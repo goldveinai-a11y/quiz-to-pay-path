@@ -41,8 +41,6 @@ function QuizPage() {
   }, [index]);
 
   const step = steps[index]!;
-  const sectionSteps = steps.filter((s) => s.section === step.section);
-  const sectionProgress = (sectionSteps.indexOf(step) + 1) / sectionSteps.length;
 
   const next = () => {
     if (index >= steps.length - 1) {
@@ -60,13 +58,13 @@ function QuizPage() {
     <main className="min-h-screen bg-background">
       {step.kind !== "analysis" ? (
         <QuizChrome
-          section={step.section}
-          progress={sectionProgress}
+          index={index}
+          total={steps.length}
           canBack={index > 0}
           onBack={() => setIndex((i) => Math.max(0, i - 1))}
         />
       ) : null}
-      <div className="mx-auto max-w-md px-4 py-7">
+      <div className="mx-auto max-w-md px-4 pb-10 pt-6">
         <StepRenderer key={step.id} step={step} answers={answers} onAnswer={setAnswer} onNext={next} />
       </div>
       <p className="sr-only">{SECTIONS.join(", ")}</p>
