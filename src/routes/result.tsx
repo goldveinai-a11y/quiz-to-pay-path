@@ -272,9 +272,6 @@ function ResultPage() {
           <SectionTitle eyebrow="Before / after">
             No more reading words you don't understand
           </SectionTitle>
-          <p className="mt-2 font-mono text-[10px] uppercase tracking-wider text-faint">
-            Drag to compare
-          </p>
           <div className="mt-5 space-y-4">
             <BeforeAfter
               reference="Romans 3:25"
