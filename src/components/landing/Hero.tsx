@@ -21,7 +21,7 @@ export function Hero() {
           />
         </div>
 
-        <div className="mx-4 -mt-14 rounded-2xl border border-border bg-card p-4 text-left shadow-s2">
+        <div className="relative z-10 mx-4 -mt-10 rounded-2xl border border-border bg-card p-4 text-left shadow-s2">
           <p className="eyebrow text-faint">John 3:16 · today</p>
           <p className="mt-2 font-serif text-[19px] leading-snug text-ink">
             “For God so <span className="bg-gold/30 px-1">loved</span> the world…”
