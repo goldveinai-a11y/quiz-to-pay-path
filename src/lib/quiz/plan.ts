@@ -110,7 +110,7 @@ export function buildPlan(answers: Answers): PlanResult {
   const style = (answers["style"] as string) ?? "explain-first";
 
   const bullets = [
-    \`Your 30-day plan through \${book.book}, one \${mins}-minute session in the \${tod}\`,
+    `Your 30-day plan through ${book.book}, one ${mins}-minute session in the ${tod}`,
     obs.bullet,
     style === "read-first"
       ? "The passage first, with help the moment you get stuck — the way you said you learn"
