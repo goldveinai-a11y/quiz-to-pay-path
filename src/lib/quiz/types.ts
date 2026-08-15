@@ -14,6 +14,7 @@ export type Option = {
   value: string;
   label: string;
   emoji?: string;
+  image?: string;
   hint?: string;
 };
 
