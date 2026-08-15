@@ -98,7 +98,7 @@ function ResultPage() {
             className="absolute inset-0"
             style={{
               background:
-                "linear-gradient(180deg,rgba(18,20,42,0.10) 0%,rgba(18,20,42,0.30) 38%,rgba(18,20,42,0.82) 74%,rgba(18,20,42,0.94) 100%)",
+                "linear-gradient(180deg,rgba(18,20,42,0.10) 0%,rgba(18,20,42,0.30) 38%,rgba(18,20,42,0.80) 72%,rgba(18,20,42,0.86) 88%,var(--background) 100%)",
             }}
           />
           <div className="absolute inset-x-0 bottom-6 mx-auto max-w-md px-5 text-center">
