@@ -88,7 +88,7 @@ function ResultPage() {
 
       {/* Hero */}
       <section className="relative">
-        <div className="relative h-[248px] w-full overflow-hidden">
+        <div className="relative h-[268px] w-full overflow-hidden">
           <img
             src={ART["hero"]!}
             alt="Engraved sunrise over hills"
@@ -98,10 +98,10 @@ function ResultPage() {
             className="absolute inset-0"
             style={{
               background:
-                "linear-gradient(180deg,rgba(18,20,42,0.15),rgba(18,20,42,0.35) 45%,var(--background))",
+                "linear-gradient(180deg,rgba(18,20,42,0.10) 0%,rgba(18,20,42,0.30) 38%,rgba(18,20,42,0.82) 74%,rgba(18,20,42,0.94) 100%)",
             }}
           />
-          <div className="absolute inset-x-0 bottom-5 mx-auto max-w-md px-5 text-center">
+          <div className="absolute inset-x-0 bottom-6 mx-auto max-w-md px-5 text-center">
             <p className="eyebrow text-white/75">{plan.name ? `${plan.name}'s plan` : "Your plan"}</p>
             <h1 className="mt-2 font-serif text-[32px] font-semibold leading-[1.12] tracking-tight text-white">
               Your 30-day plan is ready
@@ -111,7 +111,7 @@ function ResultPage() {
       </section>
 
       <div className="mx-auto max-w-md px-4">
-        <p className="mt-4 text-center text-[14px] leading-relaxed text-ink2">
+        <p className="mt-5 text-center text-[14px] leading-relaxed text-ink2">
           {plan.sessions} sessions a week · {plan.minutes} minutes · in the {plan.timeOfDay}
         </p>
 
