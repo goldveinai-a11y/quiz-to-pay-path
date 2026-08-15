@@ -46,40 +46,49 @@ export function AnalysisStep({
   const c = 2 * Math.PI * r;
 
   return (
-    <div className="flex min-h-[70vh] flex-col items-center justify-center text-center">
-      <div className="relative h-44 w-44">
+    <div className="art-hatch fixed inset-0 z-40 flex flex-col items-center justify-center px-6 text-center"
+      style={{ background: "linear-gradient(160deg,#39406F,#1A1E3C 62%,#12142A)" }}
+    >
+      <span
+        className="pointer-events-none absolute -right-16 -top-16 h-64 w-64 rounded-full opacity-70 blur-[3px]"
+        style={{ background: "radial-gradient(circle,#EBCB8B,#D9973F 50%,transparent 72%)" }}
+      />
+      <p className="eyebrow relative z-10 mb-8 text-white/60">Building your plan</p>
+      <div className="relative z-10 h-44 w-44">
         <svg viewBox="0 0 160 160" className="h-full w-full -rotate-90">
-          <circle cx="80" cy="80" r={r} className="fill-none stroke-secondary" strokeWidth="10" />
+          <circle cx="80" cy="80" r={r} className="fill-none stroke-white/15" strokeWidth="8" />
           <circle
             cx="80"
             cy="80"
             r={r}
-            className="fill-none stroke-gold transition-all duration-150"
-            strokeWidth="10"
+            className="fill-none stroke-amber transition-all duration-150"
+            strokeWidth="8"
             strokeLinecap="round"
             strokeDasharray={c}
             strokeDashoffset={c - (progress / 100) * c}
           />
         </svg>
         <div className="absolute inset-0 grid place-items-center">
-          <span className="font-serif text-4xl font-semibold">{Math.round(progress)}%</span>
+          <span className="font-serif text-[42px] font-semibold text-white">
+            {Math.round(progress)}%
+          </span>
         </div>
       </div>
 
-      <div className="mt-8 w-full max-w-xs space-y-3 text-left">
+      <div className="relative z-10 mt-9 w-full max-w-xs space-y-3 text-left">
         {lines.map((line, i) => (
           <div
             key={line}
-            className={`flex items-center gap-3 text-sm transition ${
-              i <= active ? "text-foreground" : "text-muted-foreground/50"
+            className={`flex items-center gap-3 text-[13.5px] transition ${
+              i <= active ? "text-white" : "text-white/35"
             }`}
           >
             <span
-              className={`grid h-5 w-5 place-items-center rounded-full border ${
-                i < active ? "border-success bg-success text-white" : "border-border"
+              className={`grid h-[18px] w-[18px] flex-none place-items-center rounded-full border ${
+                i < active ? "border-amber bg-amber text-ink" : "border-white/30"
               }`}
             >
-              {i < active ? <Check className="h-3 w-3" /> : null}
+              {i < active ? <Check className="h-3 w-3" strokeWidth={3} /> : null}
             </span>
             {line}
           </div>
@@ -87,16 +96,16 @@ export function AnalysisStep({
       </div>
 
       {askDepth && !answeredDepth ? (
-        <div className="fixed inset-0 z-30 grid place-items-end bg-ink/40 p-4 backdrop-blur-sm sm:place-items-center">
-          <div className="w-full max-w-md rounded-3xl border border-border bg-card p-6 text-left shadow-xl">
-            <h2 className="text-xl font-semibold">One last thing</h2>
-            <p className="mt-1 text-sm text-muted-foreground">
+        <div className="fixed inset-0 z-50 grid place-items-end bg-ink/50 p-4 backdrop-blur-sm sm:place-items-center">
+          <div className="w-full max-w-md rounded-3xl bg-card p-6 text-left shadow-s3">
+            <p className="eyebrow text-terra">One last thing</p>
+            <h2 className="mt-2 font-serif text-[22px] font-semibold leading-snug">
               Do you prefer shorter sessions or deeper ones?
-            </p>
-            <div className="mt-5 space-y-3">
+            </h2>
+            <div className="mt-5 space-y-2.5">
               {[
-                { v: "shorter", l: "Shorter — 7 minutes, in and out" },
-                { v: "deeper", l: "Deeper — 12 minutes, go further" },
+                { v: "shorter", l: "Shorter", d: "7 minutes, in and out" },
+                { v: "deeper", l: "Deeper", d: "12 minutes, go further" },
               ].map((o) => (
                 <button
                   key={o.v}
@@ -106,9 +115,10 @@ export function AnalysisStep({
                     setAnsweredDepth(true);
                     setAskDepth(false);
                   }}
-                  className="w-full rounded-2xl border border-border bg-background px-4 py-4 text-left text-[15px] font-medium transition hover:border-gold"
+                  className="w-full rounded-2xl border-2 border-border bg-background px-4 py-4 text-left transition hover:border-teal"
                 >
-                  {o.l}
+                  <span className="block text-[15px] font-semibold">{o.l}</span>
+                  <span className="block text-[12.5px] text-muted-foreground">{o.d}</span>
                 </button>
               ))}
             </div>
