@@ -1,13 +1,13 @@
 import type { Answers } from "./types";
 
 const TRADITION_MAP: Record<string, { translation: string; voices: string }> = {
-  catholic: { translation: "NABRE (with the deuterocanon)", voices: "Augustine, Aquinas, Ratzinger" },
-  orthodox: { translation: "OSB / NKJV", voices: "Chrysostom, Athanasius, Schmemann" },
-  baptist: { translation: "CSB", voices: "Spurgeon, Stott, Keller" },
-  reformed: { translation: "ESV", voices: "Calvin, Owen, Sproul" },
-  pentecostal: { translation: "NIV", voices: "Fee, Yong, Cho" },
-  "just-christian": { translation: "NIV", voices: "Lewis, Wright, Keller" },
-  unsure: { translation: "NIV (easy to read, widely used)", voices: "Lewis, Wright, Keller" },
+  catholic: { translation: "WEB (with the deuterocanon)", voices: "Augustine, Aquinas, Ratzinger" },
+  orthodox: { translation: "WEB (with the deuterocanon)", voices: "Chrysostom, Athanasius, Schmemann" },
+  baptist: { translation: "KJV", voices: "Spurgeon, Stott, Keller" },
+  reformed: { translation: "WEB", voices: "Calvin, Owen, Sproul" },
+  pentecostal: { translation: "WEB", voices: "Fee, Yong, Cho" },
+  "just-christian": { translation: "WEB", voices: "Lewis, Wright, Keller" },
+  unsure: { translation: "WEB (easy to read, modern English)", voices: "Lewis, Wright, Keller" },
 };
 
 const THEME_BOOK: Record<string, { book: string; why: string }> = {
