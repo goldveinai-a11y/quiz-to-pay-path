@@ -88,7 +88,7 @@ function ResultPage() {
 
       {/* Hero */}
       <section className="relative">
-        <div className="relative h-[268px] w-full overflow-hidden">
+        <div className="relative h-[268px] w-full overflow-hidden rounded-b-[28px]">
           <img
             src={ART["hero"]!}
             alt="Engraved sunrise over hills"
@@ -98,7 +98,7 @@ function ResultPage() {
             className="absolute inset-0"
             style={{
               background:
-                "linear-gradient(180deg,rgba(18,20,42,0.10) 0%,rgba(18,20,42,0.30) 38%,rgba(18,20,42,0.80) 72%,rgba(18,20,42,0.86) 88%,var(--background) 100%)",
+                "linear-gradient(180deg,rgba(18,20,42,0.10) 0%,rgba(18,20,42,0.30) 38%,rgba(18,20,42,0.78) 70%,rgba(18,20,42,0.93) 100%)",
             }}
           />
           <div className="absolute inset-x-0 bottom-6 mx-auto max-w-md px-5 text-center">
