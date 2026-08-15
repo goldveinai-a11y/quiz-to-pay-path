@@ -103,6 +103,17 @@ function ResultPage() {
           {plan.sessions} sessions a week · {plan.minutes} minutes · in the {plan.timeOfDay}
         </p>
 
+        {/* Reader type */}
+        <section className="mt-6 rounded-3xl bg-card p-5 shadow-s1">
+          <p className="eyebrow text-terra">You read like</p>
+          <p className="mt-1.5 font-serif text-[24px] font-semibold leading-tight text-ink">
+            {plan.readerType}
+          </p>
+          <p className="mt-3.5 border-t border-border pt-3.5 text-[13.5px] leading-relaxed text-ink2">
+            <span className="font-semibold text-ink">Your obstacle is {plan.obstacleName}</span> — {plan.obstacleLine}
+          </p>
+        </section>
+
         {/* Plan card */}
         <section className="mt-6 overflow-hidden rounded-3xl bg-card shadow-s2">
           <div className="flex items-stretch gap-4 border-b border-border p-5">
@@ -235,16 +246,7 @@ function ResultPage() {
         <section className="pt-12">
           <SectionTitle eyebrow="What's inside">Everything you need, nothing you don't</SectionTitle>
           <ul className="mt-5 divide-y divide-border overflow-hidden rounded-3xl bg-card shadow-s1">
-            {[
-              `Your 30-day plan through ${plan.book}, one ${plan.minutes}-minute session at a time`,
-              "Plain-English context before every passage — who's speaking, and why it matters",
-              "Tap any word for the original Greek or Hebrew. Free, forever.",
-              "Ask any question, however basic. No one is watching.",
-              plan.showBothSides
-                ? "See how Catholic, Orthodox and Protestant readings differ, side by side"
-                : "Commentary from your own tradition only",
-              "Notes, highlights and a streak that survives a missed day",
-            ].map((f) => (
+            {plan.bullets.map((f) => (
               <li key={f} className="flex gap-3 px-5 py-3.5 text-[14px] leading-relaxed text-ink2">
                 <span className="mt-[3px] grid h-[18px] w-[18px] flex-none place-items-center rounded-full bg-teal text-background">
                   <Check className="h-3 w-3" strokeWidth={3} />
