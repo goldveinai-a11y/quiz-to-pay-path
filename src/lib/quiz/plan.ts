@@ -21,6 +21,44 @@ const THEME_BOOK: Record<string, { book: string; why: string }> = {
   nothing: { book: "Mark", why: "The fastest gospel — the whole story in about two hours of reading." },
 };
 
+const READER_TYPE: Record<string, string> = {
+  understand: "an Honest Reader",
+  "hard-season": "a Reader in a Hard Season",
+  habit: "a Restarter",
+  group: "a Reluctant Guide",
+  returning: "a Returner",
+};
+
+type Obstacle = { name: string; line: string; bullet: string };
+
+const OBSTACLES: Record<string, Obstacle> = {
+  "dont-understand": {
+    name: "missing context",
+    line: "you read the words, but not who they were written to.",
+    bullet: "Context before every passage — who is speaking, to whom, and why it mattered then",
+  },
+  "lose-thread": {
+    name: "a lost thread",
+    line: "every passage lands on its own and the story never joins up.",
+    bullet: "Every session is a numbered step in one story, never a verse at random",
+  },
+  bored: {
+    name: "a flat page",
+    line: "the text goes past and nothing catches.",
+    bullet: "One thing per session that changes how the passage reads — never a wall of notes",
+  },
+  guilt: {
+    name: "the guilt loop",
+    line: "one missed day quietly turns into a missed month.",
+    bullet: "Counters that only go up. Miss a week and nothing you have done disappears",
+  },
+  "where-start": {
+    name: "a blank page",
+    line: "opening it means deciding where to begin, every single time.",
+    bullet: "Tomorrow's passage is already chosen. You open it and read",
+  },
+};
+
 export type PlanResult = {
   name: string;
   email: string;
@@ -36,6 +74,10 @@ export type PlanResult = {
   understandingAfter: number;
   themes: string[];
   showBothSides: boolean;
+  readerType: string;
+  obstacleName: string;
+  obstacleLine: string;
+  bullets: string[];
 };
 
 const TIME_LABEL: Record<string, string> = {
@@ -59,6 +101,32 @@ export function buildPlan(answers: Answers): PlanResult {
   const sessions = days === "2-3" ? 3 : days === "6-7" ? 7 : 5;
   const now = Number(answers["understanding"] ?? 4);
   const depth = (answers["analysis_depth"] as string) ?? "shorter";
+  const trigger = (answers["trigger"] as string) ?? "understand";
+  const readerType = READER_TYPE[trigger] ?? READER_TYPE["understand"]!;
+  const blockers = asArray(answers["blockers"]);
+  const obs = OBSTACLES[blockers[0] ?? "dont-understand"] ?? OBSTACLES["dont-understand"]!;
+  const mins = depth === "deeper" ? 12 : 7;
+  const tod = TIME_LABEL[(answers["time-of-day"] as string) ?? "morning"] ?? "morning";
+  const style = (answers["style"] as string) ?? "explain-first";
+
+  const bullets = [
+    \`Your 30-day plan through \${book.book}, one \${mins}-minute session in the \${tod}\`,
+    obs.bullet,
+    style === "read-first"
+      ? "The passage first, with help the moment you get stuck — the way you said you learn"
+      : "The explanation first, then the passage — the way you said you learn",
+    "Tap any word for the original Greek or Hebrew. Free, forever.",
+    answers["embarrassed"] === "yes"
+      ? "Ask any question, however basic. Nobody sees it but you."
+      : "Ask any question about the passage, any time.",
+    answers["disagreements"] === "both"
+      ? "See how Catholic, Orthodox and Protestant readings differ, side by side"
+      : "Commentary from your own tradition only",
+    "Notes, highlights and a streak that survives a missed day",
+  ];
+  if (trigger === "group") {
+    bullets.splice(6, 0, "Prep your group's discussion — questions and a handout, ready to send");
+  }
 
   return {
     name: ((answers["name"] as string) ?? "friend").trim() || "friend",
@@ -75,6 +143,10 @@ export function buildPlan(answers: Answers): PlanResult {
     understandingAfter: Math.min(10, Math.max(now + 3, 7)),
     themes,
     showBothSides: answers["disagreements"] === "both",
+    readerType,
+    obstacleName: obs.name,
+    obstacleLine: obs.line,
+    bullets,
   };
 }
 
