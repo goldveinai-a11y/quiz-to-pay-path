@@ -37,21 +37,10 @@ export const Route = createFileRoute("/result")({
 });
 
 const PLANS = [
-  { id: "1-week", label: "1-week trial", per: "0.14", price: 1, old: 6.99 },
-  { id: "1-month", label: "1-month access", per: "0.16", price: 4.99, old: 14.99, best: true },
-  { id: "3-month", label: "3-month access", per: "0.11", price: 9.99, old: 29.99 },
+  { id: "1-week", label: "1-week trial", per: "1.00", price: 6.99, old: 14.99 },
+  { id: "1-month", label: "1-month access", per: "0.50", price: 14.99, old: 29.99, best: true },
+  { id: "3-month", label: "3-month access", per: "0.33", price: 29.99, old: 69.99 },
 ];
-
-function useCountdown(seconds: number) {
-  const [left, setLeft] = useState(seconds);
-  useEffect(() => {
-    const id = window.setInterval(() => setLeft((l) => (l > 0 ? l - 1 : 0)), 1000);
-    return () => window.clearInterval(id);
-  }, []);
-  const m = String(Math.floor(left / 60)).padStart(2, "0");
-  const s = String(left % 60).padStart(2, "0");
-  return `${m}:${s}`;
-}
 
 function SectionTitle({ eyebrow, children }: { eyebrow: string; children: React.ReactNode }) {
   return (
@@ -68,7 +57,6 @@ function ResultPage() {
   const navigate = useNavigate();
   const [plan, setPlan] = useState<PlanResult | null>(null);
   const [selected, setSelected] = useState("1-month");
-  const timer = useCountdown(10 * 60);
 
   useEffect(() => {
     setPlan(buildPlan(loadAnswers()));
@@ -83,7 +71,7 @@ function ResultPage() {
   return (
     <main className="paper-grain min-h-screen bg-background pb-28">
       <div className="sticky top-0 z-30 bg-ink px-4 py-2 text-center font-mono text-[10.5px] uppercase tracking-[0.14em] text-background">
-        Code <span className="text-amber">SUMMER_2026</span> applied · held for {timer}
+        Code <span className="text-amber">SUMMER_2026</span> applied
       </div>
 
       {/* Hero */}
@@ -215,13 +203,13 @@ function ResultPage() {
                   <span className="flex-1">
                     <span className="block text-[15px] font-semibold text-ink">{p.label}</span>
                     <span className="mt-0.5 block text-[12.5px] text-muted-foreground">
-                      <span className="line-through">€{p.old.toFixed(2)}</span>{" "}
-                      <span className="font-semibold text-terra">€{p.price.toFixed(2)}</span>
+                      <span className="line-through">${p.old.toFixed(2)}</span>{" "}
+                      <span className="font-semibold text-terra">${p.price.toFixed(2)}</span>
                     </span>
                   </span>
                   <span className="text-right">
                     <span className="block font-serif text-[22px] font-semibold leading-none text-ink">
-                      €{p.per}
+                      ${p.per}
                     </span>
                     <span className="mt-1 block font-mono text-[9px] uppercase tracking-wider text-faint">
                       per day
@@ -468,7 +456,7 @@ function ResultPage() {
         </section>
 
         <p className="pt-10 text-center text-[11px] leading-relaxed text-muted-foreground">
-          By continuing you agree to be charged €{selectedPlan.price.toFixed(2)} today and to the
+          By continuing you agree to be charged ${selectedPlan.price.toFixed(2)} today and to the
           renewal terms of your plan. Cancel any time before renewal.
         </p>
       </div>
@@ -480,7 +468,7 @@ function ResultPage() {
             onClick={go}
             className="h-[54px] w-full rounded-2xl bg-ink text-[15px] font-medium text-background shadow-s2 transition hover:bg-ink/90"
           >
-            Start my plan · €{selectedPlan.price.toFixed(2)}
+            Start my plan · ${selectedPlan.price.toFixed(2)}
           </button>
         </div>
       </div>
