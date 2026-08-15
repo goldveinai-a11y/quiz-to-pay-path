@@ -8,9 +8,9 @@ import { loadAnswers } from "@/lib/quiz/store";
 type Search = { plan?: string };
 
 const PRICES: Record<string, { label: string; price: number; renews: string }> = {
-  "1-week": { label: "1-week trial", price: 1, renews: "€6.99 every week after the trial" },
-  "1-month": { label: "1-month access", price: 4.99, renews: "€14.99 every month after" },
-  "3-month": { label: "3-month access", price: 9.99, renews: "€29.99 every 3 months after" },
+  "1-week": { label: "1-week trial", price: 6.99, renews: "$29.99 every 3 months after the trial" },
+  "1-month": { label: "1-month access", price: 14.99, renews: "$29.99 every 3 months after" },
+  "3-month": { label: "3-month access", price: 29.99, renews: "$69.99 every year after" },
 };
 
 export const Route = createFileRoute("/checkout")({
@@ -62,7 +62,7 @@ function CheckoutPage() {
         <div className="flex items-start justify-between">
           <div>
             <p className="text-sm text-muted-foreground">Total today</p>
-            <p className="font-serif text-4xl font-semibold">€{selected.price.toFixed(2)}</p>
+            <p className="font-serif text-4xl font-semibold">${selected.price.toFixed(2)}</p>
             <p className="mt-1 text-xs text-muted-foreground">
               {selected.label} · then {selected.renews}
             </p>
@@ -137,7 +137,7 @@ function CheckoutPage() {
                 className="h-13 w-full rounded-xl py-4 text-base font-semibold"
               >
                 <CreditCard className="mr-2 h-4 w-4" />
-                {pending ? "Processing…" : `Pay €${selected.price.toFixed(2)}`}
+                {pending ? "Processing…" : `Pay $${selected.price.toFixed(2)}`}
               </Button>
             </div>
 
@@ -149,4 +149,4 @@ function CheckoutPage() {
       </div>
     </main>
   );
-}
+      }
