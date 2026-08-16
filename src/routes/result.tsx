@@ -10,6 +10,7 @@ import {
 import { BeforeAfter } from "@/components/paywall/BeforeAfter";
 import { GrowthChart } from "@/components/paywall/GrowthChart";
 import { PhoneMock } from "@/components/paywall/PhoneMock";
+import { PAYWALL_REVIEWS } from "@/lib/reviews";
 import { ART } from "@/lib/quiz/art";
 import { loadAnswers } from "@/lib/quiz/store";
 import { buildPlan, THEME_LABELS, type PlanResult } from "@/lib/quiz/plan";
@@ -368,31 +369,26 @@ function ResultPage() {
         <section className="pt-12">
           <SectionTitle eyebrow="Readers">People who were stuck too</SectionTitle>
           <div className="mt-5 space-y-3">
-            {[
-              {
-                n: "Marta, 34",
-                t: "I'd started Genesis four times and quit at Leviticus. This is the first plan I've finished.",
-              },
-              {
-                n: "Daniel, 47",
-                t: "I never asked questions at church because I felt stupid. Here I ask ten a week.",
-              },
-              {
-                n: "Grace, 26",
-                t: "Seven minutes before bed. Thirty days later I actually know what Paul is arguing.",
-              },
-            ].map((r) => (
-              <figure key={r.n} className="rounded-2xl bg-card p-5 shadow-s1">
+            {PAYWALL_REVIEWS.map((r) => (
+              <figure key={r.name} className="rounded-2xl bg-card p-5 shadow-s1">
                 <div className="flex gap-0.5 text-amber">
                   {Array.from({ length: 5 }).map((_, i) => (
                     <Star key={i} className="h-3.5 w-3.5 fill-current" />
                   ))}
                 </div>
                 <blockquote className="mt-2.5 font-serif text-[16px] leading-relaxed text-ink">
-                  “{r.t}”
+                  “{r.text}”
                 </blockquote>
-                <figcaption className="mt-2.5 font-mono text-[10px] uppercase tracking-wider text-faint">
-                  {r.n}
+                <figcaption className="mt-3 flex items-center gap-2.5 font-mono text-[10px] uppercase tracking-wider text-faint">
+                  <img
+                    src={r.face}
+                    alt={`${r.name}, Plainly reader`}
+                    loading="lazy"
+                    width={512}
+                    height={512}
+                    className="h-9 w-9 rounded-full border border-border object-cover"
+                  />
+                  {r.name}
                 </figcaption>
               </figure>
             ))}

@@ -1,20 +1,4 @@
-const REVIEWS = [
-  {
-    name: "Olivia",
-    initials: "OL",
-    text: "I read the Bible for years and quietly understood almost none of it. Plainly explains the verse and the word behind it — in seven minutes I actually get it.",
-  },
-  {
-    name: "Marcus",
-    initials: "MA",
-    text: "The daily plan is short enough that I never skip. Three weeks in and it's the first habit I've kept since college.",
-  },
-  {
-    name: "Grace",
-    initials: "GR",
-    text: "The original-language notes are what sold me. It's like having a study Bible that only says the part I needed.",
-  },
-];
+import { LANDING_REVIEWS } from "@/lib/reviews";
 
 function Stars() {
   return (
@@ -38,14 +22,19 @@ export function Reviews() {
         Real notes from people who finally stayed in the text
       </p>
       <div className="mt-7 space-y-4">
-        {REVIEWS.map((r) => (
+        {LANDING_REVIEWS.map((r) => (
           <article key={r.name} className="rounded-2xl border border-border bg-card p-5 shadow-s1">
             <Stars />
             <p className="mt-3 text-[14px] leading-relaxed text-ink2">{r.text}</p>
             <div className="mt-4 flex items-center gap-3">
-              <span className="flex h-9 w-9 items-center justify-center rounded-full bg-secondary font-mono text-[11px] text-ink2">
-                {r.initials}
-              </span>
+              <img
+                src={r.face}
+                alt={`${r.name}, Plainly reader`}
+                loading="lazy"
+                width={512}
+                height={512}
+                className="h-10 w-10 rounded-full border border-border object-cover"
+              />
               <span className="text-[14px] font-medium text-ink">{r.name}</span>
             </div>
           </article>
