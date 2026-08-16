@@ -1,7 +1,15 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { buildMyPlan, buildSessionDay, persistStep, persistDone, switchBook } from "./read.server";
+import {
+  buildMyPlan,
+  buildSessionDay,
+  persistStep,
+  persistDone,
+  switchBook,
+  readAccess,
+  cancelAccess,
+} from "./read.server";
 
 export const completePurchase = createServerFn({ method: "POST" })
   .inputValidator((data) =>
@@ -55,3 +63,11 @@ export const startBook = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((data) => z.object({ bookSlug: z.string().min(1) }).parse(data))
   .handler(async ({ data, context }) => switchBook(context.userId, data.bookSlug));
+
+export const getAccess = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => readAccess(context.userId));
+
+export const cancelAccessNow = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => cancelAccess(context.userId));
