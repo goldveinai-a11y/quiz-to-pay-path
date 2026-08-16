@@ -14,10 +14,17 @@ import { RENEWALS } from "@/lib/payments/renewals";
 
 type Admin = ReturnType<typeof createClient<Database>>;
 
-async function db(): Promise<Admin> {
+async function db(scoped?: Admin): Promise<Admin> {
+  // Reads and writes made on behalf of a signed-in reader use their own
+  // client, so row-level security stays in force. The service client is only
+  // used where there is no user session (payment fulfilment, email dispatch).
+  if (scoped) return scoped;
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   return supabaseAdmin as unknown as Admin;
 }
+
+/** The RLS-scoped client handed to us by the auth middleware. */
+export type ScopedClient = Admin;
 
 const DAY_MS = 86400000;
 
@@ -35,8 +42,8 @@ function daysBetween(a: string, b: string) {
 
 const MAX_FREEZES = 3;
 
-async function activePlan(userId: string) {
-  const supabase = await db();
+async function activePlan(userId: string, scoped?: Admin) {
+  const supabase = await db(scoped);
   const { data } = await supabase
     .from("user_plans")
     .select("*")
@@ -57,9 +64,9 @@ async function activePlan(userId: string) {
   return created;
 }
 
-export async function buildMyPlan(userId: string): Promise<MyPlan> {
-  const supabase = await db();
-  const plan = await activePlan(userId);
+export async function buildMyPlan(userId: string, scoped?: Admin): Promise<MyPlan> {
+  const supabase = await db(scoped);
+  const plan = await activePlan(userId, scoped);
   const [{ data: sessions }, { data: progress }] = await Promise.all([
     supabase
       .from("study_sessions")
@@ -134,9 +141,9 @@ export async function buildMyPlan(userId: string): Promise<MyPlan> {
   };
 }
 
-export async function buildSessionDay(userId: string, day: number): Promise<SessionDay> {
-  const supabase = await db();
-  const plan = await activePlan(userId);
+export async function buildSessionDay(userId: string, day: number, scoped?: Admin): Promise<SessionDay> {
+  const supabase = await db(scoped);
+  const plan = await activePlan(userId, scoped);
   const startedAt = plan.started_at ?? plan.created_at;
   if (unlockAt(startedAt, day).getTime() > Date.now()) {
     throw new Error("This day has not opened yet.");
@@ -234,9 +241,9 @@ export async function buildSessionDay(userId: string, day: number): Promise<Sess
   };
 }
 
-export async function persistStep(userId: string, day: number, step: number) {
-  const supabase = await db();
-  const plan = await activePlan(userId);
+export async function persistStep(userId: string, day: number, step: number, scoped?: Admin) {
+  const supabase = await db(scoped);
+  const plan = await activePlan(userId, scoped);
   await supabase
     .from("user_progress")
     .upsert(
@@ -246,9 +253,9 @@ export async function persistStep(userId: string, day: number, step: number) {
   return { ok: true };
 }
 
-export async function persistDone(userId: string, day: number, note: string | null) {
-  const supabase = await db();
-  const plan = await activePlan(userId);
+export async function persistDone(userId: string, day: number, note: string | null, scoped?: Admin) {
+  const supabase = await db(scoped);
+  const plan = await activePlan(userId, scoped);
   await supabase.from("user_progress").upsert(
     {
       user_id: userId,
@@ -260,7 +267,7 @@ export async function persistDone(userId: string, day: number, note: string | nu
     },
     { onConflict: "plan_id,day_number" },
   );
-  const streak = await bumpStreak(plan, userId);
+  const streak = await bumpStreak(plan, userId, scoped);
   return { ok: true, streak };
 }
 
@@ -270,8 +277,8 @@ type PlanRow = Awaited<ReturnType<typeof activePlan>>;
  * One session finished today extends the streak. A single missed day spends a
  * freeze instead of wiping it — the plan should never punish a bad week.
  */
-async function bumpStreak(plan: PlanRow, userId: string) {
-  const supabase = await db();
+async function bumpStreak(plan: PlanRow, userId: string, scoped?: Admin) {
+  const supabase = await db(scoped);
   const today = dayKey(new Date());
   const last = plan.last_completed_on ?? null;
   let current = plan.streak_count ?? 0;
@@ -319,9 +326,9 @@ async function bumpStreak(plan: PlanRow, userId: string) {
 }
 
 /** Everything the reader wrote, in one place — the reason to stay past day 30. */
-export async function listNotes(userId: string): Promise<SavedNote[]> {
-  const supabase = await db();
-  const plan = await activePlan(userId);
+export async function listNotes(userId: string, scoped?: Admin): Promise<SavedNote[]> {
+  const supabase = await db(scoped);
+  const plan = await activePlan(userId, scoped);
   const [{ data: progress }, { data: sessions }] = await Promise.all([
     supabase
       .from("user_progress")
@@ -350,8 +357,8 @@ export async function listNotes(userId: string): Promise<SavedNote[]> {
     });
 }
 
-export async function switchBook(userId: string, bookSlug: string) {
-  const supabase = await db();
+export async function switchBook(userId: string, bookSlug: string, scoped?: Admin) {
+  const supabase = await db(scoped);
   const slug = BOOK_TITLES[bookSlug] ? bookSlug : "john";
   await supabase.from("user_plans").update({ is_active: false }).eq("user_id", userId);
   const { data, error } = await supabase
@@ -363,8 +370,8 @@ export async function switchBook(userId: string, bookSlug: string) {
   return { planId: data.id, bookSlug: slug };
 }
 
-export async function readAccess(userId: string) {
-  const supabase = await db();
+export async function readAccess(userId: string, scoped?: Admin) {
+  const supabase = await db(scoped);
   const { data } = await supabase
     .from("subscriptions")
     .select("plan_code, plan_label, status, amount_cents, current_period_end, cancel_at_period_end")
