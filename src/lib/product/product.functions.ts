@@ -17,19 +17,19 @@ import {
 // after the payment session has been verified with the card processor.
 export const getMyPlan = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
-  .handler(async ({ context }) => buildMyPlan(context.userId));
+  .handler(async ({ context }) => buildMyPlan(context.userId, context.supabase as never));
 
 export const getSessionDay = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .inputValidator((data) => z.object({ day: z.number().int().min(1).max(30) }).parse(data))
-  .handler(async ({ data, context }) => buildSessionDay(context.userId, data.day));
+  .handler(async ({ data, context }) => buildSessionDay(context.userId, data.day, context.supabase as never));
 
 export const saveStep = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((data) =>
     z.object({ day: z.number().int().min(1).max(30), step: z.number().int().min(1).max(6) }).parse(data),
   )
-  .handler(async ({ data, context }) => persistStep(context.userId, data.day, data.step));
+  .handler(async ({ data, context }) => persistStep(context.userId, data.day, data.step, context.supabase as never));
 
 export const completeDay = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
@@ -41,20 +41,20 @@ export const completeDay = createServerFn({ method: "POST" })
       })
       .parse(data),
   )
-  .handler(async ({ data, context }) => persistDone(context.userId, data.day, data.note ?? null));
+  .handler(async ({ data, context }) => persistDone(context.userId, data.day, data.note ?? null, context.supabase as never));
 
 export const startBook = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((data) => z.object({ bookSlug: z.string().min(1) }).parse(data))
-  .handler(async ({ data, context }) => switchBook(context.userId, data.bookSlug));
+  .handler(async ({ data, context }) => switchBook(context.userId, data.bookSlug, context.supabase as never));
 
 export const getAccess = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
-  .handler(async ({ context }) => readAccess(context.userId));
+  .handler(async ({ context }) => readAccess(context.userId, context.supabase as never));
 
 export const getMyNotes = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
-  .handler(async ({ context }) => listNotes(context.userId));
+  .handler(async ({ context }) => listNotes(context.userId, context.supabase as never));
 
 export const cancelAccessNow = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
