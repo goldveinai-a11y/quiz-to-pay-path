@@ -278,3 +278,91 @@ export async function cancelAccess(userId: string, environment: "sandbox" | "liv
   return { ok: true };
 }
 
+/** Longer cycles cost less per day, so only moves up this ladder are offered. */
+const PLAN_RANK: Record<string, number> = { "1-week": 0, "1-month": 1, "3-month": 2 };
+
+export function upgradeOptions(currentCode: string) {
+  const rank = PLAN_RANK[currentCode] ?? 0;
+  return Object.values(ACCESS_PLANS)
+    .filter((p) => (PLAN_RANK[p.code] ?? 0) > rank)
+    .map((p) => {
+      const renewal = RENEWALS[p.code] ?? RENEWALS["1-month"]!;
+      return {
+        code: p.code,
+        label: p.label,
+        renews: p.renews,
+        renewalAmountCents: renewal.amountCents,
+      };
+    });
+}
+
+/**
+ * Moves the live subscription onto a longer renewal cycle. Access is never
+ * interrupted; the card processor prorates the difference.
+ */
+export async function changePlan(
+  userId: string,
+  targetCode: string,
+  environment: "sandbox" | "live" = "sandbox",
+) {
+  const supabase = await db();
+  const { data: current } = await supabase
+    .from("subscriptions")
+    .select("id, plan_code, provider_subscription_id")
+    .eq("user_id", userId)
+    .eq("status", "active")
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (!current) throw new Error("No active access to change");
+
+  const currentRank = PLAN_RANK[current.plan_code] ?? 0;
+  const targetRank = PLAN_RANK[targetCode];
+  if (targetRank === undefined) throw new Error("Unknown plan");
+  if (targetRank <= currentRank) throw new Error("Only longer cycles can be chosen");
+
+  const target = getAccessPlan(targetCode);
+  const renewal = RENEWALS[targetCode] ?? RENEWALS["1-month"]!;
+
+  if (current.provider_subscription_id) {
+    const { createStripeClient } = await import("@/lib/stripe.server");
+    const stripe = createStripeClient(environment);
+    const lookupKey = `plainly_renewal_${renewal.intervalCount}_${renewal.interval}_${renewal.amountCents}`;
+
+    const existing = await stripe.prices.list({ lookup_keys: [lookupKey], limit: 1 });
+    const price =
+      existing.data[0] ??
+      (await stripe.prices.create({
+        currency: "usd",
+        unit_amount: renewal.amountCents,
+        recurring: { interval: renewal.interval, interval_count: renewal.intervalCount },
+        lookup_key: lookupKey,
+        transfer_lookup_key: true,
+        nickname: `Plainly — continued access (${target.label})`,
+        product_data: { name: "Plainly — continued access" },
+      }));
+
+    const subscription = await stripe.subscriptions.retrieve(current.provider_subscription_id);
+    const item =
+      subscription.items.data.find((i) => i.price.recurring) ?? subscription.items.data[0];
+    if (item) {
+      await stripe.subscriptions.update(current.provider_subscription_id, {
+        items: [{ id: item.id, price: price.id }],
+        proration_behavior: "create_prorations",
+        metadata: { ...(subscription.metadata ?? {}), planCode: target.code },
+      });
+    }
+  }
+
+  const { error } = await supabase
+    .from("subscriptions")
+    .update({
+      plan_code: target.code,
+      plan_label: target.label,
+      amount_cents: renewal.amountCents,
+    })
+    .eq("id", current.id);
+  if (error) throw new Error(error.message);
+  return { ok: true, planCode: target.code };
+}
+
