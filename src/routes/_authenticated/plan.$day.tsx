@@ -184,6 +184,8 @@ function SessionPage() {
 type SessionStep = "passage" | "insight" | "context" | "divide" | "question" | "close";
 
 function PassageStep({ data }: { data: SessionDay }) {
+  // Exactly one word carries the underline, on its first appearance.
+  let used = false;
   return (
     <section>
       <p className="eyebrow text-muted-foreground">
@@ -191,14 +193,21 @@ function PassageStep({ data }: { data: SessionDay }) {
       </p>
       <h1 className="mt-3 font-serif text-2xl font-semibold leading-snug">{data.title}</h1>
       <div className="mt-6 space-y-4">
-        {data.verses.map((v) => (
-          <p key={v.verse} className="font-serif text-xl leading-relaxed">
-            <span className="mr-2 align-super font-mono text-[0.6rem] text-muted-foreground">
-              {v.verse}
-            </span>
-            {highlight(v.text, data.highlightWord)}
-          </p>
-        ))}
+        {data.verses.map((v) => {
+          const word =
+            !used && data.highlightWord && v.text.toLowerCase().includes(data.highlightWord.toLowerCase())
+              ? data.highlightWord
+              : null;
+          if (word) used = true;
+          return (
+            <p key={v.verse} className="font-serif text-xl leading-relaxed">
+              <span className="mr-2 align-super font-mono text-[0.6rem] text-muted-foreground">
+                {v.verse}
+              </span>
+              {highlight(v.text, word)}
+            </p>
+          );
+        })}
       </div>
     </section>
   );
