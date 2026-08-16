@@ -1,9 +1,13 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { X, Lock, ShieldCheck, CreditCard } from "lucide-react";
+import { useServerFn } from "@tanstack/react-start";
+import { X, Lock, CreditCard } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { loadAnswers } from "@/lib/quiz/store";
+import { completePurchase } from "@/lib/product/product.functions";
+import { supabase } from "@/integrations/supabase/client";
+import { THEME_TO_BOOK } from "@/lib/product/types";
 
 type Search = { plan?: string };
 
@@ -14,6 +18,7 @@ const PRICES: Record<string, { label: string; price: number; renews: string }> =
 };
 
 export const Route = createFileRoute("/checkout")({
+  ssr: false,
   validateSearch: (search: Record<string, unknown>): Search => ({
     plan: typeof search["plan"] === "string" ? search["plan"] : "1-month",
   }),
@@ -37,9 +42,10 @@ export const Route = createFileRoute("/checkout")({
 function CheckoutPage() {
   const { plan } = Route.useSearch();
   const navigate = useNavigate();
+  const purchase = useServerFn(completePurchase);
   const [email, setEmail] = useState("");
   const [pending, setPending] = useState(false);
-  const [done, setDone] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const selected = PRICES[plan ?? "1-month"] ?? PRICES["1-month"]!;
 
@@ -48,12 +54,31 @@ function CheckoutPage() {
     if (typeof a["email"] === "string") setEmail(a["email"] as string);
   }, []);
 
-  const pay = () => {
+  const pay = async () => {
     setPending(true);
-    window.setTimeout(() => {
+    setError(null);
+    try {
+      const answers = loadAnswers();
+      const theme = typeof answers["theme"] === "string" ? (answers["theme"] as string) : "";
+      const result = await purchase({
+        data: {
+          email: email.trim().toLowerCase(),
+          planCode: plan ?? "1-month",
+          bookSlug: THEME_TO_BOOK[theme] ?? "john",
+          tradition: typeof answers["tradition"] === "string" ? (answers["tradition"] as string) : "unsure",
+          readerName: typeof answers["name"] === "string" ? (answers["name"] as string) : undefined,
+          origin: window.location.origin,
+        },
+      });
+      // Same tab, same moment: the buyer is signed in and lands on their plan.
+      if (result.tokenHash) {
+        await supabase.auth.verifyOtp({ type: "email", token_hash: result.tokenHash });
+      }
+      navigate({ to: "/plan", replace: true });
+    } catch (e) {
       setPending(false);
-      setDone(true);
-    }, 900);
+      setError(e instanceof Error ? e.message : "We couldn't complete that payment.");
+    }
   };
 
   return (
@@ -77,22 +102,7 @@ function CheckoutPage() {
           </button>
         </div>
 
-        {done ? (
-          <div className="mt-8 text-center">
-            <ShieldCheck className="mx-auto h-12 w-12 text-success" />
-            <h1 className="mt-3 text-2xl font-semibold">Payments coming soon</h1>
-            <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-              This is the checkout preview. Real billing, accounts and the reading app are the next
-              step — your answers and plan are saved.
-            </p>
-            <Button
-              onClick={() => navigate({ to: "/result" })}
-              className="mt-6 h-12 w-full rounded-full"
-            >
-              Back to my plan
-            </Button>
-          </div>
-        ) : (
+        {(
           <>
             <div className="mt-6">
               <label className="text-sm font-medium" htmlFor="checkout-email">
@@ -109,35 +119,17 @@ function CheckoutPage() {
               <p className="mt-1.5 text-xs text-muted-foreground">
                 Your receipt and plan link go here.
               </p>
+              {error ? <p className="mt-2 text-sm text-destructive">{error}</p> : null}
             </div>
 
             <div className="mt-6 space-y-3">
-              <button
-                type="button"
-                onClick={pay}
-                className="h-12 w-full rounded-xl bg-ink text-sm font-semibold text-background"
-              >
-                 Pay
-              </button>
-              <button
-                type="button"
-                onClick={pay}
-                className="h-12 w-full rounded-xl border border-border bg-background text-sm font-semibold"
-              >
-                G Pay
-              </button>
-              <div className="flex items-center gap-3 py-1">
-                <div className="h-px flex-1 bg-border" />
-                <span className="text-xs text-muted-foreground">or pay with card</span>
-                <div className="h-px flex-1 bg-border" />
-              </div>
               <Button
                 onClick={pay}
                 disabled={pending || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)}
                 className="h-13 w-full rounded-xl py-4 text-base font-semibold"
               >
                 <CreditCard className="mr-2 h-4 w-4" />
-                {pending ? "Processing…" : `Pay $${selected.price.toFixed(2)}`}
+                {pending ? "Processing…" : `Pay $${selected.price.toFixed(2)} now`}
               </Button>
             </div>
 
