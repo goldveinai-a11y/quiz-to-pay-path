@@ -326,6 +326,7 @@ function QuestionStep({
 }
 
 function CloseStep({ data, done }: { data: SessionDay; done: boolean }) {
+  const verse = data.verses[0];
   return (
     <section>
       <p className="eyebrow text-muted-foreground">Take it with you</p>
@@ -333,6 +334,11 @@ function CloseStep({ data, done }: { data: SessionDay; done: boolean }) {
       <p className="mt-3 text-[0.95rem] leading-relaxed text-muted-foreground">
         {done ? "Day " + data.day + " is finished." : "That's the whole of day " + data.day + "."}
       </p>
+      {verse ? (
+        <div className="mt-6">
+          <ShareCard text={verse.text} reference={data.reference} translation={data.translation} />
+        </div>
+      ) : null}
       {data.next ? (
         <div className="mt-6 rounded-2xl border border-border bg-card p-5">
           <p className="eyebrow text-muted-foreground">Tomorrow · day {data.next.day}</p>
