@@ -47,6 +47,63 @@ export type Database = {
         }
         Relationships: []
       }
+      email_events: {
+        Row: {
+          day_number: number | null
+          id: string
+          kind: string
+          sent_at: string
+          user_id: string
+        }
+        Insert: {
+          day_number?: number | null
+          id?: string
+          kind: string
+          sent_at?: string
+          user_id: string
+        }
+        Update: {
+          day_number?: number | null
+          id?: string
+          kind?: string
+          sent_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      email_preferences: {
+        Row: {
+          created_at: string
+          daily_reminder: boolean
+          email: string
+          milestone: boolean
+          unsubscribe_token: string
+          updated_at: string
+          user_id: string
+          win_back: boolean
+        }
+        Insert: {
+          created_at?: string
+          daily_reminder?: boolean
+          email: string
+          milestone?: boolean
+          unsubscribe_token?: string
+          updated_at?: string
+          user_id: string
+          win_back?: boolean
+        }
+        Update: {
+          created_at?: string
+          daily_reminder?: boolean
+          email?: string
+          milestone?: boolean
+          unsubscribe_token?: string
+          updated_at?: string
+          user_id?: string
+          win_back?: boolean
+        }
+        Relationships: []
+      }
       study_sessions: {
         Row: {
           art_tone: string
@@ -183,12 +240,19 @@ export type Database = {
         Row: {
           book_slug: string
           book_title: string
+          completed_at: string | null
           created_at: string
+          freezes_used: number
           id: string
           is_active: boolean
+          last_completed_on: string | null
+          longest_streak: number
+          paused_until: string | null
           reader_name: string | null
+          review_asked_at: string | null
           show_both_sides: boolean
           started_at: string
+          streak_count: number
           tradition: string
           translation: string
           user_id: string
@@ -197,12 +261,19 @@ export type Database = {
         Insert: {
           book_slug?: string
           book_title?: string
+          completed_at?: string | null
           created_at?: string
+          freezes_used?: number
           id?: string
           is_active?: boolean
+          last_completed_on?: string | null
+          longest_streak?: number
+          paused_until?: string | null
           reader_name?: string | null
+          review_asked_at?: string | null
           show_both_sides?: boolean
           started_at?: string
+          streak_count?: number
           tradition?: string
           translation?: string
           user_id: string
@@ -211,12 +282,19 @@ export type Database = {
         Update: {
           book_slug?: string
           book_title?: string
+          completed_at?: string | null
           created_at?: string
+          freezes_used?: number
           id?: string
           is_active?: boolean
+          last_completed_on?: string | null
+          longest_streak?: number
+          paused_until?: string | null
           reader_name?: string | null
+          review_asked_at?: string | null
           show_both_sides?: boolean
           started_at?: string
+          streak_count?: number
           tradition?: string
           translation?: string
           user_id?: string
@@ -289,6 +367,48 @@ export type Database = {
           text?: string
           translation?: string
           verse?: number
+        }
+        Relationships: []
+      }
+      word_notes: {
+        Row: {
+          also_in: string | null
+          book: string
+          chapter: number
+          created_at: string
+          id: string
+          language: string
+          meaning: string
+          original: string
+          transliteration: string
+          verse: number
+          word: string
+        }
+        Insert: {
+          also_in?: string | null
+          book: string
+          chapter: number
+          created_at?: string
+          id?: string
+          language?: string
+          meaning: string
+          original: string
+          transliteration: string
+          verse: number
+          word: string
+        }
+        Update: {
+          also_in?: string | null
+          book?: string
+          chapter?: number
+          created_at?: string
+          id?: string
+          language?: string
+          meaning?: string
+          original?: string
+          transliteration?: string
+          verse?: number
+          word?: string
         }
         Relationships: []
       }

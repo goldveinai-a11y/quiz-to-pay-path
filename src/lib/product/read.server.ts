@@ -1,15 +1,30 @@
 import { createClient } from "@supabase/supabase-js";
 import type { Database } from "@/integrations/supabase/types";
-import { BOOK_TITLES, type MyPlan, type PlanDay, type SessionDay, type DivideReading } from "./types";
+import {
+  BOOK_TITLES,
+  type MyPlan,
+  type PlanDay,
+  type SavedNote,
+  type SessionDay,
+  type DivideReading,
+  type WordNote,
+} from "./types";
 import { ACCESS_PLANS, getAccessPlan } from "./pricing";
 import { RENEWALS } from "@/lib/payments/renewals";
 
 type Admin = ReturnType<typeof createClient<Database>>;
 
-async function db(): Promise<Admin> {
+async function db(scoped?: Admin): Promise<Admin> {
+  // Reads and writes made on behalf of a signed-in reader use their own
+  // client, so row-level security stays in force. The service client is only
+  // used where there is no user session (payment fulfilment, email dispatch).
+  if (scoped) return scoped;
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   return supabaseAdmin as unknown as Admin;
 }
+
+/** The RLS-scoped client handed to us by the auth middleware. */
+export type ScopedClient = Admin;
 
 const DAY_MS = 86400000;
 
@@ -17,8 +32,18 @@ function unlockAt(startedAt: string, day: number) {
   return new Date(new Date(startedAt).getTime() + (day - 1) * DAY_MS);
 }
 
-async function activePlan(userId: string) {
-  const supabase = await db();
+function dayKey(date: Date) {
+  return date.toISOString().slice(0, 10);
+}
+
+function daysBetween(a: string, b: string) {
+  return Math.round((Date.parse(`${b}T00:00:00Z`) - Date.parse(`${a}T00:00:00Z`)) / DAY_MS);
+}
+
+const MAX_FREEZES = 3;
+
+async function activePlan(userId: string, scoped?: Admin) {
+  const supabase = await db(scoped);
   const { data } = await supabase
     .from("user_plans")
     .select("*")
@@ -39,16 +64,19 @@ async function activePlan(userId: string) {
   return created;
 }
 
-export async function buildMyPlan(userId: string): Promise<MyPlan> {
-  const supabase = await db();
-  const plan = await activePlan(userId);
+export async function buildMyPlan(userId: string, scoped?: Admin): Promise<MyPlan> {
+  const supabase = await db(scoped);
+  const plan = await activePlan(userId, scoped);
   const [{ data: sessions }, { data: progress }] = await Promise.all([
     supabase
       .from("study_sessions")
       .select("day_number, title, reference, setup, art_tone")
       .eq("book_slug", plan.book_slug)
       .order("day_number"),
-    supabase.from("user_progress").select("day_number, step, completed_at").eq("plan_id", plan.id),
+    supabase
+      .from("user_progress")
+      .select("day_number, step, completed_at, note")
+      .eq("plan_id", plan.id),
   ]);
 
   const byDay = new Map((progress ?? []).map((p) => [p.day_number, p]));
@@ -89,6 +117,14 @@ export async function buildMyPlan(userId: string): Promise<MyPlan> {
     finished,
     total: days.length,
     days,
+    streak: {
+      current: plan.streak_count ?? 0,
+      longest: plan.longest_streak ?? 0,
+      todayDone: plan.last_completed_on === dayKey(new Date()),
+      freezesLeft: Math.max(0, MAX_FREEZES - (plan.freezes_used ?? 0)),
+    },
+    notesCount: (progress ?? []).filter((p) => p.note && p.note.trim()).length,
+    complete: days.length > 0 && finished >= days.length,
     hero: heroSource
       ? {
           day: heroSource.day_number,
@@ -105,9 +141,9 @@ export async function buildMyPlan(userId: string): Promise<MyPlan> {
   };
 }
 
-export async function buildSessionDay(userId: string, day: number): Promise<SessionDay> {
-  const supabase = await db();
-  const plan = await activePlan(userId);
+export async function buildSessionDay(userId: string, day: number, scoped?: Admin): Promise<SessionDay> {
+  const supabase = await db(scoped);
+  const plan = await activePlan(userId, scoped);
   const startedAt = plan.started_at ?? plan.created_at;
   if (unlockAt(startedAt, day).getTime() > Date.now()) {
     throw new Error("This day has not opened yet.");
@@ -139,6 +175,23 @@ export async function buildSessionDay(userId: string, day: number): Promise<Sess
     .eq("day_number", day)
     .maybeSingle();
 
+  // Word study: curated public-domain lexicon notes for this exact passage.
+  const { data: wordRows } = await supabase
+    .from("word_notes")
+    .select("word, original, transliteration, language, meaning, also_in")
+    .eq("book", session.book)
+    .eq("chapter", session.chapter)
+    .gte("verse", session.verse_start)
+    .lte("verse", session.verse_end);
+  const words: WordNote[] = (wordRows ?? []).map((w) => ({
+    word: w.word,
+    original: w.original,
+    transliteration: w.transliteration,
+    language: w.language,
+    meaning: w.meaning,
+    alsoIn: w.also_in,
+  }));
+
   const { data: next } = await supabase
     .from("study_sessions")
     .select("day_number, title")
@@ -159,6 +212,7 @@ export async function buildSessionDay(userId: string, day: number): Promise<Sess
     tone: session.art_tone ?? "teal",
     highlightWord: session.highlight_word,
     verses: (verses ?? []).map((v) => ({ verse: v.verse, text: v.text })),
+    words,
     insight: {
       title: session.insight_title,
       body: session.insight_body,
@@ -187,9 +241,9 @@ export async function buildSessionDay(userId: string, day: number): Promise<Sess
   };
 }
 
-export async function persistStep(userId: string, day: number, step: number) {
-  const supabase = await db();
-  const plan = await activePlan(userId);
+export async function persistStep(userId: string, day: number, step: number, scoped?: Admin) {
+  const supabase = await db(scoped);
+  const plan = await activePlan(userId, scoped);
   await supabase
     .from("user_progress")
     .upsert(
@@ -199,9 +253,9 @@ export async function persistStep(userId: string, day: number, step: number) {
   return { ok: true };
 }
 
-export async function persistDone(userId: string, day: number, note: string | null) {
-  const supabase = await db();
-  const plan = await activePlan(userId);
+export async function persistDone(userId: string, day: number, note: string | null, scoped?: Admin) {
+  const supabase = await db(scoped);
+  const plan = await activePlan(userId, scoped);
   await supabase.from("user_progress").upsert(
     {
       user_id: userId,
@@ -213,11 +267,98 @@ export async function persistDone(userId: string, day: number, note: string | nu
     },
     { onConflict: "plan_id,day_number" },
   );
-  return { ok: true };
+  const streak = await bumpStreak(plan, userId, scoped);
+  return { ok: true, streak };
 }
 
-export async function switchBook(userId: string, bookSlug: string) {
-  const supabase = await db();
+type PlanRow = Awaited<ReturnType<typeof activePlan>>;
+
+/**
+ * One session finished today extends the streak. A single missed day spends a
+ * freeze instead of wiping it — the plan should never punish a bad week.
+ */
+async function bumpStreak(plan: PlanRow, userId: string, scoped?: Admin) {
+  const supabase = await db(scoped);
+  const today = dayKey(new Date());
+  const last = plan.last_completed_on ?? null;
+  let current = plan.streak_count ?? 0;
+  let freezesUsed = plan.freezes_used ?? 0;
+  let usedFreeze = false;
+
+  if (last === today) {
+    // Already counted today.
+  } else if (last && daysBetween(last, today) === 1) {
+    current += 1;
+  } else if (last && daysBetween(last, today) === 2 && freezesUsed < MAX_FREEZES) {
+    current += 1;
+    freezesUsed += 1;
+    usedFreeze = true;
+  } else {
+    current = 1;
+  }
+
+  const longest = Math.max(plan.longest_streak ?? 0, current);
+
+  const { count } = await supabase
+    .from("user_progress")
+    .select("day_number", { count: "exact", head: true })
+    .eq("plan_id", plan.id)
+    .not("completed_at", "is", null);
+  const { count: total } = await supabase
+    .from("study_sessions")
+    .select("day_number", { count: "exact", head: true })
+    .eq("book_slug", plan.book_slug);
+  const finishedAll = Boolean(total && count && count >= total);
+
+  await supabase
+    .from("user_plans")
+    .update({
+      streak_count: current,
+      longest_streak: longest,
+      last_completed_on: today,
+      freezes_used: freezesUsed,
+      ...(finishedAll && !plan.completed_at ? { completed_at: new Date().toISOString() } : {}),
+    })
+    .eq("id", plan.id)
+    .eq("user_id", userId);
+
+  return { current, longest, usedFreeze, freezesLeft: Math.max(0, MAX_FREEZES - freezesUsed), finishedAll };
+}
+
+/** Everything the reader wrote, in one place — the reason to stay past day 30. */
+export async function listNotes(userId: string, scoped?: Admin): Promise<SavedNote[]> {
+  const supabase = await db(scoped);
+  const plan = await activePlan(userId, scoped);
+  const [{ data: progress }, { data: sessions }] = await Promise.all([
+    supabase
+      .from("user_progress")
+      .select("day_number, note, completed_at")
+      .eq("plan_id", plan.id)
+      .not("note", "is", null)
+      .order("day_number"),
+    supabase
+      .from("study_sessions")
+      .select("day_number, title, reference, question")
+      .eq("book_slug", plan.book_slug),
+  ]);
+  const byDay = new Map((sessions ?? []).map((s) => [s.day_number, s]));
+  return (progress ?? [])
+    .filter((p) => p.note && p.note.trim())
+    .map((p) => {
+      const s = byDay.get(p.day_number);
+      return {
+        day: p.day_number,
+        title: s?.title ?? `Day ${p.day_number}`,
+        reference: s?.reference ?? "",
+        question: s?.question ?? "",
+        note: p.note!.trim(),
+        completedAt: p.completed_at,
+      };
+    });
+}
+
+export async function switchBook(userId: string, bookSlug: string, scoped?: Admin) {
+  const supabase = await db(scoped);
   const slug = BOOK_TITLES[bookSlug] ? bookSlug : "john";
   await supabase.from("user_plans").update({ is_active: false }).eq("user_id", userId);
   const { data, error } = await supabase
@@ -229,8 +370,8 @@ export async function switchBook(userId: string, bookSlug: string) {
   return { planId: data.id, bookSlug: slug };
 }
 
-export async function readAccess(userId: string) {
-  const supabase = await db();
+export async function readAccess(userId: string, scoped?: Admin) {
+  const supabase = await db(scoped);
   const { data } = await supabase
     .from("subscriptions")
     .select("plan_code, plan_label, status, amount_cents, current_period_end, cancel_at_period_end")
