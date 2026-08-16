@@ -259,15 +259,3 @@ export async function cancelAccess(userId: string) {
   return { ok: true };
 }
 
-async function unusedSwitchBook(userId: string, bookSlug: string) {
-  const supabase = await db();
-  const slug = BOOK_TITLES[bookSlug] ? bookSlug : "john";
-  await supabase.from("user_plans").update({ is_active: false }).eq("user_id", userId);
-  const { data, error } = await supabase
-    .from("user_plans")
-    .insert({ user_id: userId, book_slug: slug, book_title: BOOK_TITLES[slug]!, translation: "WEB", is_active: true })
-    .select("id")
-    .single();
-  if (error) throw new Error(error.message);
-  return { planId: data.id, bookSlug: slug };
-}
