@@ -16,6 +16,7 @@ import { Route as CheckoutRouteImport } from './routes/checkout'
 import { Route as QuizRouteImport } from './routes/quiz'
 import { Route as ResultRouteImport } from './routes/result'
 import { Route as AuthenticatedPlanIndexRouteImport } from './routes/_authenticated/plan.index'
+import { Route as AuthenticatedPlanDayRouteImport } from './routes/_authenticated/plan.$day'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -51,6 +52,11 @@ const AuthenticatedPlanIndexRoute = AuthenticatedPlanIndexRouteImport.update({
   path: '/plan/',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedPlanDayRoute = AuthenticatedPlanDayRouteImport.update({
+  id: '/plan/$day',
+  path: '/plan/$day',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -58,6 +64,7 @@ export interface FileRoutesByFullPath {
   '/checkout': typeof CheckoutRoute
   '/quiz': typeof QuizRoute
   '/result': typeof ResultRoute
+  '/plan/$day': typeof AuthenticatedPlanDayRoute
   '/plan/': typeof AuthenticatedPlanIndexRoute
 }
 export interface FileRoutesByTo {
@@ -66,6 +73,7 @@ export interface FileRoutesByTo {
   '/checkout': typeof CheckoutRoute
   '/quiz': typeof QuizRoute
   '/result': typeof ResultRoute
+  '/plan/$day': typeof AuthenticatedPlanDayRoute
   '/plan': typeof AuthenticatedPlanIndexRoute
 }
 export interface FileRoutesById {
@@ -76,13 +84,15 @@ export interface FileRoutesById {
   '/checkout': typeof CheckoutRoute
   '/quiz': typeof QuizRoute
   '/result': typeof ResultRoute
+  '/_authenticated/plan/$day': typeof AuthenticatedPlanDayRoute
   '/_authenticated/plan/': typeof AuthenticatedPlanIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/auth' | '/checkout' | '/quiz' | '/result' | '/plan/'
+  fullPaths:
+    '/' | '/auth' | '/checkout' | '/quiz' | '/result' | '/plan/$day' | '/plan/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth' | '/checkout' | '/quiz' | '/result' | '/plan'
+  to: '/' | '/auth' | '/checkout' | '/quiz' | '/result' | '/plan/$day' | '/plan'
   id:
     | '__root__'
     | '/'
@@ -91,6 +101,7 @@ export interface FileRouteTypes {
     | '/checkout'
     | '/quiz'
     | '/result'
+    | '/_authenticated/plan/$day'
     | '/_authenticated/plan/'
   fileRoutesById: FileRoutesById
 }
@@ -154,14 +165,23 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedPlanIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/plan/$day': {
+      id: '/_authenticated/plan/$day'
+      path: '/plan/$day'
+      fullPath: '/plan/$day'
+      preLoaderRoute: typeof AuthenticatedPlanDayRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
 interface AuthenticatedRouteRouteChildren {
+  AuthenticatedPlanDayRoute: typeof AuthenticatedPlanDayRoute
   AuthenticatedPlanIndexRoute: typeof AuthenticatedPlanIndexRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedPlanDayRoute: AuthenticatedPlanDayRoute,
   AuthenticatedPlanIndexRoute: AuthenticatedPlanIndexRoute,
 }
 
