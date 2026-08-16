@@ -226,3 +226,36 @@ export async function switchBook(userId: string, bookSlug: string) {
   if (error) throw new Error(error.message);
   return { planId: data.id, bookSlug: slug };
 }
+
+export async function readAccess(userId: string) {
+  const supabase = await db();
+  const { data } = await supabase
+    .from("subscriptions")
+    .select("plan_code, plan_label, status, amount_cents, current_period_end, cancel_at_period_end")
+    .eq("user_id", userId)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (!data) return null;
+  return {
+    planCode: data.plan_code,
+    planLabel: data.plan_label,
+    status: data.status,
+    amountCents: data.amount_cents,
+    renewsAt: data.current_period_end,
+    cancelAtPeriodEnd: data.cancel_at_period_end,
+  };
+}
+
+/** One click, no retention flow: access stays until the paid period ends. */
+export async function cancelAccess(userId: string) {
+  const supabase = await db();
+  const { error } = await supabase
+    .from("subscriptions")
+    .update({ cancel_at_period_end: true, canceled_at: new Date().toISOString() })
+    .eq("user_id", userId)
+    .eq("status", "active");
+  if (error) throw new Error(error.message);
+  return { ok: true };
+}
+

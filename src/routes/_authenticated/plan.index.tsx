@@ -2,13 +2,13 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { Check, Lock, ArrowRight, LogOut } from "lucide-react";
-import { getMyPlan, startBook } from "@/lib/product/product.functions";
+import { getMyPlan, startBook, getAccess, cancelAccessNow } from "@/lib/product/product.functions";
 import { Plate } from "@/components/product/Plate";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 
-export const Route = createFileRoute("/_authenticated/plan")({
+export const Route = createFileRoute("/_authenticated/plan/")({
   head: () => ({
     meta: [
       { title: "My plan — Plainly" },
@@ -38,9 +38,12 @@ function formatUnlock(iso: string) {
 function PlanPage() {
   const fetchPlan = useServerFn(getMyPlan);
   const switchBook = useServerFn(startBook);
+  const fetchAccess = useServerFn(getAccess);
+  const cancelNow = useServerFn(cancelAccessNow);
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const { data, isLoading } = useQuery({ queryKey: ["my-plan"], queryFn: () => fetchPlan() });
+  const { data: access } = useQuery({ queryKey: ["access"], queryFn: () => fetchAccess() });
 
   const signOut = async () => {
     await queryClient.cancelQueries();
@@ -74,7 +77,7 @@ function PlanPage() {
 
       {hero ? (
         <section className="mt-4 overflow-hidden rounded-3xl border border-border bg-card shadow-s2">
-          <Plate day={hero.day} tone={hero.tone} className="h-44" credit>
+          <Plate day={hero.day} tone={hero.tone} className="h-44">
             <div className="flex h-44 flex-col justify-end p-5">
               <p className="eyebrow text-white/70">
                 Day {hero.day} · {data.bookTitle}
@@ -97,7 +100,7 @@ function PlanPage() {
               <p className="eyebrow text-muted-foreground">
                 Day {data.currentDay} of {data.total}
               </p>
-              <p className="eyebrow text-muted-foreground">{data.finished} sessions finished</p>
+              <p className="eyebrow text-muted-foreground">{data.finished} {data.finished === 1 ? "session" : "sessions"} finished</p>
             </div>
             <Link to="/plan/$day" params={{ day: String(hero.day) }}>
               <Button className="mt-5 h-13 w-full rounded-xl bg-ink py-4 text-base font-semibold text-background hover:bg-ink/90">
@@ -192,6 +195,34 @@ function PlanPage() {
           ))}
         </div>
       </section>
+
+      {access ? (
+        <section className="mt-4 rounded-2xl border border-border bg-card p-5">
+          <h2 className="font-serif text-lg">Your access</h2>
+          <p className="mt-1 text-sm text-muted-foreground">
+            {access.planLabel}
+            {access.renewsAt
+              ? ` · ${access.cancelAtPeriodEnd ? "ends" : "renews"} ${formatUnlock(access.renewsAt)}`
+              : ""}
+          </p>
+          {access.cancelAtPeriodEnd ? (
+            <p className="mt-3 text-sm text-muted-foreground">
+              Cancelled. You keep everything until the date above.
+            </p>
+          ) : (
+            <button
+              type="button"
+              onClick={async () => {
+                await cancelNow();
+                await queryClient.invalidateQueries({ queryKey: ["access"] });
+              }}
+              className="mt-3 text-sm text-muted-foreground underline underline-offset-4 transition-colors duration-150 hover:text-foreground"
+            >
+              Cancel access
+            </button>
+          )}
+        </section>
+      ) : null}
     </main>
   );
 }
