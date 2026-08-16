@@ -10,6 +10,7 @@ import {
   readAccess,
   cancelAccess,
   changePlan,
+  listNotes,
 } from "./read.server";
 
 // Fulfilment is not a public endpoint: it runs only from finalizePurchase,
@@ -50,6 +51,10 @@ export const startBook = createServerFn({ method: "POST" })
 export const getAccess = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => readAccess(context.userId));
+
+export const getMyNotes = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => listNotes(context.userId));
 
 export const cancelAccessNow = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
