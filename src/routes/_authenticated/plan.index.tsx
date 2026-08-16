@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { Check, Lock, ArrowRight, LogOut } from "lucide-react";
+import { Check, Lock, ArrowRight, LogOut, Flame, NotebookPen } from "lucide-react";
 import {
   getMyPlan,
   startBook,
@@ -9,8 +9,10 @@ import {
   cancelAccessNow,
   changePlanNow,
 } from "@/lib/product/product.functions";
+import { getEmailPrefs, setEmailPrefs } from "@/lib/email/email.functions";
 import { Plate } from "@/components/product/Plate";
 import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
 import { supabase } from "@/integrations/supabase/client";
 import { getStripeEnvironment } from "@/lib/stripe";
 import { cn } from "@/lib/utils";
@@ -48,10 +50,13 @@ function PlanPage() {
   const fetchAccess = useServerFn(getAccess);
   const cancelNow = useServerFn(cancelAccessNow);
   const changePlan = useServerFn(changePlanNow);
+  const fetchPrefs = useServerFn(getEmailPrefs);
+  const savePrefs = useServerFn(setEmailPrefs);
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const { data, isLoading } = useQuery({ queryKey: ["my-plan"], queryFn: () => fetchPlan() });
   const { data: access } = useQuery({ queryKey: ["access"], queryFn: () => fetchAccess() });
+  const { data: prefs } = useQuery({ queryKey: ["email-prefs"], queryFn: () => fetchPrefs() });
 
   const signOut = async () => {
     await queryClient.cancelQueries();
@@ -74,14 +79,36 @@ function PlanPage() {
     <main className="mx-auto max-w-[480px] px-5 pb-20 pt-6">
       <header className="flex items-center justify-between">
         <p className="eyebrow text-muted-foreground">Plainly</p>
-        <button
-          type="button"
-          onClick={signOut}
-          className="eyebrow flex items-center gap-1.5 text-muted-foreground hover:text-foreground"
-        >
-          <LogOut className="h-3.5 w-3.5" /> Sign out
-        </button>
+        <div className="flex items-center gap-4">
+          {data.streak.current > 0 ? (
+            <span className="eyebrow flex items-center gap-1.5 text-terra">
+              <Flame className="h-3.5 w-3.5" /> {data.streak.current} day
+              {data.streak.current === 1 ? "" : "s"}
+            </span>
+          ) : null}
+          <Link
+            to="/notes"
+            className="eyebrow flex items-center gap-1.5 text-muted-foreground hover:text-foreground"
+          >
+            <NotebookPen className="h-3.5 w-3.5" /> Notes
+          </Link>
+        </div>
       </header>
+
+      {data.complete ? (
+        <section className="mt-4 rounded-3xl border border-terra/30 bg-terra/5 p-5">
+          <h2 className="font-serif text-xl font-semibold">You finished {data.bookTitle}</h2>
+          <p className="mt-1.5 text-sm text-muted-foreground">
+            {data.total} sessions, {data.notesCount} written in your own words. Longest run:{" "}
+            {data.streak.longest} days.
+          </p>
+          <Link to="/notes">
+            <Button className="mt-4 h-11 w-full rounded-xl bg-ink text-background hover:bg-ink/90">
+              Read back what you wrote
+            </Button>
+          </Link>
+        </section>
+      ) : null}
 
       {hero ? (
         <section className="mt-4 overflow-hidden rounded-3xl border border-border bg-card shadow-s2">
@@ -243,20 +270,50 @@ function PlanPage() {
                   </div>
                 </div>
               ) : null}
-              <button
-                type="button"
-                onClick={async () => {
-                  await cancelNow({ data: { environment: getStripeEnvironment() } });
-                  await queryClient.invalidateQueries({ queryKey: ["access"] });
-                }}
-                className="mt-3 block text-sm text-muted-foreground underline underline-offset-4 transition-colors duration-150 hover:text-foreground"
-              >
-                Cancel access
-              </button>
+              <details className="mt-4 border-t border-border pt-3">
+                <summary className="eyebrow cursor-pointer list-none text-muted-foreground">
+                  Manage billing
+                </summary>
+                <button
+                  type="button"
+                  onClick={async () => {
+                    await cancelNow({ data: { environment: getStripeEnvironment() } });
+                    await queryClient.invalidateQueries({ queryKey: ["access"] });
+                  }}
+                  className="mt-3 block text-sm text-muted-foreground underline underline-offset-4 transition-colors duration-150 hover:text-foreground"
+                >
+                  Cancel access
+                </button>
+              </details>
             </>
           )}
         </section>
       ) : null}
+
+      <section className="mt-4 rounded-2xl border border-border bg-card p-5">
+        <div className="flex items-center justify-between gap-4">
+          <div>
+            <h2 className="font-serif text-lg">Daily nudge</h2>
+            <p className="mt-1 text-sm text-muted-foreground">
+              One short email when the next day opens. Nothing else.
+            </p>
+          </div>
+          <Switch
+            checked={prefs?.daily_reminder ?? true}
+            onCheckedChange={async (checked) => {
+              await savePrefs({ data: { dailyReminder: checked } });
+              await queryClient.invalidateQueries({ queryKey: ["email-prefs"] });
+            }}
+          />
+        </div>
+        <button
+          type="button"
+          onClick={signOut}
+          className="eyebrow mt-5 flex items-center gap-1.5 border-t border-border pt-4 text-muted-foreground hover:text-foreground"
+        >
+          <LogOut className="h-3.5 w-3.5" /> Sign out
+        </button>
+      </section>
     </main>
   );
 }

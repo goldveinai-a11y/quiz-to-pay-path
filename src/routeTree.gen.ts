@@ -17,6 +17,7 @@ import { Route as CheckoutCompleteRouteImport } from './routes/checkout-complete
 import { Route as QuizRouteImport } from './routes/quiz'
 import { Route as ResultRouteImport } from './routes/result'
 import { Route as UnsubscribeRouteImport } from './routes/unsubscribe'
+import { Route as AuthenticatedNotesRouteImport } from './routes/_authenticated/notes'
 import { Route as AuthenticatedPlanIndexRouteImport } from './routes/_authenticated/plan.index'
 import { Route as AuthenticatedPlanDayRouteImport } from './routes/_authenticated/plan.$day'
 import { Route as ApiPublicEmailsDailyRouteImport } from './routes/api/public/emails/daily'
@@ -61,6 +62,11 @@ const UnsubscribeRoute = UnsubscribeRouteImport.update({
   path: '/unsubscribe',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedNotesRoute = AuthenticatedNotesRouteImport.update({
+  id: '/notes',
+  path: '/notes',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedPlanIndexRoute = AuthenticatedPlanIndexRouteImport.update({
   id: '/plan/',
   path: '/plan/',
@@ -91,6 +97,7 @@ export interface FileRoutesByFullPath {
   '/quiz': typeof QuizRoute
   '/result': typeof ResultRoute
   '/unsubscribe': typeof UnsubscribeRoute
+  '/notes': typeof AuthenticatedNotesRoute
   '/plan/$day': typeof AuthenticatedPlanDayRoute
   '/plan/': typeof AuthenticatedPlanIndexRoute
   '/api/public/emails/daily': typeof ApiPublicEmailsDailyRoute
@@ -104,6 +111,7 @@ export interface FileRoutesByTo {
   '/quiz': typeof QuizRoute
   '/result': typeof ResultRoute
   '/unsubscribe': typeof UnsubscribeRoute
+  '/notes': typeof AuthenticatedNotesRoute
   '/plan/$day': typeof AuthenticatedPlanDayRoute
   '/plan': typeof AuthenticatedPlanIndexRoute
   '/api/public/emails/daily': typeof ApiPublicEmailsDailyRoute
@@ -119,6 +127,7 @@ export interface FileRoutesById {
   '/quiz': typeof QuizRoute
   '/result': typeof ResultRoute
   '/unsubscribe': typeof UnsubscribeRoute
+  '/_authenticated/notes': typeof AuthenticatedNotesRoute
   '/_authenticated/plan/$day': typeof AuthenticatedPlanDayRoute
   '/_authenticated/plan/': typeof AuthenticatedPlanIndexRoute
   '/api/public/emails/daily': typeof ApiPublicEmailsDailyRoute
@@ -134,6 +143,7 @@ export interface FileRouteTypes {
     | '/quiz'
     | '/result'
     | '/unsubscribe'
+    | '/notes'
     | '/plan/$day'
     | '/plan/'
     | '/api/public/emails/daily'
@@ -147,6 +157,7 @@ export interface FileRouteTypes {
     | '/quiz'
     | '/result'
     | '/unsubscribe'
+    | '/notes'
     | '/plan/$day'
     | '/plan'
     | '/api/public/emails/daily'
@@ -161,6 +172,7 @@ export interface FileRouteTypes {
     | '/quiz'
     | '/result'
     | '/unsubscribe'
+    | '/_authenticated/notes'
     | '/_authenticated/plan/$day'
     | '/_authenticated/plan/'
     | '/api/public/emails/daily'
@@ -238,6 +250,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof UnsubscribeRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/notes': {
+      id: '/_authenticated/notes'
+      path: '/notes'
+      fullPath: '/notes'
+      preLoaderRoute: typeof AuthenticatedNotesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/plan/': {
       id: '/_authenticated/plan/'
       path: '/plan'
@@ -270,11 +289,13 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedRouteRouteChildren {
+  AuthenticatedNotesRoute: typeof AuthenticatedNotesRoute
   AuthenticatedPlanDayRoute: typeof AuthenticatedPlanDayRoute
   AuthenticatedPlanIndexRoute: typeof AuthenticatedPlanIndexRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedNotesRoute: AuthenticatedNotesRoute,
   AuthenticatedPlanDayRoute: AuthenticatedPlanDayRoute,
   AuthenticatedPlanIndexRoute: AuthenticatedPlanIndexRoute,
 }
