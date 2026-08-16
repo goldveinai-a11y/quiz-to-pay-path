@@ -218,16 +218,42 @@ function PlanPage() {
               Cancelled. You keep everything until the date above.
             </p>
           ) : (
-            <button
-              type="button"
-              onClick={async () => {
-                await cancelNow({ data: { environment: getStripeEnvironment() } });
-                await queryClient.invalidateQueries({ queryKey: ["access"] });
-              }}
-              className="mt-3 text-sm text-muted-foreground underline underline-offset-4 transition-colors duration-150 hover:text-foreground"
-            >
-              Cancel access
-            </button>
+            <>
+              {access.upgrades?.length ? (
+                <div className="mt-4">
+                  <p className="text-sm text-muted-foreground">
+                    Move to a longer cycle — less per day, nothing interrupted.
+                  </p>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {access.upgrades.map((u) => (
+                      <button
+                        key={u.code}
+                        type="button"
+                        onClick={async () => {
+                          await changePlan({
+                            data: { planCode: u.code as "1-month" | "3-month", environment: getStripeEnvironment() },
+                          });
+                          await queryClient.invalidateQueries({ queryKey: ["access"] });
+                        }}
+                        className="rounded-full border border-border px-4 py-2 text-sm transition-colors duration-150 hover:bg-secondary"
+                      >
+                        {u.label} · {u.renews}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              ) : null}
+              <button
+                type="button"
+                onClick={async () => {
+                  await cancelNow({ data: { environment: getStripeEnvironment() } });
+                  await queryClient.invalidateQueries({ queryKey: ["access"] });
+                }}
+                className="mt-3 block text-sm text-muted-foreground underline underline-offset-4 transition-colors duration-150 hover:text-foreground"
+              >
+                Cancel access
+              </button>
+            </>
           )}
         </section>
       ) : null}
