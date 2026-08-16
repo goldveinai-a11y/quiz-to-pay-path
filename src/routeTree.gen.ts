@@ -18,6 +18,7 @@ import { Route as QuizRouteImport } from './routes/quiz'
 import { Route as ResultRouteImport } from './routes/result'
 import { Route as AuthenticatedPlanIndexRouteImport } from './routes/_authenticated/plan.index'
 import { Route as AuthenticatedPlanDayRouteImport } from './routes/_authenticated/plan.$day'
+import { Route as ApiPublicEmailsDailyRouteImport } from './routes/api/public/emails/daily'
 import { Route as ApiPublicPaymentsWebhookRouteImport } from './routes/api/public/payments/webhook'
 
 const IndexRoute = IndexRouteImport.update({
@@ -64,6 +65,11 @@ const AuthenticatedPlanDayRoute = AuthenticatedPlanDayRouteImport.update({
   path: '/plan/$day',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const ApiPublicEmailsDailyRoute = ApiPublicEmailsDailyRouteImport.update({
+  id: '/api/public/emails/daily',
+  path: '/api/public/emails/daily',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicPaymentsWebhookRoute =
   ApiPublicPaymentsWebhookRouteImport.update({
     id: '/api/public/payments/webhook',
@@ -80,6 +86,7 @@ export interface FileRoutesByFullPath {
   '/result': typeof ResultRoute
   '/plan/$day': typeof AuthenticatedPlanDayRoute
   '/plan/': typeof AuthenticatedPlanIndexRoute
+  '/api/public/emails/daily': typeof ApiPublicEmailsDailyRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
 }
 export interface FileRoutesByTo {
@@ -91,6 +98,7 @@ export interface FileRoutesByTo {
   '/result': typeof ResultRoute
   '/plan/$day': typeof AuthenticatedPlanDayRoute
   '/plan': typeof AuthenticatedPlanIndexRoute
+  '/api/public/emails/daily': typeof ApiPublicEmailsDailyRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
 }
 export interface FileRoutesById {
@@ -104,6 +112,7 @@ export interface FileRoutesById {
   '/result': typeof ResultRoute
   '/_authenticated/plan/$day': typeof AuthenticatedPlanDayRoute
   '/_authenticated/plan/': typeof AuthenticatedPlanIndexRoute
+  '/api/public/emails/daily': typeof ApiPublicEmailsDailyRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
 }
 export interface FileRouteTypes {
@@ -117,6 +126,7 @@ export interface FileRouteTypes {
     | '/result'
     | '/plan/$day'
     | '/plan/'
+    | '/api/public/emails/daily'
     | '/api/public/payments/webhook'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -128,6 +138,7 @@ export interface FileRouteTypes {
     | '/result'
     | '/plan/$day'
     | '/plan'
+    | '/api/public/emails/daily'
     | '/api/public/payments/webhook'
   id:
     | '__root__'
@@ -140,6 +151,7 @@ export interface FileRouteTypes {
     | '/result'
     | '/_authenticated/plan/$day'
     | '/_authenticated/plan/'
+    | '/api/public/emails/daily'
     | '/api/public/payments/webhook'
   fileRoutesById: FileRoutesById
 }
@@ -151,6 +163,7 @@ export interface RootRouteChildren {
   CheckoutCompleteRoute: typeof CheckoutCompleteRoute
   QuizRoute: typeof QuizRoute
   ResultRoute: typeof ResultRoute
+  ApiPublicEmailsDailyRoute: typeof ApiPublicEmailsDailyRoute
   ApiPublicPaymentsWebhookRoute: typeof ApiPublicPaymentsWebhookRoute
 }
 
@@ -219,6 +232,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedPlanDayRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/api/public/emails/daily': {
+      id: '/api/public/emails/daily'
+      path: '/api/public/emails/daily'
+      fullPath: '/api/public/emails/daily'
+      preLoaderRoute: typeof ApiPublicEmailsDailyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/payments/webhook': {
       id: '/api/public/payments/webhook'
       path: '/api/public/payments/webhook'
@@ -250,6 +270,7 @@ const rootRouteChildren: RootRouteChildren = {
   CheckoutCompleteRoute: CheckoutCompleteRoute,
   QuizRoute: QuizRoute,
   ResultRoute: ResultRoute,
+  ApiPublicEmailsDailyRoute: ApiPublicEmailsDailyRoute,
   ApiPublicPaymentsWebhookRoute: ApiPublicPaymentsWebhookRoute,
 }
 export const routeTree = rootRouteImport
