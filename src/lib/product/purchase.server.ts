@@ -19,6 +19,8 @@ export type PurchaseInput = {
   showBothSides?: boolean | undefined;
   readerName?: string | undefined;
   origin?: string | undefined;
+  providerCustomerId?: string | null | undefined;
+  providerSubscriptionId?: string | null | undefined;
 };
 
 /**
@@ -74,6 +76,8 @@ export async function fulfillPurchase(input: PurchaseInput) {
     status: "active",
     amount_cents: plan.amountCents,
     current_period_end: periodEnd,
+    provider_customer_id: input.providerCustomerId ?? null,
+    provider_subscription_id: input.providerSubscriptionId ?? null,
   });
 
   // The one email: it confirms the charge and carries the only key back in.

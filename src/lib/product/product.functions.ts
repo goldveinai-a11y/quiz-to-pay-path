@@ -11,26 +11,8 @@ import {
   cancelAccess,
 } from "./read.server";
 
-export const completePurchase = createServerFn({ method: "POST" })
-  .inputValidator((data) =>
-    z
-      .object({
-        email: z.string().email(),
-        planCode: z.string().min(1),
-        bookSlug: z.string().optional(),
-        tradition: z.string().optional(),
-        voices: z.string().optional(),
-        showBothSides: z.boolean().optional(),
-        readerName: z.string().optional(),
-        origin: z.string().optional(),
-      })
-      .parse(data),
-  )
-  .handler(async ({ data }) => {
-    const { fulfillPurchase } = await import("./purchase.server");
-    return fulfillPurchase(data);
-  });
-
+// Fulfilment is not a public endpoint: it runs only from finalizePurchase,
+// after the payment session has been verified with the card processor.
 export const getMyPlan = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => buildMyPlan(context.userId));
@@ -70,4 +52,5 @@ export const getAccess = createServerFn({ method: "GET" })
 
 export const cancelAccessNow = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .handler(async ({ context }) => cancelAccess(context.userId));
+  .inputValidator((data: { environment: "sandbox" | "live" }) => data)
+  .handler(async ({ context, data }) => cancelAccess(context.userId, data.environment));
