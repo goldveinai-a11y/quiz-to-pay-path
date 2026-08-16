@@ -2,7 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { Check, Lock, ArrowRight, LogOut } from "lucide-react";
-import { getMyPlan, startBook } from "@/lib/product/product.functions";
+import { getMyPlan, startBook, getAccess, cancelAccessNow } from "@/lib/product/product.functions";
 import { Plate } from "@/components/product/Plate";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
@@ -38,9 +38,12 @@ function formatUnlock(iso: string) {
 function PlanPage() {
   const fetchPlan = useServerFn(getMyPlan);
   const switchBook = useServerFn(startBook);
+  const fetchAccess = useServerFn(getAccess);
+  const cancelNow = useServerFn(cancelAccessNow);
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const { data, isLoading } = useQuery({ queryKey: ["my-plan"], queryFn: () => fetchPlan() });
+  const { data: access } = useQuery({ queryKey: ["access"], queryFn: () => fetchAccess() });
 
   const signOut = async () => {
     await queryClient.cancelQueries();
@@ -192,6 +195,34 @@ function PlanPage() {
           ))}
         </div>
       </section>
+
+      {access ? (
+        <section className="mt-4 rounded-2xl border border-border bg-card p-5">
+          <h2 className="font-serif text-lg">Your access</h2>
+          <p className="mt-1 text-sm text-muted-foreground">
+            {access.planLabel}
+            {access.renewsAt
+              ? ` · ${access.cancelAtPeriodEnd ? "ends" : "renews"} ${formatUnlock(access.renewsAt)}`
+              : ""}
+          </p>
+          {access.cancelAtPeriodEnd ? (
+            <p className="mt-3 text-sm text-muted-foreground">
+              Cancelled. You keep everything until the date above.
+            </p>
+          ) : (
+            <button
+              type="button"
+              onClick={async () => {
+                await cancelNow();
+                await queryClient.invalidateQueries({ queryKey: ["access"] });
+              }}
+              className="mt-3 text-sm text-muted-foreground underline underline-offset-4 transition-colors duration-150 hover:text-foreground"
+            >
+              Cancel access
+            </button>
+          )}
+        </section>
+      ) : null}
     </main>
   );
 }
