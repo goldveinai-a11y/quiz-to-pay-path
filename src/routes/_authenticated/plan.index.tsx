@@ -77,7 +77,7 @@ function PlanPage() {
 
       {hero ? (
         <section className="mt-4 overflow-hidden rounded-3xl border border-border bg-card shadow-s2">
-          <Plate day={hero.day} tone={hero.tone} className="h-44" credit>
+          <Plate day={hero.day} tone={hero.tone} className="h-44">
             <div className="flex h-44 flex-col justify-end p-5">
               <p className="eyebrow text-white/70">
                 Day {hero.day} · {data.bookTitle}
@@ -100,7 +100,7 @@ function PlanPage() {
               <p className="eyebrow text-muted-foreground">
                 Day {data.currentDay} of {data.total}
               </p>
-              <p className="eyebrow text-muted-foreground">{data.finished} sessions finished</p>
+              <p className="eyebrow text-muted-foreground">{data.finished} {data.finished === 1 ? "session" : "sessions"} finished</p>
             </div>
             <Link to="/plan/$day" params={{ day: String(hero.day) }}>
               <Button className="mt-5 h-13 w-full rounded-xl bg-ink py-4 text-base font-semibold text-background hover:bg-ink/90">
