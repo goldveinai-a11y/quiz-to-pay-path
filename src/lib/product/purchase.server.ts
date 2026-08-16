@@ -94,5 +94,10 @@ export async function fulfillPurchase(input: PurchaseInput) {
   const link = await admin.auth.admin.generateLink({ type: "magiclink", email });
   const tokenHash = link.data?.properties?.hashed_token ?? null;
 
+  // Reminders are on from day one, with a one-click way out in every email.
+  const { ensurePreferences, sendWelcome } = await import("@/lib/email/dispatch.server");
+  await ensurePreferences(userId, email);
+  await sendWelcome(userId, email, bookSlug, origin);
+
   return { tokenHash, planId: planRow.id, bookSlug };
 }
