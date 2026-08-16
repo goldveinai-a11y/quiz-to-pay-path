@@ -9,6 +9,7 @@ import {
   switchBook,
   readAccess,
   cancelAccess,
+  changePlan,
 } from "./read.server";
 
 // Fulfilment is not a public endpoint: it runs only from finalizePurchase,
@@ -54,3 +55,15 @@ export const cancelAccessNow = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((data: { environment: "sandbox" | "live" }) => data)
   .handler(async ({ context, data }) => cancelAccess(context.userId, data.environment));
+
+export const changePlanNow = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data) =>
+    z
+      .object({
+        planCode: z.enum(["1-week", "1-month", "3-month"]),
+        environment: z.enum(["sandbox", "live"]),
+      })
+      .parse(data),
+  )
+  .handler(async ({ context, data }) => changePlan(context.userId, data.planCode, data.environment));
