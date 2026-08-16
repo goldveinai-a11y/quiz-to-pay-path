@@ -31,8 +31,8 @@ export function Reviews() {
                 src={r.face}
                 alt={`${r.name}, Plainly reader`}
                 loading="lazy"
-                width={512}
-                height={512}
+                width={128}
+                height={128}
                 className="h-10 w-10 rounded-full border border-border object-cover"
               />
               <span className="text-[14px] font-medium text-ink">{r.name}</span>
