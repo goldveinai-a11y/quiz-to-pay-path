@@ -8,6 +8,32 @@ export type PlanDay = {
   step: number;
 };
 
+export type StreakState = {
+  current: number;
+  longest: number;
+  /** True on a day the reader has already finished a session. */
+  todayDone: boolean;
+  freezesLeft: number;
+};
+
+export type WordNote = {
+  word: string;
+  original: string;
+  transliteration: string;
+  language: string;
+  meaning: string;
+  alsoIn: string | null;
+};
+
+export type SavedNote = {
+  day: number;
+  title: string;
+  reference: string;
+  question: string;
+  note: string;
+  completedAt: string | null;
+};
+
 export type MyPlan = {
   planId: string;
   bookSlug: string;
@@ -22,6 +48,9 @@ export type MyPlan = {
   finished: number;
   total: number;
   days: PlanDay[];
+  streak: StreakState;
+  notesCount: number;
+  complete: boolean;
   hero: {
     day: number;
     title: string;
@@ -45,6 +74,7 @@ export type SessionDay = {
   tone: string;
   highlightWord: string | null;
   verses: { verse: number; text: string }[];
+  words: WordNote[];
   insight: { title: string; body: string; author: string; year: string };
   context: string;
   divide: {
