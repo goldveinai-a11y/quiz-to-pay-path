@@ -174,6 +174,7 @@ export const steps: Step[] = [
     options: [
       { value: "explain-first", label: "Explain it first, then let me read" },
       { value: "read-first", label: "Let me read, help when I'm stuck" },
+      { value: "depends", label: "Depends — both, when I need it" },
     ],
   },
 
