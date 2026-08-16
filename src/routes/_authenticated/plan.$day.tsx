@@ -5,10 +5,12 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { X, ArrowRight, Check } from "lucide-react";
 import { getSessionDay, saveStep, completeDay } from "@/lib/product/product.functions";
 import { Plate } from "@/components/product/Plate";
+import { WordSheet } from "@/components/product/WordSheet";
+import { ShareCard } from "@/components/product/ShareCard";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
-import type { SessionDay } from "@/lib/product/types";
+import type { SessionDay, WordNote } from "@/lib/product/types";
 
 export const Route = createFileRoute("/_authenticated/plan/$day")({
   head: () => ({
@@ -33,17 +35,34 @@ export const Route = createFileRoute("/_authenticated/plan/$day")({
   component: SessionPage,
 });
 
-function highlight(text: string, word: string | null) {
-  if (!word) return text;
-  const i = text.toLowerCase().indexOf(word.toLowerCase());
-  if (i < 0) return text;
+/** Splits a verse so any word with a lexicon note becomes tappable. */
+function VerseText({
+  text,
+  words,
+  onWord,
+}: {
+  text: string;
+  words: Map<string, WordNote>;
+  onWord: (note: WordNote) => void;
+}) {
+  if (words.size === 0) return <>{text}</>;
+  const parts = text.split(/([A-Za-z’']+)/);
   return (
     <>
-      {text.slice(0, i)}
-      <span className="underline decoration-terra/60 decoration-2 underline-offset-4">
-        {text.slice(i, i + word.length)}
-      </span>
-      {text.slice(i + word.length)}
+      {parts.map((part, i) => {
+        const note = words.get(part.toLowerCase());
+        if (!note) return <span key={i}>{part}</span>;
+        return (
+          <button
+            key={i}
+            type="button"
+            onClick={() => onWord(note)}
+            className="underline decoration-terra/60 decoration-2 underline-offset-4 transition-colors duration-150 hover:text-terra"
+          >
+            {part}
+          </button>
+        );
+      })}
     </>
   );
 }
@@ -66,6 +85,7 @@ function SessionPage() {
   const [index, setIndex] = useState(0);
   const [note, setNote] = useState("");
   const [done, setDone] = useState(false);
+  const [openWord, setOpenWord] = useState<WordNote | null>(null);
   const restored = useRef(false);
 
   const steps = useMemo(() => {
@@ -137,7 +157,7 @@ function SessionPage() {
       </header>
 
       <div className="flex-1 py-8">
-        {current === "passage" ? <PassageStep data={data} /> : null}
+        {current === "passage" ? <PassageStep data={data} onWord={setOpenWord} /> : null}
         {current === "insight" ? <InsightStep data={data} /> : null}
         {current === "context" ? <ContextStep data={data} /> : null}
         {current === "divide" ? <DivideStep data={data} /> : null}
@@ -177,15 +197,16 @@ function SessionPage() {
           </div>
         )}
       </div>
+
+      <WordSheet note={openWord} onClose={() => setOpenWord(null)} />
     </main>
   );
 }
 
 type SessionStep = "passage" | "insight" | "context" | "divide" | "question" | "close";
 
-function PassageStep({ data }: { data: SessionDay }) {
-  // Exactly one word carries the underline, on its first appearance.
-  let used = false;
+function PassageStep({ data, onWord }: { data: SessionDay; onWord: (w: WordNote) => void }) {
+  const words = new Map(data.words.map((w) => [w.word.toLowerCase(), w]));
   return (
     <section>
       <p className="eyebrow text-muted-foreground">
@@ -193,22 +214,20 @@ function PassageStep({ data }: { data: SessionDay }) {
       </p>
       <h1 className="mt-3 font-serif text-2xl font-semibold leading-snug">{data.title}</h1>
       <div className="mt-6 space-y-4">
-        {data.verses.map((v) => {
-          const word =
-            !used && data.highlightWord && v.text.toLowerCase().includes(data.highlightWord.toLowerCase())
-              ? data.highlightWord
-              : null;
-          if (word) used = true;
-          return (
+        {data.verses.map((v) => (
             <p key={v.verse} className="font-serif text-xl leading-relaxed">
               <span className="mr-2 align-super font-mono text-[0.6rem] text-muted-foreground">
                 {v.verse}
               </span>
-              {highlight(v.text, word)}
+            <VerseText text={v.text} words={words} onWord={onWord} />
             </p>
-          );
-        })}
+        ))}
       </div>
+      {words.size > 0 ? (
+        <p className="eyebrow mt-6 text-muted-foreground">
+          Tap an underlined word for the {data.words[0]?.language ?? "original"} behind it
+        </p>
+      ) : null}
     </section>
   );
 }
