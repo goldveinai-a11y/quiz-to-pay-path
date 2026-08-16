@@ -104,6 +104,24 @@ export type Database = {
         }
         Relationships: []
       }
+      job_secrets: {
+        Row: {
+          created_at: string
+          name: string
+          value: string
+        }
+        Insert: {
+          created_at?: string
+          name: string
+          value?: string
+        }
+        Update: {
+          created_at?: string
+          name?: string
+          value?: string
+        }
+        Relationships: []
+      }
       study_sessions: {
         Row: {
           art_tone: string
