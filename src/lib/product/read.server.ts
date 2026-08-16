@@ -66,7 +66,10 @@ export async function buildMyPlan(userId: string): Promise<MyPlan> {
       .select("day_number, title, reference, setup, art_tone")
       .eq("book_slug", plan.book_slug)
       .order("day_number"),
-    supabase.from("user_progress").select("day_number, step, completed_at").eq("plan_id", plan.id),
+    supabase
+      .from("user_progress")
+      .select("day_number, step, completed_at, note")
+      .eq("plan_id", plan.id),
   ]);
 
   const byDay = new Map((progress ?? []).map((p) => [p.day_number, p]));
