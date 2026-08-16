@@ -384,8 +384,8 @@ function ResultPage() {
                     src={r.face}
                     alt={`${r.name}, Plainly reader`}
                     loading="lazy"
-                    width={512}
-                    height={512}
+                    width={128}
+                    height={128}
                     className="h-9 w-9 rounded-full border border-border object-cover"
                   />
                   {r.name}
