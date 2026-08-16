@@ -1,6 +1,14 @@
 import { createClient } from "@supabase/supabase-js";
 import type { Database } from "@/integrations/supabase/types";
-import { BOOK_TITLES, type MyPlan, type PlanDay, type SessionDay, type DivideReading } from "./types";
+import {
+  BOOK_TITLES,
+  type MyPlan,
+  type PlanDay,
+  type SavedNote,
+  type SessionDay,
+  type DivideReading,
+  type WordNote,
+} from "./types";
 import { ACCESS_PLANS, getAccessPlan } from "./pricing";
 import { RENEWALS } from "@/lib/payments/renewals";
 
@@ -16,6 +24,16 @@ const DAY_MS = 86400000;
 function unlockAt(startedAt: string, day: number) {
   return new Date(new Date(startedAt).getTime() + (day - 1) * DAY_MS);
 }
+
+function dayKey(date: Date) {
+  return date.toISOString().slice(0, 10);
+}
+
+function daysBetween(a: string, b: string) {
+  return Math.round((Date.parse(`${b}T00:00:00Z`) - Date.parse(`${a}T00:00:00Z`)) / DAY_MS);
+}
+
+const MAX_FREEZES = 3;
 
 async function activePlan(userId: string) {
   const supabase = await db();
@@ -89,6 +107,14 @@ export async function buildMyPlan(userId: string): Promise<MyPlan> {
     finished,
     total: days.length,
     days,
+    streak: {
+      current: plan.streak_count ?? 0,
+      longest: plan.longest_streak ?? 0,
+      todayDone: plan.last_completed_on === dayKey(new Date()),
+      freezesLeft: Math.max(0, MAX_FREEZES - (plan.freezes_used ?? 0)),
+    },
+    notesCount: (progress ?? []).filter((p) => p.note && p.note.trim()).length,
+    complete: days.length > 0 && finished >= days.length,
     hero: heroSource
       ? {
           day: heroSource.day_number,
@@ -139,6 +165,23 @@ export async function buildSessionDay(userId: string, day: number): Promise<Sess
     .eq("day_number", day)
     .maybeSingle();
 
+  // Word study: curated public-domain lexicon notes for this exact passage.
+  const { data: wordRows } = await supabase
+    .from("word_notes")
+    .select("word, original, transliteration, language, meaning, also_in")
+    .eq("book", session.book)
+    .eq("chapter", session.chapter)
+    .gte("verse", session.verse_start)
+    .lte("verse", session.verse_end);
+  const words: WordNote[] = (wordRows ?? []).map((w) => ({
+    word: w.word,
+    original: w.original,
+    transliteration: w.transliteration,
+    language: w.language,
+    meaning: w.meaning,
+    alsoIn: w.also_in,
+  }));
+
   const { data: next } = await supabase
     .from("study_sessions")
     .select("day_number, title")
@@ -159,6 +202,7 @@ export async function buildSessionDay(userId: string, day: number): Promise<Sess
     tone: session.art_tone ?? "teal",
     highlightWord: session.highlight_word,
     verses: (verses ?? []).map((v) => ({ verse: v.verse, text: v.text })),
+    words,
     insight: {
       title: session.insight_title,
       body: session.insight_body,
