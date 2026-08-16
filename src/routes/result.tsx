@@ -10,6 +10,7 @@ import {
 import { BeforeAfter } from "@/components/paywall/BeforeAfter";
 import { GrowthChart } from "@/components/paywall/GrowthChart";
 import { PhoneMock } from "@/components/paywall/PhoneMock";
+import { PAYWALL_REVIEWS } from "@/lib/reviews";
 import { ART } from "@/lib/quiz/art";
 import { loadAnswers } from "@/lib/quiz/store";
 import { buildPlan, THEME_LABELS, type PlanResult } from "@/lib/quiz/plan";
