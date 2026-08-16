@@ -2,7 +2,13 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { Check, Lock, ArrowRight, LogOut } from "lucide-react";
-import { getMyPlan, startBook, getAccess, cancelAccessNow } from "@/lib/product/product.functions";
+import {
+  getMyPlan,
+  startBook,
+  getAccess,
+  cancelAccessNow,
+  changePlanNow,
+} from "@/lib/product/product.functions";
 import { Plate } from "@/components/product/Plate";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
@@ -41,6 +47,7 @@ function PlanPage() {
   const switchBook = useServerFn(startBook);
   const fetchAccess = useServerFn(getAccess);
   const cancelNow = useServerFn(cancelAccessNow);
+  const changePlan = useServerFn(changePlanNow);
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const { data, isLoading } = useQuery({ queryKey: ["my-plan"], queryFn: () => fetchPlan() });
