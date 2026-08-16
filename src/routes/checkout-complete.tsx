@@ -5,7 +5,7 @@ import { finalizePurchase } from "@/lib/payments/payments.functions";
 import { getStripeEnvironment } from "@/lib/stripe";
 import { supabase } from "@/integrations/supabase/client";
 
-export const Route = createFileRoute("/checkout/return")({
+export const Route = createFileRoute("/checkout-complete")({
   ssr: false,
   validateSearch: (search: Record<string, unknown>): { session_id?: string | undefined } => ({
     session_id: typeof search["session_id"] === "string" ? search["session_id"] : undefined,
