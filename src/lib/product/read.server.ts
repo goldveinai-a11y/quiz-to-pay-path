@@ -246,6 +246,8 @@ export async function readAccess(userId: string) {
     amountCents: data.amount_cents,
     renewsAt: data.current_period_end,
     cancelAtPeriodEnd: data.cancel_at_period_end,
+    upgrades:
+      data.status === "active" && !data.cancel_at_period_end ? upgradeOptions(data.plan_code) : [],
   };
 }
 
