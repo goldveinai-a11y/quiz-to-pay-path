@@ -1,12 +1,14 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
+import { EmbeddedCheckoutProvider, EmbeddedCheckout } from "@stripe/react-stripe-js";
 import { X, Lock, CreditCard } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { loadAnswers } from "@/lib/quiz/store";
-import { completePurchase } from "@/lib/product/product.functions";
-import { supabase } from "@/integrations/supabase/client";
+import { createIntroCheckout } from "@/lib/payments/payments.functions";
+import { getStripe, getStripeEnvironment } from "@/lib/stripe";
+import { PaymentTestModeBanner } from "@/components/PaymentTestModeBanner";
 import { THEME_TO_BOOK } from "@/lib/product/types";
 
 type Search = { plan?: string };
@@ -42,10 +44,11 @@ export const Route = createFileRoute("/checkout")({
 function CheckoutPage() {
   const { plan } = Route.useSearch();
   const navigate = useNavigate();
-  const purchase = useServerFn(completePurchase);
+  const startCheckout = useServerFn(createIntroCheckout);
   const [email, setEmail] = useState("");
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [clientSecret, setClientSecret] = useState<string | null>(null);
 
   const selected = PRICES[plan ?? "1-month"] ?? PRICES["1-month"]!;
 
@@ -60,21 +63,21 @@ function CheckoutPage() {
     try {
       const answers = loadAnswers();
       const theme = typeof answers["theme"] === "string" ? (answers["theme"] as string) : "";
-      const result = await purchase({
+      const result = await startCheckout({
         data: {
           email: email.trim().toLowerCase(),
           planCode: plan ?? "1-month",
           bookSlug: THEME_TO_BOOK[theme] ?? "john",
-          tradition: typeof answers["tradition"] === "string" ? (answers["tradition"] as string) : "unsure",
+          tradition:
+            typeof answers["tradition"] === "string" ? (answers["tradition"] as string) : "unsure",
           readerName: typeof answers["name"] === "string" ? (answers["name"] as string) : undefined,
-          origin: window.location.origin,
+          returnUrl: `${window.location.origin}/checkout-complete?session_id={CHECKOUT_SESSION_ID}`,
+          environment: getStripeEnvironment(),
         },
       });
-      // Same tab, same moment: the buyer is signed in and lands on their plan.
-      if (result.tokenHash) {
-        await supabase.auth.verifyOtp({ type: "email", token_hash: result.tokenHash });
-      }
-      navigate({ to: "/plan", replace: true });
+      if ("error" in result) throw new Error(result.error);
+      setClientSecret(result.clientSecret);
+      setPending(false);
     } catch (e) {
       setPending(false);
       setError(e instanceof Error ? e.message : "We couldn't complete that payment.");
@@ -83,6 +86,7 @@ function CheckoutPage() {
 
   return (
     <main className="min-h-screen bg-ink/60 px-4 py-8 backdrop-blur-sm sm:grid sm:place-items-center">
+      <PaymentTestModeBanner />
       <div className="mx-auto w-full max-w-md rounded-3xl border border-border bg-card p-6 shadow-2xl">
         <div className="flex items-start justify-between">
           <div>
@@ -102,7 +106,13 @@ function CheckoutPage() {
           </button>
         </div>
 
-        {(
+        {clientSecret ? (
+          <div className="mt-6">
+            <EmbeddedCheckoutProvider stripe={getStripe()} options={{ clientSecret }}>
+              <EmbeddedCheckout />
+            </EmbeddedCheckoutProvider>
+          </div>
+        ) : (
           <>
             <div className="mt-6">
               <label className="text-sm font-medium" htmlFor="checkout-email">
@@ -129,7 +139,7 @@ function CheckoutPage() {
                 className="h-13 w-full rounded-xl py-4 text-base font-semibold"
               >
                 <CreditCard className="mr-2 h-4 w-4" />
-                {pending ? "Processing…" : `Pay $${selected.price.toFixed(2)} now`}
+                {pending ? "Opening…" : `Pay $${selected.price.toFixed(2)} now`}
               </Button>
             </div>
 

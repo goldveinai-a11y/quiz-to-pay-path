@@ -6,6 +6,7 @@ import { getMyPlan, startBook, getAccess, cancelAccessNow } from "@/lib/product/
 import { Plate } from "@/components/product/Plate";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
+import { getStripeEnvironment } from "@/lib/stripe";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/plan/")({
@@ -213,7 +214,7 @@ function PlanPage() {
             <button
               type="button"
               onClick={async () => {
-                await cancelNow();
+                await cancelNow({ data: { environment: getStripeEnvironment() } });
                 await queryClient.invalidateQueries({ queryKey: ["access"] });
               }}
               className="mt-3 text-sm text-muted-foreground underline underline-offset-4 transition-colors duration-150 hover:text-foreground"

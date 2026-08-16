@@ -13,10 +13,12 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as CheckoutRouteImport } from './routes/checkout'
+import { Route as CheckoutCompleteRouteImport } from './routes/checkout-complete'
 import { Route as QuizRouteImport } from './routes/quiz'
 import { Route as ResultRouteImport } from './routes/result'
 import { Route as AuthenticatedPlanIndexRouteImport } from './routes/_authenticated/plan.index'
 import { Route as AuthenticatedPlanDayRouteImport } from './routes/_authenticated/plan.$day'
+import { Route as ApiPublicPaymentsWebhookRouteImport } from './routes/api/public/payments/webhook'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -35,6 +37,11 @@ const AuthRoute = AuthRouteImport.update({
 const CheckoutRoute = CheckoutRouteImport.update({
   id: '/checkout',
   path: '/checkout',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CheckoutCompleteRoute = CheckoutCompleteRouteImport.update({
+  id: '/checkout-complete',
+  path: '/checkout-complete',
   getParentRoute: () => rootRouteImport,
 } as any)
 const QuizRoute = QuizRouteImport.update({
@@ -57,24 +64,34 @@ const AuthenticatedPlanDayRoute = AuthenticatedPlanDayRouteImport.update({
   path: '/plan/$day',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const ApiPublicPaymentsWebhookRoute =
+  ApiPublicPaymentsWebhookRouteImport.update({
+    id: '/api/public/payments/webhook',
+    path: '/api/public/payments/webhook',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/checkout': typeof CheckoutRoute
+  '/checkout-complete': typeof CheckoutCompleteRoute
   '/quiz': typeof QuizRoute
   '/result': typeof ResultRoute
   '/plan/$day': typeof AuthenticatedPlanDayRoute
   '/plan/': typeof AuthenticatedPlanIndexRoute
+  '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/checkout': typeof CheckoutRoute
+  '/checkout-complete': typeof CheckoutCompleteRoute
   '/quiz': typeof QuizRoute
   '/result': typeof ResultRoute
   '/plan/$day': typeof AuthenticatedPlanDayRoute
   '/plan': typeof AuthenticatedPlanIndexRoute
+  '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -82,27 +99,48 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
   '/checkout': typeof CheckoutRoute
+  '/checkout-complete': typeof CheckoutCompleteRoute
   '/quiz': typeof QuizRoute
   '/result': typeof ResultRoute
   '/_authenticated/plan/$day': typeof AuthenticatedPlanDayRoute
   '/_authenticated/plan/': typeof AuthenticatedPlanIndexRoute
+  '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
-    '/' | '/auth' | '/checkout' | '/quiz' | '/result' | '/plan/$day' | '/plan/'
+    | '/'
+    | '/auth'
+    | '/checkout'
+    | '/checkout-complete'
+    | '/quiz'
+    | '/result'
+    | '/plan/$day'
+    | '/plan/'
+    | '/api/public/payments/webhook'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth' | '/checkout' | '/quiz' | '/result' | '/plan/$day' | '/plan'
+  to:
+    | '/'
+    | '/auth'
+    | '/checkout'
+    | '/checkout-complete'
+    | '/quiz'
+    | '/result'
+    | '/plan/$day'
+    | '/plan'
+    | '/api/public/payments/webhook'
   id:
     | '__root__'
     | '/'
     | '/_authenticated'
     | '/auth'
     | '/checkout'
+    | '/checkout-complete'
     | '/quiz'
     | '/result'
     | '/_authenticated/plan/$day'
     | '/_authenticated/plan/'
+    | '/api/public/payments/webhook'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -110,8 +148,10 @@ export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
   CheckoutRoute: typeof CheckoutRoute
+  CheckoutCompleteRoute: typeof CheckoutCompleteRoute
   QuizRoute: typeof QuizRoute
   ResultRoute: typeof ResultRoute
+  ApiPublicPaymentsWebhookRoute: typeof ApiPublicPaymentsWebhookRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -144,6 +184,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CheckoutRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/checkout-complete': {
+      id: '/checkout-complete'
+      path: '/checkout-complete'
+      fullPath: '/checkout-complete'
+      preLoaderRoute: typeof CheckoutCompleteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/quiz': {
       id: '/quiz'
       path: '/quiz'
@@ -172,6 +219,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedPlanDayRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/api/public/payments/webhook': {
+      id: '/api/public/payments/webhook'
+      path: '/api/public/payments/webhook'
+      fullPath: '/api/public/payments/webhook'
+      preLoaderRoute: typeof ApiPublicPaymentsWebhookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -193,8 +247,10 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
   CheckoutRoute: CheckoutRoute,
+  CheckoutCompleteRoute: CheckoutCompleteRoute,
   QuizRoute: QuizRoute,
   ResultRoute: ResultRoute,
+  ApiPublicPaymentsWebhookRoute: ApiPublicPaymentsWebhookRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

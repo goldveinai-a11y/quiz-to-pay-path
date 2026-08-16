@@ -248,8 +248,25 @@ export async function readAccess(userId: string) {
 }
 
 /** One click, no retention flow: access stays until the paid period ends. */
-export async function cancelAccess(userId: string) {
+export async function cancelAccess(userId: string, environment: "sandbox" | "live" = "sandbox") {
   const supabase = await db();
+  const { data: current } = await supabase
+    .from("subscriptions")
+    .select("provider_subscription_id")
+    .eq("user_id", userId)
+    .eq("status", "active")
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (current?.provider_subscription_id) {
+    const { createStripeClient } = await import("@/lib/stripe.server");
+    const stripe = createStripeClient(environment);
+    await stripe.subscriptions.update(current.provider_subscription_id, {
+      cancel_at_period_end: true,
+    });
+  }
+
   const { error } = await supabase
     .from("subscriptions")
     .update({ cancel_at_period_end: true, canceled_at: new Date().toISOString() })
