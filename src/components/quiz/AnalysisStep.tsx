@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Check } from "lucide-react";
 import type { Answers } from "@/lib/quiz/types";
 
@@ -21,25 +21,39 @@ export function AnalysisStep({
   const [progress, setProgress] = useState(0);
   const [askDepth, setAskDepth] = useState(false);
   const [answeredDepth, setAnsweredDepth] = useState(false);
+  const elapsedRef = useRef(0);
+  const lastTickRef = useRef(Date.now());
+  const pausedRef = useRef(false);
+  const answeredRef = useRef(false);
+  const onDoneRef = useRef(onDone);
+  onDoneRef.current = onDone;
 
   const days = (answers["days"] as string) ?? "4-5";
   const lines = [...LINES];
   lines[2] = `Setting the pace to ${days.replace("-", "–")} days a week…`;
 
   useEffect(() => {
-    const start = Date.now();
+    lastTickRef.current = Date.now();
     const id = window.setInterval(() => {
-      const elapsed = Date.now() - start;
+      const now = Date.now();
+      const delta = now - lastTickRef.current;
+      lastTickRef.current = now;
+      // while the extra question is open, hold the progress where it is
+      if (!pausedRef.current) elapsedRef.current += delta;
+      const elapsed = elapsedRef.current;
       const pct = Math.min(100, (elapsed / 7000) * 100);
       setProgress(pct);
-      if (elapsed > 3800 && !answeredDepth) setAskDepth(true);
-      if (pct >= 100 && (answeredDepth || elapsed > 12000)) {
+      if (elapsed > 3800 && !answeredRef.current && !pausedRef.current) {
+        pausedRef.current = true;
+        setAskDepth(true);
+      }
+      if (pct >= 100 && answeredRef.current) {
         window.clearInterval(id);
-        onDone();
+        onDoneRef.current();
       }
     }, 80);
     return () => window.clearInterval(id);
-  }, [answeredDepth, onDone]);
+  }, []);
 
   const active = Math.min(lines.length - 1, Math.floor((progress / 100) * lines.length));
   const r = 68;
@@ -112,6 +126,9 @@ export function AnalysisStep({
                   type="button"
                   onClick={() => {
                     onAnswer("analysis_depth", o.v);
+                    answeredRef.current = true;
+                    pausedRef.current = false;
+                    lastTickRef.current = Date.now();
                     setAnsweredDepth(true);
                     setAskDepth(false);
                   }}
