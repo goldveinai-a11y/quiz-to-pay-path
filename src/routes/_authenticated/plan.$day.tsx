@@ -169,13 +169,22 @@ function SessionPage() {
 
       <div className="sticky bottom-0 bg-background pb-2 pt-3">
         {current === "close" ? (
-          <Button
-            onClick={finish}
-            className="h-13 w-full rounded-xl bg-ink py-4 text-base font-semibold text-background hover:bg-ink/90"
-          >
-            {done ? "Back to my plan" : "Mark today done"}
-            <Check className="ml-2 h-4 w-4" />
-          </Button>
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={() => go(index - 1)}
+              className="eyebrow px-2 py-3 text-muted-foreground transition-colors duration-150 hover:text-foreground"
+            >
+              Back
+            </button>
+            <Button
+              onClick={finish}
+              className="h-13 flex-1 rounded-xl bg-ink py-4 text-base font-semibold text-background hover:bg-ink/90"
+            >
+              {done ? "Back to my plan" : "Mark today done"}
+              <Check className="ml-2 h-4 w-4" />
+            </Button>
+          </div>
         ) : (
           <div className="flex items-center gap-3">
             {index > 0 ? (
