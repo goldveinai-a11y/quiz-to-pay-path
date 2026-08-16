@@ -260,7 +260,94 @@ export async function persistDone(userId: string, day: number, note: string | nu
     },
     { onConflict: "plan_id,day_number" },
   );
-  return { ok: true };
+  const streak = await bumpStreak(plan, userId);
+  return { ok: true, streak };
+}
+
+type PlanRow = Awaited<ReturnType<typeof activePlan>>;
+
+/**
+ * One session finished today extends the streak. A single missed day spends a
+ * freeze instead of wiping it — the plan should never punish a bad week.
+ */
+async function bumpStreak(plan: PlanRow, userId: string) {
+  const supabase = await db();
+  const today = dayKey(new Date());
+  const last = plan.last_completed_on ?? null;
+  let current = plan.streak_count ?? 0;
+  let freezesUsed = plan.freezes_used ?? 0;
+  let usedFreeze = false;
+
+  if (last === today) {
+    // Already counted today.
+  } else if (last && daysBetween(last, today) === 1) {
+    current += 1;
+  } else if (last && daysBetween(last, today) === 2 && freezesUsed < MAX_FREEZES) {
+    current += 1;
+    freezesUsed += 1;
+    usedFreeze = true;
+  } else {
+    current = 1;
+  }
+
+  const longest = Math.max(plan.longest_streak ?? 0, current);
+
+  const { count } = await supabase
+    .from("user_progress")
+    .select("day_number", { count: "exact", head: true })
+    .eq("plan_id", plan.id)
+    .not("completed_at", "is", null);
+  const { count: total } = await supabase
+    .from("study_sessions")
+    .select("day_number", { count: "exact", head: true })
+    .eq("book_slug", plan.book_slug);
+  const finishedAll = Boolean(total && count && count >= total);
+
+  await supabase
+    .from("user_plans")
+    .update({
+      streak_count: current,
+      longest_streak: longest,
+      last_completed_on: today,
+      freezes_used: freezesUsed,
+      ...(finishedAll && !plan.completed_at ? { completed_at: new Date().toISOString() } : {}),
+    })
+    .eq("id", plan.id)
+    .eq("user_id", userId);
+
+  return { current, longest, usedFreeze, freezesLeft: Math.max(0, MAX_FREEZES - freezesUsed), finishedAll };
+}
+
+/** Everything the reader wrote, in one place — the reason to stay past day 30. */
+export async function listNotes(userId: string): Promise<SavedNote[]> {
+  const supabase = await db();
+  const plan = await activePlan(userId);
+  const [{ data: progress }, { data: sessions }] = await Promise.all([
+    supabase
+      .from("user_progress")
+      .select("day_number, note, completed_at")
+      .eq("plan_id", plan.id)
+      .not("note", "is", null)
+      .order("day_number"),
+    supabase
+      .from("study_sessions")
+      .select("day_number, title, reference, question")
+      .eq("book_slug", plan.book_slug),
+  ]);
+  const byDay = new Map((sessions ?? []).map((s) => [s.day_number, s]));
+  return (progress ?? [])
+    .filter((p) => p.note && p.note.trim())
+    .map((p) => {
+      const s = byDay.get(p.day_number);
+      return {
+        day: p.day_number,
+        title: s?.title ?? `Day ${p.day_number}`,
+        reference: s?.reference ?? "",
+        question: s?.question ?? "",
+        note: p.note!.trim(),
+        completedAt: p.completed_at,
+      };
+    });
 }
 
 export async function switchBook(userId: string, bookSlug: string) {
