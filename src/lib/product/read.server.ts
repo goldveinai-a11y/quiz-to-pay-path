@@ -1,6 +1,8 @@
 import { createClient } from "@supabase/supabase-js";
 import type { Database } from "@/integrations/supabase/types";
 import { BOOK_TITLES, type MyPlan, type PlanDay, type SessionDay, type DivideReading } from "./types";
+import { ACCESS_PLANS, getAccessPlan } from "./pricing";
+import { RENEWALS } from "@/lib/payments/renewals";
 
 type Admin = ReturnType<typeof createClient<Database>>;
 
