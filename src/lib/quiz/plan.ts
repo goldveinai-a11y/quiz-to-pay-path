@@ -114,7 +114,9 @@ export function buildPlan(answers: Answers): PlanResult {
     obs.bullet,
     style === "read-first"
       ? "The passage first, with help the moment you get stuck — the way you said you learn"
-      : "The explanation first, then the passage — the way you said you learn",
+      : style === "depends"
+        ? "Explanation or passage first — the session works either way, switch whenever you want"
+        : "The explanation first, then the passage — the way you said you learn",
     "Tap any word for the original Greek or Hebrew. Free, forever.",
     answers["embarrassed"] === "yes"
       ? "Ask any question, however basic. Nobody sees it but you."
