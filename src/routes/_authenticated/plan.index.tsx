@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 
-export const Route = createFileRoute("/_authenticated/plan")({
+export const Route = createFileRoute("/_authenticated/plan/")({
   head: () => ({
     meta: [
       { title: "My plan — Plainly" },
