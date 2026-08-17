@@ -16,7 +16,6 @@ import { Route as CheckoutRouteImport } from './routes/checkout'
 import { Route as CheckoutCompleteRouteImport } from './routes/checkout-complete'
 import { Route as QuizRouteImport } from './routes/quiz'
 import { Route as ResultRouteImport } from './routes/result'
-import { Route as UnsubscribeRouteImport } from './routes/unsubscribe'
 import { Route as AuthenticatedNotesRouteImport } from './routes/_authenticated/notes'
 import { Route as AuthenticatedPlanIndexRouteImport } from './routes/_authenticated/plan.index'
 import { Route as AuthenticatedPlanDayRouteImport } from './routes/_authenticated/plan.$day'
@@ -56,11 +55,6 @@ const QuizRoute = QuizRouteImport.update({
 const ResultRoute = ResultRouteImport.update({
   id: '/result',
   path: '/result',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const UnsubscribeRoute = UnsubscribeRouteImport.update({
-  id: '/unsubscribe',
-  path: '/unsubscribe',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedNotesRoute = AuthenticatedNotesRouteImport.update({
@@ -103,7 +97,6 @@ export interface FileRoutesByFullPath {
   '/checkout-complete': typeof CheckoutCompleteRoute
   '/quiz': typeof QuizRoute
   '/result': typeof ResultRoute
-  '/unsubscribe': typeof UnsubscribeRoute
   '/notes': typeof AuthenticatedNotesRoute
   '/plan/$day': typeof AuthenticatedPlanDayRoute
   '/plan/': typeof AuthenticatedPlanIndexRoute
@@ -118,7 +111,6 @@ export interface FileRoutesByTo {
   '/checkout-complete': typeof CheckoutCompleteRoute
   '/quiz': typeof QuizRoute
   '/result': typeof ResultRoute
-  '/unsubscribe': typeof UnsubscribeRoute
   '/notes': typeof AuthenticatedNotesRoute
   '/plan/$day': typeof AuthenticatedPlanDayRoute
   '/plan': typeof AuthenticatedPlanIndexRoute
@@ -135,7 +127,6 @@ export interface FileRoutesById {
   '/checkout-complete': typeof CheckoutCompleteRoute
   '/quiz': typeof QuizRoute
   '/result': typeof ResultRoute
-  '/unsubscribe': typeof UnsubscribeRoute
   '/_authenticated/notes': typeof AuthenticatedNotesRoute
   '/_authenticated/plan/$day': typeof AuthenticatedPlanDayRoute
   '/_authenticated/plan/': typeof AuthenticatedPlanIndexRoute
@@ -152,7 +143,6 @@ export interface FileRouteTypes {
     | '/checkout-complete'
     | '/quiz'
     | '/result'
-    | '/unsubscribe'
     | '/notes'
     | '/plan/$day'
     | '/plan/'
@@ -167,7 +157,6 @@ export interface FileRouteTypes {
     | '/checkout-complete'
     | '/quiz'
     | '/result'
-    | '/unsubscribe'
     | '/notes'
     | '/plan/$day'
     | '/plan'
@@ -183,7 +172,6 @@ export interface FileRouteTypes {
     | '/checkout-complete'
     | '/quiz'
     | '/result'
-    | '/unsubscribe'
     | '/_authenticated/notes'
     | '/_authenticated/plan/$day'
     | '/_authenticated/plan/'
@@ -200,7 +188,6 @@ export interface RootRouteChildren {
   CheckoutCompleteRoute: typeof CheckoutCompleteRoute
   QuizRoute: typeof QuizRoute
   ResultRoute: typeof ResultRoute
-  UnsubscribeRoute: typeof UnsubscribeRoute
   ApiPublicEmailsDailyRoute: typeof ApiPublicEmailsDailyRoute
   ApiPublicPaymentsWebhookRoute: typeof ApiPublicPaymentsWebhookRoute
   LovableEmailTransactionalPreviewRoute: typeof LovableEmailTransactionalPreviewRoute
@@ -255,13 +242,6 @@ declare module '@tanstack/react-router' {
       path: '/result'
       fullPath: '/result'
       preLoaderRoute: typeof ResultRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/unsubscribe': {
-      id: '/unsubscribe'
-      path: '/unsubscribe'
-      fullPath: '/unsubscribe'
-      preLoaderRoute: typeof UnsubscribeRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/notes': {
@@ -332,7 +312,6 @@ const rootRouteChildren: RootRouteChildren = {
   CheckoutCompleteRoute: CheckoutCompleteRoute,
   QuizRoute: QuizRoute,
   ResultRoute: ResultRoute,
-  UnsubscribeRoute: UnsubscribeRoute,
   ApiPublicEmailsDailyRoute: ApiPublicEmailsDailyRoute,
   ApiPublicPaymentsWebhookRoute: ApiPublicPaymentsWebhookRoute,
   LovableEmailTransactionalPreviewRoute: LovableEmailTransactionalPreviewRoute,
