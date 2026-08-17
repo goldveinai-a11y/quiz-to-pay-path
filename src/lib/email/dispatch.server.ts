@@ -252,14 +252,3 @@ export async function runDailyDispatch(origin?: string): Promise<Summary> {
 
   return summary;
 }
-
-export async function unsubscribeByToken(token: string) {
-  const admin = await db();
-  const { data } = await admin
-    .from("email_preferences")
-    .update({ daily_reminder: false, win_back: false, milestone: false })
-    .eq("unsubscribe_token", token)
-    .select("email")
-    .maybeSingle();
-  return { ok: Boolean(data) };
-}
