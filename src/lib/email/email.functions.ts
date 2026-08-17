@@ -23,11 +23,3 @@ export const setEmailPrefs = createServerFn({ method: "POST" })
       .eq("user_id", context.userId);
     return { ok: true };
   });
-
-/** Public on purpose: an unsubscribe link must work without signing in. */
-export const unsubscribeEmails = createServerFn({ method: "POST" })
-  .inputValidator((data) => z.object({ token: z.string().uuid() }).parse(data))
-  .handler(async ({ data }) => {
-    const { unsubscribeByToken } = await import("./dispatch.server");
-    return unsubscribeByToken(data.token);
-  });

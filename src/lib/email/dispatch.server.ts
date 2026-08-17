@@ -1,8 +1,25 @@
 import { createClient } from "@supabase/supabase-js";
 import type { Database } from "@/integrations/supabase/types";
 import { BOOK_TITLES } from "@/lib/product/types";
-import { sendEmail } from "./send.server";
-import { dailyEmail, finishEmail, welcomeEmail, winBackEmail } from "./templates";
+import { sendTemplateEmail } from "@/lib/email-templates/send-email";
+
+type SendResult = { delivered: boolean; reason?: string };
+
+/** One delivery point: managed sending, suppression handled by the platform. */
+async function deliver(
+  templateName: string,
+  to: string,
+  templateData: Record<string, unknown>,
+  idempotencyKey: string,
+): Promise<SendResult> {
+  try {
+    const result = await sendTemplateEmail(templateName, to, { templateData, idempotencyKey });
+    return result.sent ? { delivered: true } : { delivered: false, reason: result.reason };
+  } catch (error) {
+    console.error(`[email] ${templateName} failed for ${to}:`, error);
+    return { delivered: false, reason: "send_failed" };
+  }
+}
 
 type Admin = ReturnType<typeof createClient<Database>>;
 
@@ -17,7 +34,7 @@ export function siteUrl(origin?: string | null) {
   if (origin?.startsWith("http")) return origin.replace(/\/$/, "");
   const configured = process.env["SITE_URL"];
   if (configured) return configured.replace(/\/$/, "");
-  return "https://quiz-to-pay-path.lovable.app";
+  return "https://www.bibleroutine.app";
 }
 
 /** Every reader has one preferences row; it also carries the unsubscribe key. */
@@ -60,10 +77,6 @@ async function signInLink(email: string, redirectTo: string) {
   return data?.properties?.action_link ?? redirectTo;
 }
 
-function unsubscribeUrl(base: string, token: string) {
-  return `${base}/unsubscribe?token=${token}`;
-}
-
 /** Sent once, right after payment. Carries the only key back into the product. */
 export async function sendWelcome(userId: string, email: string, bookSlug: string, origin?: string) {
   const base = siteUrl(origin);
@@ -72,13 +85,11 @@ export async function sendWelcome(userId: string, email: string, bookSlug: strin
   if (await alreadySent(userId, "welcome", null)) return { delivered: false, reason: "duplicate" };
 
   const link = await signInLink(email, `${base}/plan/1`);
-  const result = await sendEmail(
+  const result = await deliver(
+    "welcome",
     email,
-    welcomeEmail({
-      bookTitle: BOOK_TITLES[bookSlug] ?? "your plan",
-      signInUrl: link,
-      unsubscribeUrl: unsubscribeUrl(base, prefs.unsubscribe_token),
-    }),
+    { bookTitle: BOOK_TITLES[bookSlug] ?? "your plan", signInUrl: link },
+    `welcome-${userId}`,
   );
   if (result.delivered) await record(userId, "welcome", null);
   return result;
@@ -144,15 +155,16 @@ export async function runDailyDispatch(origin?: string): Promise<Summary> {
     if (total > 0 && done.size >= total) {
       if (pref.milestone && !(await alreadySent(plan.user_id, "finish", null))) {
         const notes = (progress ?? []).filter((p) => p.note && p.note.trim()).length;
-        const result = await sendEmail(
+        const result = await deliver(
+          "plan-finished",
           pref.email,
-          finishEmail({
+          {
             bookTitle: BOOK_TITLES[plan.book_slug] ?? plan.book_slug,
             sessions: done.size,
             notes,
             reviewUrl: `${base}/plan?review=1`,
-            unsubscribeUrl: unsubscribeUrl(base, pref.unsubscribe_token),
-          }),
+          },
+          `plan-finished-${plan.user_id}-${plan.book_slug}`,
         );
         if (result.delivered) {
           await record(plan.user_id, "finish", null);
@@ -192,16 +204,17 @@ export async function runDailyDispatch(origin?: string): Promise<Summary> {
           .eq("verse", nextSession.verse_start)
           .maybeSingle();
         const link = await signInLink(pref.email, `${base}/plan/${nextSession.day_number}`);
-        const result = await sendEmail(
+        const result = await deliver(
+          "win-back",
           pref.email,
-          winBackEmail({
+          {
             day: nextSession.day_number,
             title: nextSession.title,
             quote: verse?.text ?? nextSession.setup,
             reference: nextSession.reference,
             planUrl: link,
-            unsubscribeUrl: unsubscribeUrl(base, pref.unsubscribe_token),
-          }),
+          },
+          `win-back-${plan.user_id}-${nextSession.day_number}-${new Date().toISOString().slice(0, 10)}`,
         );
         if (result.delivered) {
           await record(plan.user_id, "win_back", nextSession.day_number);
@@ -214,17 +227,18 @@ export async function runDailyDispatch(origin?: string): Promise<Summary> {
     // Today's session, once per day number.
     if (pref.daily_reminder && !(await alreadySent(plan.user_id, "daily", nextSession.day_number))) {
       const link = await signInLink(pref.email, `${base}/plan/${nextSession.day_number}`);
-      const result = await sendEmail(
+      const result = await deliver(
+        "daily-session",
         pref.email,
-        dailyEmail({
+        {
           day: nextSession.day_number,
           title: nextSession.title,
           reference: nextSession.reference,
           setup: nextSession.setup,
           streak: plan.streak_count ?? 0,
           planUrl: link,
-          unsubscribeUrl: unsubscribeUrl(base, pref.unsubscribe_token),
-        }),
+        },
+        `daily-${plan.user_id}-${nextSession.day_number}`,
       );
       if (result.delivered) {
         await record(plan.user_id, "daily", nextSession.day_number);
@@ -237,15 +251,4 @@ export async function runDailyDispatch(origin?: string): Promise<Summary> {
   }
 
   return summary;
-}
-
-export async function unsubscribeByToken(token: string) {
-  const admin = await db();
-  const { data } = await admin
-    .from("email_preferences")
-    .update({ daily_reminder: false, win_back: false, milestone: false })
-    .eq("unsubscribe_token", token)
-    .select("email")
-    .maybeSingle();
-  return { ok: Boolean(data) };
 }

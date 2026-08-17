@@ -16,12 +16,12 @@ import { Route as CheckoutRouteImport } from './routes/checkout'
 import { Route as CheckoutCompleteRouteImport } from './routes/checkout-complete'
 import { Route as QuizRouteImport } from './routes/quiz'
 import { Route as ResultRouteImport } from './routes/result'
-import { Route as UnsubscribeRouteImport } from './routes/unsubscribe'
 import { Route as AuthenticatedNotesRouteImport } from './routes/_authenticated/notes'
 import { Route as AuthenticatedPlanIndexRouteImport } from './routes/_authenticated/plan.index'
 import { Route as AuthenticatedPlanDayRouteImport } from './routes/_authenticated/plan.$day'
 import { Route as ApiPublicEmailsDailyRouteImport } from './routes/api/public/emails/daily'
 import { Route as ApiPublicPaymentsWebhookRouteImport } from './routes/api/public/payments/webhook'
+import { Route as LovableEmailTransactionalPreviewRouteImport } from './routes/lovable/email/transactional/preview'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -57,11 +57,6 @@ const ResultRoute = ResultRouteImport.update({
   path: '/result',
   getParentRoute: () => rootRouteImport,
 } as any)
-const UnsubscribeRoute = UnsubscribeRouteImport.update({
-  id: '/unsubscribe',
-  path: '/unsubscribe',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const AuthenticatedNotesRoute = AuthenticatedNotesRouteImport.update({
   id: '/notes',
   path: '/notes',
@@ -88,6 +83,12 @@ const ApiPublicPaymentsWebhookRoute =
     path: '/api/public/payments/webhook',
     getParentRoute: () => rootRouteImport,
   } as any)
+const LovableEmailTransactionalPreviewRoute =
+  LovableEmailTransactionalPreviewRouteImport.update({
+    id: '/lovable/email/transactional/preview',
+    path: '/lovable/email/transactional/preview',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -96,12 +97,12 @@ export interface FileRoutesByFullPath {
   '/checkout-complete': typeof CheckoutCompleteRoute
   '/quiz': typeof QuizRoute
   '/result': typeof ResultRoute
-  '/unsubscribe': typeof UnsubscribeRoute
   '/notes': typeof AuthenticatedNotesRoute
   '/plan/$day': typeof AuthenticatedPlanDayRoute
   '/plan/': typeof AuthenticatedPlanIndexRoute
   '/api/public/emails/daily': typeof ApiPublicEmailsDailyRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
+  '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -110,12 +111,12 @@ export interface FileRoutesByTo {
   '/checkout-complete': typeof CheckoutCompleteRoute
   '/quiz': typeof QuizRoute
   '/result': typeof ResultRoute
-  '/unsubscribe': typeof UnsubscribeRoute
   '/notes': typeof AuthenticatedNotesRoute
   '/plan/$day': typeof AuthenticatedPlanDayRoute
   '/plan': typeof AuthenticatedPlanIndexRoute
   '/api/public/emails/daily': typeof ApiPublicEmailsDailyRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
+  '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -126,12 +127,12 @@ export interface FileRoutesById {
   '/checkout-complete': typeof CheckoutCompleteRoute
   '/quiz': typeof QuizRoute
   '/result': typeof ResultRoute
-  '/unsubscribe': typeof UnsubscribeRoute
   '/_authenticated/notes': typeof AuthenticatedNotesRoute
   '/_authenticated/plan/$day': typeof AuthenticatedPlanDayRoute
   '/_authenticated/plan/': typeof AuthenticatedPlanIndexRoute
   '/api/public/emails/daily': typeof ApiPublicEmailsDailyRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
+  '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -142,12 +143,12 @@ export interface FileRouteTypes {
     | '/checkout-complete'
     | '/quiz'
     | '/result'
-    | '/unsubscribe'
     | '/notes'
     | '/plan/$day'
     | '/plan/'
     | '/api/public/emails/daily'
     | '/api/public/payments/webhook'
+    | '/lovable/email/transactional/preview'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -156,12 +157,12 @@ export interface FileRouteTypes {
     | '/checkout-complete'
     | '/quiz'
     | '/result'
-    | '/unsubscribe'
     | '/notes'
     | '/plan/$day'
     | '/plan'
     | '/api/public/emails/daily'
     | '/api/public/payments/webhook'
+    | '/lovable/email/transactional/preview'
   id:
     | '__root__'
     | '/'
@@ -171,12 +172,12 @@ export interface FileRouteTypes {
     | '/checkout-complete'
     | '/quiz'
     | '/result'
-    | '/unsubscribe'
     | '/_authenticated/notes'
     | '/_authenticated/plan/$day'
     | '/_authenticated/plan/'
     | '/api/public/emails/daily'
     | '/api/public/payments/webhook'
+    | '/lovable/email/transactional/preview'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -187,9 +188,9 @@ export interface RootRouteChildren {
   CheckoutCompleteRoute: typeof CheckoutCompleteRoute
   QuizRoute: typeof QuizRoute
   ResultRoute: typeof ResultRoute
-  UnsubscribeRoute: typeof UnsubscribeRoute
   ApiPublicEmailsDailyRoute: typeof ApiPublicEmailsDailyRoute
   ApiPublicPaymentsWebhookRoute: typeof ApiPublicPaymentsWebhookRoute
+  LovableEmailTransactionalPreviewRoute: typeof LovableEmailTransactionalPreviewRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -243,13 +244,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ResultRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/unsubscribe': {
-      id: '/unsubscribe'
-      path: '/unsubscribe'
-      fullPath: '/unsubscribe'
-      preLoaderRoute: typeof UnsubscribeRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/_authenticated/notes': {
       id: '/_authenticated/notes'
       path: '/notes'
@@ -285,6 +279,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicPaymentsWebhookRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/lovable/email/transactional/preview': {
+      id: '/lovable/email/transactional/preview'
+      path: '/lovable/email/transactional/preview'
+      fullPath: '/lovable/email/transactional/preview'
+      preLoaderRoute: typeof LovableEmailTransactionalPreviewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -311,9 +312,9 @@ const rootRouteChildren: RootRouteChildren = {
   CheckoutCompleteRoute: CheckoutCompleteRoute,
   QuizRoute: QuizRoute,
   ResultRoute: ResultRoute,
-  UnsubscribeRoute: UnsubscribeRoute,
   ApiPublicEmailsDailyRoute: ApiPublicEmailsDailyRoute,
   ApiPublicPaymentsWebhookRoute: ApiPublicPaymentsWebhookRoute,
+  LovableEmailTransactionalPreviewRoute: LovableEmailTransactionalPreviewRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
