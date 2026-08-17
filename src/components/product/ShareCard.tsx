@@ -76,7 +76,7 @@ export function ShareCard({ text, reference, translation }: Props) {
     if (!canvas) return;
     const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, "image/png"));
     if (!blob) return;
-    const file = new File([blob], `plainly-${reference.replace(/\s+/g, "-").toLowerCase()}.png`, {
+    const file = new File([blob], `bibleroutine-${reference.replace(/\s+/g, "-").toLowerCase()}.png`, {
       type: "image/png",
     });
     const nav = navigator as Navigator & {
