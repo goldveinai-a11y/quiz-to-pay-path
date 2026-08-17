@@ -7,17 +7,18 @@ import { Faq } from "@/components/landing/Faq";
 import { SiteFooter } from "@/components/landing/SiteFooter";
 import { StartButton } from "@/components/landing/StartButton";
 import { ArtBlock } from "@/components/art/ArtBlock";
+import { useReturningReader } from "@/lib/auth/useReturningReader";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Plainly — understand the Bible in 7 minutes a day" },
+      { title: "BibleRoutine — understand the Bible in 7 minutes a day" },
       {
         name: "description",
         content:
           "Take the 2-minute quiz and get a 30-day Bible reading plan matched to your tradition, your pace and what you're going through.",
       },
-      { property: "og:title", content: "Plainly — understand the Bible in 7 minutes a day" },
+      { property: "og:title", content: "BibleRoutine — understand the Bible in 7 minutes a day" },
       {
         property: "og:description",
         content: "A 30-day Bible plan built around your tradition, your pace and your questions.",
@@ -30,11 +31,12 @@ export const Route = createFileRoute("/")({
 });
 
 function Index() {
+  useReturningReader();
   return (
     <main className="min-h-screen bg-background">
       <header className="border-b border-border">
         <div className="mx-auto flex h-14 w-full max-w-[560px] items-center justify-center px-5">
-          <span className="font-serif text-[20px] tracking-tight text-ink">Plainly</span>
+          <span className="font-serif text-[20px] tracking-tight text-ink">BibleRoutine</span>
         </div>
       </header>
 
@@ -43,7 +45,7 @@ function Index() {
 
       <section className="bg-parchment py-14">
         <div className="mx-auto w-full max-w-[560px] px-5">
-          <h2 className="text-center text-[26px] leading-tight text-ink">Why people choose Plainly</h2>
+          <h2 className="text-center text-[26px] leading-tight text-ink">Why people choose BibleRoutine</h2>
           <p className="mx-auto mb-10 mt-2 max-w-[400px] text-center text-[14px] text-muted-foreground">
             Short daily readings, real explanation, no theology degree required
           </p>

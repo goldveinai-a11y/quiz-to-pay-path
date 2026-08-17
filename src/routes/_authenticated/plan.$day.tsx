@@ -15,10 +15,10 @@ import type { SessionDay, WordNote } from "@/lib/product/types";
 export const Route = createFileRoute("/_authenticated/plan/$day")({
   head: () => ({
     meta: [
-      { title: "Today's session — Plainly" },
+      { title: "Today's session — BibleRoutine" },
       { name: "description", content: "One passage, one insight, one question. About seven minutes." },
       { name: "robots", content: "noindex" },
-      { property: "og:title", content: "Today's session — Plainly" },
+      { property: "og:title", content: "Today's session — BibleRoutine" },
       { property: "og:description", content: "One passage, one insight, one question." },
       { property: "og:type", content: "article" },
       { name: "twitter:card", content: "summary" },

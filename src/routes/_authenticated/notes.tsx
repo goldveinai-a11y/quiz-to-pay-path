@@ -7,10 +7,10 @@ import { getMyNotes } from "@/lib/product/product.functions";
 export const Route = createFileRoute("/_authenticated/notes")({
   head: () => ({
     meta: [
-      { title: "My notes — Plainly" },
+      { title: "My notes — BibleRoutine" },
       { name: "description", content: "Everything you wrote across your 30 days, in one place." },
       { name: "robots", content: "noindex" },
-      { property: "og:title", content: "My notes — Plainly" },
+      { property: "og:title", content: "My notes — BibleRoutine" },
       { property: "og:description", content: "Everything you wrote across your 30 days." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },

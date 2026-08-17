@@ -1,24 +1,35 @@
+import { Link } from "@tanstack/react-router";
+
 export function SiteFooter() {
   return (
     <footer className="bg-ink px-5 py-12 text-background">
       <div className="mx-auto w-full max-w-[560px]">
-        <p className="font-serif text-[22px] tracking-tight">Plainly</p>
+        <p className="font-serif text-[22px] tracking-tight">BibleRoutine</p>
         <p className="mt-3 max-w-[420px] text-[14px] leading-relaxed opacity-70">
-          The Bible, plainly. A daily reading plan built around your tradition, your pace and your
-          questions.
+          Seven minutes a day. A daily Bible reading routine built around your tradition, your pace
+          and your questions.
         </p>
         <div className="mt-6 flex flex-wrap gap-x-6 gap-y-2 text-[13px] opacity-70">
-          <a href="/privacy" className="underline underline-offset-4">
+          <Link to="/privacy" className="underline underline-offset-4">
             Privacy Policy
-          </a>
-          <a href="/terms" className="underline underline-offset-4">
+          </Link>
+          <Link to="/terms" className="underline underline-offset-4">
             Terms of Use
-          </a>
-          <a href="mailto:hello@plainly.app" className="underline underline-offset-4">
-            hello@plainly.app
+          </Link>
+          <Link to="/refund" className="underline underline-offset-4">
+            Refunds
+          </Link>
+          <Link to="/contact" className="underline underline-offset-4">
+            Contact
+          </Link>
+          <a href="mailto:hello@bibleroutine.app" className="underline underline-offset-4">
+            hello@bibleroutine.app
           </a>
         </div>
-        <p className="mt-8 text-[12px] opacity-50">2026 © Plainly. All rights reserved.</p>
+        <p className="mt-8 text-[12px] opacity-50">
+          Scripture quoted from the public-domain WEB, KJV and ASV translations.
+        </p>
+        <p className="mt-2 text-[12px] opacity-50">2026 © BibleRoutine. All rights reserved.</p>
       </div>
     </footer>
   );

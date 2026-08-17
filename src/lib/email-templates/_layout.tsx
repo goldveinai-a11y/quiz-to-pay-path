@@ -79,7 +79,7 @@ export const Shell = ({ preview, title, children, quote, cta }: ShellProps) => (
     <Preview>{preview}</Preview>
     <Body style={main}>
       <Container style={container}>
-        <Text style={kicker}>Plainly</Text>
+        <Text style={kicker}>BibleRoutine</Text>
         <Heading style={heading}>{title}</Heading>
         {children}
         {quote ? (

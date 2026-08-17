@@ -15,7 +15,7 @@ export function SocialProof() {
         ))}
       </div>
       <p className="mt-3 text-[14px] text-muted-foreground">
-        Over 40 000 people read the Bible daily with Plainly
+        Over 40 000 people read the Bible daily with BibleRoutine
       </p>
     </section>
   );

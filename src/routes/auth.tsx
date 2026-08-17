@@ -9,10 +9,10 @@ export const Route = createFileRoute("/auth")({
   ssr: false,
   head: () => ({
     meta: [
-      { title: "Sign in — Plainly" },
+      { title: "Sign in — BibleRoutine" },
       { name: "description", content: "Open your 30-day Bible plan with a link sent to your email." },
       { name: "robots", content: "noindex" },
-      { property: "og:title", content: "Sign in — Plainly" },
+      { property: "og:title", content: "Sign in — BibleRoutine" },
       { property: "og:description", content: "Open your 30-day Bible plan." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
@@ -75,7 +75,7 @@ function AuthPage() {
   return (
     <main className="grid min-h-screen place-items-center px-5 py-12">
       <div className="w-full max-w-[420px]">
-        <p className="eyebrow text-muted-foreground">Plainly</p>
+        <p className="eyebrow text-muted-foreground">BibleRoutine</p>
         <h1 className="mt-2 font-serif text-3xl font-semibold">Open your plan</h1>
 
         {checking ? (

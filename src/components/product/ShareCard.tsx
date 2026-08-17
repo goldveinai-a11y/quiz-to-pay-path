@@ -48,7 +48,7 @@ export function ShareCard({ text, reference, translation }: Props) {
     ctx.fillStyle = "rgba(28,25,23,0.55)";
     ctx.font = "600 24px Georgia, serif";
     ctx.letterSpacing = "6px";
-    ctx.fillText("PLAINLY", 110, 150);
+    ctx.fillText("BIBLEROUTINE", 110, 150);
     ctx.letterSpacing = "0px";
 
     const body = text.length > 260 ? `${text.slice(0, 257)}…` : text;
@@ -76,7 +76,7 @@ export function ShareCard({ text, reference, translation }: Props) {
     if (!canvas) return;
     const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, "image/png"));
     if (!blob) return;
-    const file = new File([blob], `plainly-${reference.replace(/\s+/g, "-").toLowerCase()}.png`, {
+    const file = new File([blob], `bibleroutine-${reference.replace(/\s+/g, "-").toLowerCase()}.png`, {
       type: "image/png",
     });
     const nav = navigator as Navigator & {

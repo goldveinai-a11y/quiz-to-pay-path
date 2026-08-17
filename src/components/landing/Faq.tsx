@@ -7,7 +7,7 @@ import {
 
 const ITEMS = [
   {
-    q: "What is Plainly?",
+    q: "What is BibleRoutine?",
     a: "A daily Bible reading app. Each day you get a short passage, a plain-English explanation, and the key word from the original Hebrew or Greek.",
   },
   {
@@ -16,7 +16,7 @@ const ITEMS = [
   },
   {
     q: "Which translation do you use?",
-    a: "You choose. Plainly works alongside the translation you already read, and shows the original wording when it matters.",
+    a: "You choose. BibleRoutine works alongside the translation you already read, and shows the original wording when it matters.",
   },
   {
     q: "Can I cancel anytime?",

@@ -4,6 +4,7 @@ import { QuizChrome } from "@/components/quiz/QuizChrome";
 import { StepRenderer } from "@/components/quiz/StepRenderer";
 import { steps, SECTIONS } from "@/lib/quiz/steps";
 import { captureUtm, useAnswers } from "@/lib/quiz/store";
+import { useReturningReader } from "@/lib/auth/useReturningReader";
 
 export const Route = createFileRoute("/quiz")({
   head: () => ({
@@ -29,6 +30,7 @@ export const Route = createFileRoute("/quiz")({
 
 function QuizPage() {
   const navigate = useNavigate();
+  useReturningReader();
   const { answers, setAnswer, hydrated } = useAnswers();
   const [index, setIndex] = useState(0);
 

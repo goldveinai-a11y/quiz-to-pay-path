@@ -10,7 +10,7 @@ export const LANDING_REVIEWS: Review[] = [
   {
     name: "Olivia",
     face: faceOlivia,
-    text: "I read the Bible for years and quietly understood almost none of it. Plainly explains the verse and the word behind it — in seven minutes I actually get it.",
+    text: "I read the Bible for years and quietly understood almost none of it. BibleRoutine explains the verse and the word behind it — in seven minutes I actually get it.",
   },
   {
     name: "Marcus",

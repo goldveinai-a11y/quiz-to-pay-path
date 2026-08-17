@@ -16,7 +16,7 @@ export function Reviews() {
   return (
     <section className="mx-auto w-full max-w-[560px] px-5 py-12">
       <h2 className="text-center text-[26px] leading-tight text-ink">
-        See how Plainly changes reading
+        See how BibleRoutine changes reading
       </h2>
       <p className="mx-auto mt-2 max-w-[400px] text-center text-[14px] text-muted-foreground">
         Real notes from people who finally stayed in the text
@@ -29,7 +29,7 @@ export function Reviews() {
             <div className="mt-4 flex items-center gap-3">
               <img
                 src={r.face}
-                alt={`${r.name}, Plainly reader`}
+                alt={`${r.name}, BibleRoutine reader`}
                 loading="lazy"
                 width={128}
                 height={128}

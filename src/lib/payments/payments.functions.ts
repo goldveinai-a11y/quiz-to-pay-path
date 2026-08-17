@@ -45,7 +45,7 @@ export const createIntroCheckout = createServerFn({ method: "POST" })
             price_data: {
               currency: "usd",
               unit_amount: plan.amountCents,
-              product_data: { name: `Plainly — ${plan.label}` },
+              product_data: { name: `BibleRoutine — ${plan.label}` },
             },
           },
           {
@@ -57,7 +57,7 @@ export const createIntroCheckout = createServerFn({ method: "POST" })
                 interval: renewal.interval,
                 interval_count: renewal.intervalCount,
               },
-              product_data: { name: "Plainly — continued access" },
+              product_data: { name: "BibleRoutine — continued access" },
             },
           },
         ],
