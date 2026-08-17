@@ -19,7 +19,7 @@ export function BeforeAfter({
         </span>
       </div>
       <div className="px-5 pb-5 pt-7">
-        <p className="eyebrow text-terra">With Plainly</p>
+        <p className="eyebrow text-terra">With BibleRoutine</p>
         <p className="mt-2 font-serif text-[16px] leading-[1.6] text-ink">{after}</p>
       </div>
       <p className="border-t border-border px-5 py-3 font-mono text-[10px] uppercase tracking-wider text-faint">

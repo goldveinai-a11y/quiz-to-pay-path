@@ -25,7 +25,7 @@ export function QuizChrome({
           <ChevronLeft className="h-5 w-5" />
         </button>
         <span className="flex-1 text-center font-serif text-[17px] font-semibold tracking-tight">
-          Plainly
+          BibleRoutine
         </span>
         <span className="w-9 text-right font-mono text-[11px] text-muted-foreground">
           {index + 1}/{total}

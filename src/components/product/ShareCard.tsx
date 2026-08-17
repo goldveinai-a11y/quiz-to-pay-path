@@ -48,7 +48,7 @@ export function ShareCard({ text, reference, translation }: Props) {
     ctx.fillStyle = "rgba(28,25,23,0.55)";
     ctx.font = "600 24px Georgia, serif";
     ctx.letterSpacing = "6px";
-    ctx.fillText("PLAINLY", 110, 150);
+    ctx.fillText("BIBLEROUTINE", 110, 150);
     ctx.letterSpacing = "0px";
 
     const body = text.length > 260 ? `${text.slice(0, 257)}…` : text;

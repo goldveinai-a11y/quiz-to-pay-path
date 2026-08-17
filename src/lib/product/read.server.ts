@@ -481,8 +481,8 @@ export async function changePlan(
         recurring: { interval: renewal.interval, interval_count: renewal.intervalCount },
         lookup_key: lookupKey,
         transfer_lookup_key: true,
-        nickname: `Plainly — continued access (${target.label})`,
-        product_data: { name: "Plainly — continued access" },
+        nickname: `BibleRoutine — continued access (${target.label})`,
+        product_data: { name: "BibleRoutine — continued access" },
       }));
 
     const subscription = await stripe.subscriptions.retrieve(current.provider_subscription_id);

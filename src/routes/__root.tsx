@@ -77,12 +77,12 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Plainly — the Bible, plainly" },
+      { title: "BibleRoutine — the Bible, plainly" },
       {
         name: "description",
         content: "A 30-day Bible plan built around your tradition, your pace and your questions.",
       },
-      { property: "og:title", content: "Plainly — the Bible, plainly" },
+      { property: "og:title", content: "BibleRoutine — the Bible, plainly" },
       { property: "og:description", content: "Seven minutes a day. Every verse, plainly." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },

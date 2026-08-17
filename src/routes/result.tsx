@@ -382,7 +382,7 @@ function ResultPage() {
                 <figcaption className="mt-3 flex items-center gap-2.5 font-mono text-[10px] uppercase tracking-wider text-faint">
                   <img
                     src={r.face}
-                    alt={`${r.name}, Plainly reader`}
+                    alt={`${r.name}, BibleRoutine reader`}
                     loading="lazy"
                     width={128}
                     height={128}

@@ -20,10 +20,10 @@ import { cn } from "@/lib/utils";
 export const Route = createFileRoute("/_authenticated/plan/")({
   head: () => ({
     meta: [
-      { title: "My plan — Plainly" },
+      { title: "My plan — BibleRoutine" },
       { name: "description", content: "Your 30-day reading plan, one session a day." },
       { name: "robots", content: "noindex" },
-      { property: "og:title", content: "My plan — Plainly" },
+      { property: "og:title", content: "My plan — BibleRoutine" },
       { property: "og:description", content: "Your 30-day reading plan, one session a day." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
@@ -78,7 +78,7 @@ function PlanPage() {
   return (
     <main className="mx-auto max-w-[480px] px-5 pb-20 pt-6">
       <header className="flex items-center justify-between">
-        <p className="eyebrow text-muted-foreground">Plainly</p>
+        <p className="eyebrow text-muted-foreground">BibleRoutine</p>
         <div className="flex items-center gap-4">
           {data.streak.current > 0 ? (
             <span className="eyebrow flex items-center gap-1.5 text-terra">

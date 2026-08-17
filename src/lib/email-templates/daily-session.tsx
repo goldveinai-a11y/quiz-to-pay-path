@@ -35,7 +35,7 @@ const Email = ({
 export const template = {
   component: Email,
   subject: (data: Record<string, any>) =>
-    `Day ${data['day'] ?? 1} is open — ${data['title'] ?? 'Plainly'}`,
+    `Day ${data['day'] ?? 1} is open — ${data['title'] ?? 'BibleRoutine'}`,
   displayName: 'Daily session',
   previewData: {
     day: 3,

@@ -28,7 +28,7 @@ const Email = ({ day = 1, quote = '', reference = '', planUrl = '#' }: Props) =>
 export const template = {
   component: Email,
   subject: (data: Record<string, any>) =>
-    `Day ${data['day'] ?? 1} is still waiting — ${data['title'] ?? 'Plainly'}`,
+    `Day ${data['day'] ?? 1} is still waiting — ${data['title'] ?? 'BibleRoutine'}`,
   displayName: 'Win-back nudge',
   previewData: {
     day: 5,

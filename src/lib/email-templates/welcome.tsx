@@ -26,7 +26,7 @@ const Email = ({ name, bookTitle = 'your plan', signInUrl = '#' }: Props) => (
 
 export const template = {
   component: Email,
-  subject: 'Day 1 is open — Plainly',
+  subject: 'Day 1 is open — BibleRoutine',
   displayName: 'Welcome — Day 1 is open',
   previewData: { bookTitle: 'The Gospel of John', signInUrl: 'https://www.bibleroutine.app/plan/1' },
 } satisfies TemplateEntry

@@ -12,10 +12,10 @@ export const Route = createFileRoute("/checkout-complete")({
   }),
   head: () => ({
     meta: [
-      { title: "Opening your plan — Plainly" },
+      { title: "Opening your plan — BibleRoutine" },
       { name: "description", content: "Your 30 days are being prepared." },
       { name: "robots", content: "noindex" },
-      { property: "og:title", content: "Opening your plan — Plainly" },
+      { property: "og:title", content: "Opening your plan — BibleRoutine" },
       { property: "og:description", content: "Your 30 days are being prepared." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
@@ -52,7 +52,7 @@ function CheckoutReturn() {
   return (
     <main className="grid min-h-screen place-items-center px-6 text-center">
       <div>
-        <p className="eyebrow text-muted-foreground">Plainly</p>
+        <p className="eyebrow text-muted-foreground">BibleRoutine</p>
         <h1 className="mt-3 font-serif text-3xl">
           {error ? "Something went wrong" : "Setting up your 30 days"}
         </h1>
