@@ -314,6 +314,21 @@ function PlanPage() {
           <LogOut className="h-3.5 w-3.5" /> Sign out
         </button>
       </section>
+
+      <nav className="mt-6 flex flex-wrap justify-center gap-x-5 gap-y-2 pb-2 text-[12px] text-muted-foreground">
+        <Link to="/terms" className="underline underline-offset-4">
+          Terms
+        </Link>
+        <Link to="/privacy" className="underline underline-offset-4">
+          Privacy
+        </Link>
+        <Link to="/refund" className="underline underline-offset-4">
+          Refunds
+        </Link>
+        <Link to="/contact" className="underline underline-offset-4">
+          Contact
+        </Link>
+      </nav>
     </main>
   );
 }
