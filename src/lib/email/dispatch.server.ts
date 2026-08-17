@@ -155,15 +155,16 @@ export async function runDailyDispatch(origin?: string): Promise<Summary> {
     if (total > 0 && done.size >= total) {
       if (pref.milestone && !(await alreadySent(plan.user_id, "finish", null))) {
         const notes = (progress ?? []).filter((p) => p.note && p.note.trim()).length;
-        const result = await sendEmail(
+        const result = await deliver(
+          "plan-finished",
           pref.email,
-          finishEmail({
+          {
             bookTitle: BOOK_TITLES[plan.book_slug] ?? plan.book_slug,
             sessions: done.size,
             notes,
             reviewUrl: `${base}/plan?review=1`,
-            unsubscribeUrl: unsubscribeUrl(base, pref.unsubscribe_token),
-          }),
+          },
+          `plan-finished-${plan.user_id}-${plan.book_slug}`,
         );
         if (result.delivered) {
           await record(plan.user_id, "finish", null);
@@ -203,16 +204,17 @@ export async function runDailyDispatch(origin?: string): Promise<Summary> {
           .eq("verse", nextSession.verse_start)
           .maybeSingle();
         const link = await signInLink(pref.email, `${base}/plan/${nextSession.day_number}`);
-        const result = await sendEmail(
+        const result = await deliver(
+          "win-back",
           pref.email,
-          winBackEmail({
+          {
             day: nextSession.day_number,
             title: nextSession.title,
             quote: verse?.text ?? nextSession.setup,
             reference: nextSession.reference,
             planUrl: link,
-            unsubscribeUrl: unsubscribeUrl(base, pref.unsubscribe_token),
-          }),
+          },
+          `win-back-${plan.user_id}-${nextSession.day_number}-${new Date().toISOString().slice(0, 10)}`,
         );
         if (result.delivered) {
           await record(plan.user_id, "win_back", nextSession.day_number);
@@ -225,17 +227,18 @@ export async function runDailyDispatch(origin?: string): Promise<Summary> {
     // Today's session, once per day number.
     if (pref.daily_reminder && !(await alreadySent(plan.user_id, "daily", nextSession.day_number))) {
       const link = await signInLink(pref.email, `${base}/plan/${nextSession.day_number}`);
-      const result = await sendEmail(
+      const result = await deliver(
+        "daily-session",
         pref.email,
-        dailyEmail({
+        {
           day: nextSession.day_number,
           title: nextSession.title,
           reference: nextSession.reference,
           setup: nextSession.setup,
           streak: plan.streak_count ?? 0,
           planUrl: link,
-          unsubscribeUrl: unsubscribeUrl(base, pref.unsubscribe_token),
-        }),
+        },
+        `daily-${plan.user_id}-${nextSession.day_number}`,
       );
       if (result.delivered) {
         await record(plan.user_id, "daily", nextSession.day_number);
