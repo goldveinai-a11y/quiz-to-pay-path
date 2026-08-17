@@ -14,6 +14,7 @@ import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as CheckoutRouteImport } from './routes/checkout'
 import { Route as CheckoutCompleteRouteImport } from './routes/checkout-complete'
+import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as QuizRouteImport } from './routes/quiz'
 import { Route as ResultRouteImport } from './routes/result'
 import { Route as AuthenticatedNotesRouteImport } from './routes/_authenticated/notes'
@@ -45,6 +46,11 @@ const CheckoutRoute = CheckoutRouteImport.update({
 const CheckoutCompleteRoute = CheckoutCompleteRouteImport.update({
   id: '/checkout-complete',
   path: '/checkout-complete',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PrivacyRoute = PrivacyRouteImport.update({
+  id: '/privacy',
+  path: '/privacy',
   getParentRoute: () => rootRouteImport,
 } as any)
 const QuizRoute = QuizRouteImport.update({
@@ -95,6 +101,7 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/checkout': typeof CheckoutRoute
   '/checkout-complete': typeof CheckoutCompleteRoute
+  '/privacy': typeof PrivacyRoute
   '/quiz': typeof QuizRoute
   '/result': typeof ResultRoute
   '/notes': typeof AuthenticatedNotesRoute
@@ -109,6 +116,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/checkout': typeof CheckoutRoute
   '/checkout-complete': typeof CheckoutCompleteRoute
+  '/privacy': typeof PrivacyRoute
   '/quiz': typeof QuizRoute
   '/result': typeof ResultRoute
   '/notes': typeof AuthenticatedNotesRoute
@@ -125,6 +133,7 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/checkout': typeof CheckoutRoute
   '/checkout-complete': typeof CheckoutCompleteRoute
+  '/privacy': typeof PrivacyRoute
   '/quiz': typeof QuizRoute
   '/result': typeof ResultRoute
   '/_authenticated/notes': typeof AuthenticatedNotesRoute
@@ -141,6 +150,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/checkout'
     | '/checkout-complete'
+    | '/privacy'
     | '/quiz'
     | '/result'
     | '/notes'
@@ -155,6 +165,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/checkout'
     | '/checkout-complete'
+    | '/privacy'
     | '/quiz'
     | '/result'
     | '/notes'
@@ -170,6 +181,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/checkout'
     | '/checkout-complete'
+    | '/privacy'
     | '/quiz'
     | '/result'
     | '/_authenticated/notes'
@@ -186,6 +198,7 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   CheckoutRoute: typeof CheckoutRoute
   CheckoutCompleteRoute: typeof CheckoutCompleteRoute
+  PrivacyRoute: typeof PrivacyRoute
   QuizRoute: typeof QuizRoute
   ResultRoute: typeof ResultRoute
   ApiPublicEmailsDailyRoute: typeof ApiPublicEmailsDailyRoute
@@ -228,6 +241,13 @@ declare module '@tanstack/react-router' {
       path: '/checkout-complete'
       fullPath: '/checkout-complete'
       preLoaderRoute: typeof CheckoutCompleteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/privacy': {
+      id: '/privacy'
+      path: '/privacy'
+      fullPath: '/privacy'
+      preLoaderRoute: typeof PrivacyRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/quiz': {
@@ -310,6 +330,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   CheckoutRoute: CheckoutRoute,
   CheckoutCompleteRoute: CheckoutCompleteRoute,
+  PrivacyRoute: PrivacyRoute,
   QuizRoute: QuizRoute,
   ResultRoute: ResultRoute,
   ApiPublicEmailsDailyRoute: ApiPublicEmailsDailyRoute,
