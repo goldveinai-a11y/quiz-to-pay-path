@@ -17,7 +17,14 @@ export interface TemplateEntry {
  *   import { template as welcomeTemplate } from './welcome'
  *   // then add to TEMPLATES: 'welcome': welcomeTemplate
  */
+import { template as welcomeTemplate } from './welcome'
+import { template as dailySessionTemplate } from './daily-session'
+import { template as winBackTemplate } from './win-back'
+import { template as planFinishedTemplate } from './plan-finished'
+
 export const TEMPLATES: Record<string, TemplateEntry> = {
-  // Add templates here as they are created, e.g.:
-  // 'welcome': welcomeTemplate,
+  welcome: welcomeTemplate,
+  'daily-session': dailySessionTemplate,
+  'win-back': winBackTemplate,
+  'plan-finished': planFinishedTemplate,
 }
