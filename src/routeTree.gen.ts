@@ -14,9 +14,12 @@ import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as CheckoutRouteImport } from './routes/checkout'
 import { Route as CheckoutCompleteRouteImport } from './routes/checkout-complete'
+import { Route as ContactRouteImport } from './routes/contact'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as QuizRouteImport } from './routes/quiz'
+import { Route as RefundRouteImport } from './routes/refund'
 import { Route as ResultRouteImport } from './routes/result'
+import { Route as TermsRouteImport } from './routes/terms'
 import { Route as AuthenticatedNotesRouteImport } from './routes/_authenticated/notes'
 import { Route as AuthenticatedPlanIndexRouteImport } from './routes/_authenticated/plan.index'
 import { Route as AuthenticatedPlanDayRouteImport } from './routes/_authenticated/plan.$day'
@@ -48,6 +51,11 @@ const CheckoutCompleteRoute = CheckoutCompleteRouteImport.update({
   path: '/checkout-complete',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ContactRoute = ContactRouteImport.update({
+  id: '/contact',
+  path: '/contact',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PrivacyRoute = PrivacyRouteImport.update({
   id: '/privacy',
   path: '/privacy',
@@ -58,9 +66,19 @@ const QuizRoute = QuizRouteImport.update({
   path: '/quiz',
   getParentRoute: () => rootRouteImport,
 } as any)
+const RefundRoute = RefundRouteImport.update({
+  id: '/refund',
+  path: '/refund',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ResultRoute = ResultRouteImport.update({
   id: '/result',
   path: '/result',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TermsRoute = TermsRouteImport.update({
+  id: '/terms',
+  path: '/terms',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedNotesRoute = AuthenticatedNotesRouteImport.update({
@@ -101,9 +119,12 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/checkout': typeof CheckoutRoute
   '/checkout-complete': typeof CheckoutCompleteRoute
+  '/contact': typeof ContactRoute
   '/privacy': typeof PrivacyRoute
   '/quiz': typeof QuizRoute
+  '/refund': typeof RefundRoute
   '/result': typeof ResultRoute
+  '/terms': typeof TermsRoute
   '/notes': typeof AuthenticatedNotesRoute
   '/plan/$day': typeof AuthenticatedPlanDayRoute
   '/plan/': typeof AuthenticatedPlanIndexRoute
@@ -116,9 +137,12 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/checkout': typeof CheckoutRoute
   '/checkout-complete': typeof CheckoutCompleteRoute
+  '/contact': typeof ContactRoute
   '/privacy': typeof PrivacyRoute
   '/quiz': typeof QuizRoute
+  '/refund': typeof RefundRoute
   '/result': typeof ResultRoute
+  '/terms': typeof TermsRoute
   '/notes': typeof AuthenticatedNotesRoute
   '/plan/$day': typeof AuthenticatedPlanDayRoute
   '/plan': typeof AuthenticatedPlanIndexRoute
@@ -133,9 +157,12 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/checkout': typeof CheckoutRoute
   '/checkout-complete': typeof CheckoutCompleteRoute
+  '/contact': typeof ContactRoute
   '/privacy': typeof PrivacyRoute
   '/quiz': typeof QuizRoute
+  '/refund': typeof RefundRoute
   '/result': typeof ResultRoute
+  '/terms': typeof TermsRoute
   '/_authenticated/notes': typeof AuthenticatedNotesRoute
   '/_authenticated/plan/$day': typeof AuthenticatedPlanDayRoute
   '/_authenticated/plan/': typeof AuthenticatedPlanIndexRoute
@@ -150,9 +177,12 @@ export interface FileRouteTypes {
     | '/auth'
     | '/checkout'
     | '/checkout-complete'
+    | '/contact'
     | '/privacy'
     | '/quiz'
+    | '/refund'
     | '/result'
+    | '/terms'
     | '/notes'
     | '/plan/$day'
     | '/plan/'
@@ -165,9 +195,12 @@ export interface FileRouteTypes {
     | '/auth'
     | '/checkout'
     | '/checkout-complete'
+    | '/contact'
     | '/privacy'
     | '/quiz'
+    | '/refund'
     | '/result'
+    | '/terms'
     | '/notes'
     | '/plan/$day'
     | '/plan'
@@ -181,9 +214,12 @@ export interface FileRouteTypes {
     | '/auth'
     | '/checkout'
     | '/checkout-complete'
+    | '/contact'
     | '/privacy'
     | '/quiz'
+    | '/refund'
     | '/result'
+    | '/terms'
     | '/_authenticated/notes'
     | '/_authenticated/plan/$day'
     | '/_authenticated/plan/'
@@ -198,9 +234,12 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   CheckoutRoute: typeof CheckoutRoute
   CheckoutCompleteRoute: typeof CheckoutCompleteRoute
+  ContactRoute: typeof ContactRoute
   PrivacyRoute: typeof PrivacyRoute
   QuizRoute: typeof QuizRoute
+  RefundRoute: typeof RefundRoute
   ResultRoute: typeof ResultRoute
+  TermsRoute: typeof TermsRoute
   ApiPublicEmailsDailyRoute: typeof ApiPublicEmailsDailyRoute
   ApiPublicPaymentsWebhookRoute: typeof ApiPublicPaymentsWebhookRoute
   LovableEmailTransactionalPreviewRoute: typeof LovableEmailTransactionalPreviewRoute
@@ -243,6 +282,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CheckoutCompleteRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/contact': {
+      id: '/contact'
+      path: '/contact'
+      fullPath: '/contact'
+      preLoaderRoute: typeof ContactRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/privacy': {
       id: '/privacy'
       path: '/privacy'
@@ -257,11 +303,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof QuizRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/refund': {
+      id: '/refund'
+      path: '/refund'
+      fullPath: '/refund'
+      preLoaderRoute: typeof RefundRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/result': {
       id: '/result'
       path: '/result'
       fullPath: '/result'
       preLoaderRoute: typeof ResultRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/terms': {
+      id: '/terms'
+      path: '/terms'
+      fullPath: '/terms'
+      preLoaderRoute: typeof TermsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/notes': {
@@ -330,9 +390,12 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   CheckoutRoute: CheckoutRoute,
   CheckoutCompleteRoute: CheckoutCompleteRoute,
+  ContactRoute: ContactRoute,
   PrivacyRoute: PrivacyRoute,
   QuizRoute: QuizRoute,
+  RefundRoute: RefundRoute,
   ResultRoute: ResultRoute,
+  TermsRoute: TermsRoute,
   ApiPublicEmailsDailyRoute: ApiPublicEmailsDailyRoute,
   ApiPublicPaymentsWebhookRoute: ApiPublicPaymentsWebhookRoute,
   LovableEmailTransactionalPreviewRoute: LovableEmailTransactionalPreviewRoute,
