@@ -1,8 +1,25 @@
 import { createClient } from "@supabase/supabase-js";
 import type { Database } from "@/integrations/supabase/types";
 import { BOOK_TITLES } from "@/lib/product/types";
-import { sendEmail } from "./send.server";
-import { dailyEmail, finishEmail, welcomeEmail, winBackEmail } from "./templates";
+import { sendTemplateEmail } from "@/lib/email-templates/send-email";
+
+type SendResult = { delivered: boolean; reason?: string };
+
+/** One delivery point: managed sending, suppression handled by the platform. */
+async function deliver(
+  templateName: string,
+  to: string,
+  templateData: Record<string, unknown>,
+  idempotencyKey: string,
+): Promise<SendResult> {
+  try {
+    const result = await sendTemplateEmail(templateName, to, { templateData, idempotencyKey });
+    return result.sent ? { delivered: true } : { delivered: false, reason: result.reason };
+  } catch (error) {
+    console.error(`[email] ${templateName} failed for ${to}:`, error);
+    return { delivered: false, reason: "send_failed" };
+  }
+}
 
 type Admin = ReturnType<typeof createClient<Database>>;
 
@@ -17,7 +34,7 @@ export function siteUrl(origin?: string | null) {
   if (origin?.startsWith("http")) return origin.replace(/\/$/, "");
   const configured = process.env["SITE_URL"];
   if (configured) return configured.replace(/\/$/, "");
-  return "https://quiz-to-pay-path.lovable.app";
+  return "https://www.bibleroutine.app";
 }
 
 /** Every reader has one preferences row; it also carries the unsubscribe key. */
@@ -60,10 +77,6 @@ async function signInLink(email: string, redirectTo: string) {
   return data?.properties?.action_link ?? redirectTo;
 }
 
-function unsubscribeUrl(base: string, token: string) {
-  return `${base}/unsubscribe?token=${token}`;
-}
-
 /** Sent once, right after payment. Carries the only key back into the product. */
 export async function sendWelcome(userId: string, email: string, bookSlug: string, origin?: string) {
   const base = siteUrl(origin);
@@ -72,13 +85,11 @@ export async function sendWelcome(userId: string, email: string, bookSlug: strin
   if (await alreadySent(userId, "welcome", null)) return { delivered: false, reason: "duplicate" };
 
   const link = await signInLink(email, `${base}/plan/1`);
-  const result = await sendEmail(
+  const result = await deliver(
+    "welcome",
     email,
-    welcomeEmail({
-      bookTitle: BOOK_TITLES[bookSlug] ?? "your plan",
-      signInUrl: link,
-      unsubscribeUrl: unsubscribeUrl(base, prefs.unsubscribe_token),
-    }),
+    { bookTitle: BOOK_TITLES[bookSlug] ?? "your plan", signInUrl: link },
+    `welcome-${userId}`,
   );
   if (result.delivered) await record(userId, "welcome", null);
   return result;
