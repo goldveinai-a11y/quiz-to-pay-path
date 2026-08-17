@@ -7,6 +7,7 @@ import { Faq } from "@/components/landing/Faq";
 import { SiteFooter } from "@/components/landing/SiteFooter";
 import { StartButton } from "@/components/landing/StartButton";
 import { ArtBlock } from "@/components/art/ArtBlock";
+import { useReturningReader } from "@/lib/auth/useReturningReader";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -30,6 +31,7 @@ export const Route = createFileRoute("/")({
 });
 
 function Index() {
+  useReturningReader();
   return (
     <main className="min-h-screen bg-background">
       <header className="border-b border-border">
