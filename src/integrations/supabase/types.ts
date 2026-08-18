@@ -152,6 +152,36 @@ export type Database = {
         }
         Relationships: []
       }
+      session_questions: {
+        Row: {
+          answer: string
+          book_slug: string
+          created_at: string
+          day_number: number
+          id: string
+          question: string
+          user_id: string
+        }
+        Insert: {
+          answer: string
+          book_slug: string
+          created_at?: string
+          day_number: number
+          id?: string
+          question: string
+          user_id: string
+        }
+        Update: {
+          answer?: string
+          book_slug?: string
+          created_at?: string
+          day_number?: number
+          id?: string
+          question?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       study_sessions: {
         Row: {
           art_tone: string
