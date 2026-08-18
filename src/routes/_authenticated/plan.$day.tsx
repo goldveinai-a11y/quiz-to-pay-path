@@ -521,6 +521,7 @@ function PassageStep({ data, onWord }: { data: SessionDay; onWord: (w: WordNote)
       <p className="eyebrow text-muted-foreground">
         {data.reference} · {data.translation}
       </p>
+      <p className="eyebrow mt-1 text-muted-foreground">About {data.minutes} minutes</p>
       <h1 className="mt-3 font-serif text-2xl font-semibold leading-snug">{data.title}</h1>
       <div className="mt-6 space-y-4">
         {data.verses.map((v) => (
