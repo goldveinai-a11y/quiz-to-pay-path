@@ -2,8 +2,10 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { X, ArrowRight, Check } from "lucide-react";
+import { X, ArrowRight, Check, MessageCircleQuestion, Loader2 } from "lucide-react";
 import { getSessionDay, saveStep, completeDay } from "@/lib/product/product.functions";
+import { askAboutPassage } from "@/lib/product/ask.functions";
+import { Input } from "@/components/ui/input";
 import { Plate } from "@/components/product/Plate";
 import { WordSheet } from "@/components/product/WordSheet";
 import { ShareCard } from "@/components/product/ShareCard";
@@ -165,6 +167,7 @@ function SessionPage() {
           <QuestionStep data={data} note={note} onNote={setNote} />
         ) : null}
         {current === "close" ? <CloseStep data={data} done={done} /> : null}
+        {current === "close" ? null : <AskPanel data={data} />}
       </div>
 
       <div className="sticky bottom-0 bg-background pb-2 pt-3">
