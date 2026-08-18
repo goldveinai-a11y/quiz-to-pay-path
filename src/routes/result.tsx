@@ -291,6 +291,13 @@ function ResultPage() {
               after="'Word' is logos — the reason and order behind everything. John is claiming the logic of the universe has a face."
             />
           </div>
+          <button
+            type="button"
+            onClick={go}
+            className="mt-8 h-[54px] w-full rounded-2xl bg-ink text-[15px] font-medium text-background shadow-s2 transition hover:bg-ink/90"
+          >
+            Start my plan · ${selectedPlan.price.toFixed(2)}
+          </button>
         </section>
 
         {/* Product */}
