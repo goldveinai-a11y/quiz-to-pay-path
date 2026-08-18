@@ -269,6 +269,21 @@ export async function buildSessionDay(userId: string, day: number, scoped?: Admi
     alsoIn: w.also_in,
   }));
 
+  // Seeded books ship one lexicon note with the session itself.
+  const seedWord = (session.word_study ?? null) as
+    | { word: string; original: string; language: string; gloss: string; body: string }
+    | null;
+  if (seedWord?.word && !words.some((w) => w.word.toLowerCase() === seedWord.word.toLowerCase())) {
+    words.push({
+      word: seedWord.word,
+      original: seedWord.original,
+      transliteration: seedWord.gloss,
+      language: seedWord.language,
+      meaning: seedWord.body,
+      alsoIn: null,
+    });
+  }
+
   const { data: next } = await supabase
     .from("study_sessions")
     .select("day_number, title")
@@ -288,6 +303,29 @@ export async function buildSessionDay(userId: string, day: number, scoped?: Admi
   const readings = (session.divide_readings ?? null) as DivideReading[] | null;
   const showDivide = Boolean(session.divides && plan.show_both_sides !== false && readings?.length);
 
+  const crossReference = (session.cross_reference ?? null) as CrossReference | null;
+  const application = (session.application ?? null) as Application | null;
+  const allVoices = ((session.voices ?? []) as TraditionVoice[]).filter((v) => v?.reading);
+  const tradition = (plan.tradition ?? "unsure").toLowerCase();
+  const own = allVoices.find((v) => v.tradition.toLowerCase().startsWith(tradition.slice(0, 6)));
+  // Show every tradition when the reader asked for both sides or never told us.
+  const voices = plan.show_both_sides !== false || !own ? allVoices : [own];
+
+  const wordCount =
+    [
+      session.insight_body,
+      session.context_body,
+      application?.body ?? "",
+      crossReference?.note ?? "",
+      voices.map((v) => v.reading).join(" "),
+      (verses ?? []).map((v) => v.text).join(" "),
+    ]
+      .join(" ")
+      .trim()
+      .split(/\s+/).length;
+  // ~130 words a minute for close reading, plus a minute for the question.
+  const minutes = Math.max(3, Math.round(wordCount / 130) + 1);
+
   return {
     day,
     bookTitle: BOOK_TITLES[plan.book_slug] ?? plan.book_slug,
@@ -306,6 +344,10 @@ export async function buildSessionDay(userId: string, day: number, scoped?: Admi
       year: session.insight_year,
     },
     context: session.context_body,
+    crossReference,
+    application,
+    voices,
+    minutes,
     divide: showDivide
       ? {
           question: session.divide_question ?? "How traditions read this",
