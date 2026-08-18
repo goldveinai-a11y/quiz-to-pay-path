@@ -58,7 +58,8 @@ export async function fulfillPurchase(input: PurchaseInput) {
       user_id: userId,
       book_slug: bookSlug,
       book_title: BOOK_TITLES[bookSlug] ?? "John in 30 days",
-      translation: "WEB",
+      // Only public-domain texts, and only ones we actually hold in full.
+      translation: input.tradition === "baptist" ? "KJV" : "WEB",
       tradition: input.tradition ?? "unsure",
       voices: input.voices ?? "classic",
       show_both_sides: input.showBothSides ?? true,
