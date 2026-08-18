@@ -311,7 +311,6 @@ export async function buildSessionDay(userId: string, day: number, scoped?: Admi
       ? {
           day: next.day_number,
           title: next.title,
-          unlockAt: unlockAt(startedAt, next.day_number).toISOString(),
         }
       : null,
   };
