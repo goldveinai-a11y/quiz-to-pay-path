@@ -292,6 +292,13 @@ export async function buildSessionDay(userId: string, day: number, scoped?: Admi
     .eq("day_number", day + 1)
     .maybeSingle();
 
+  const { data: highlightRows } = await supabase
+    .from("verse_highlights")
+    .select("verse")
+    .eq("user_id", userId)
+    .eq("book_slug", plan.book_slug)
+    .eq("day_number", day);
+
   // One short comprehension question, seeded per session. Never generated at runtime.
   const { data: quizRow } = await supabase
     .from("session_quiz")
@@ -368,6 +375,7 @@ export async function buildSessionDay(userId: string, day: number, scoped?: Admi
         : null,
     step: progress?.step ?? 1,
     note: progress?.note ?? null,
+    highlights: (highlightRows ?? []).map((h) => h.verse),
     done: Boolean(progress?.completed_at),
     next: next
       ? {
