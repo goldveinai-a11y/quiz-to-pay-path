@@ -80,24 +80,21 @@ export async function fulfillPurchase(input: PurchaseInput) {
     provider_subscription_id: input.providerSubscriptionId ?? null,
   });
 
-  // The one email: it confirms the charge and carries the only key back in.
+  // Exactly ONE sign-in token per purchase: minting a second one invalidates
+  // the first, which is what used to break the emailed link and code.
   const origin = input.origin?.startsWith("http") ? input.origin : undefined;
-  await admin.auth.signInWithOtp({
+  const link = await admin.auth.admin.generateLink({
+    type: "magiclink",
     email,
-    options: {
-      shouldCreateUser: false,
-      ...(origin ? { emailRedirectTo: `${origin}/auth/callback` } : {}),
-    },
+    ...(origin ? { options: { redirectTo: `${origin}/auth` } } : {}),
   });
-
-  // Immediate, same-tab sign-in for the person who just paid.
-  const link = await admin.auth.admin.generateLink({ type: "magiclink", email });
   const tokenHash = link.data?.properties?.hashed_token ?? null;
+  const actionLink = link.data?.properties?.action_link ?? null;
 
   // Reminders are on from day one, with a one-click way out in every email.
   const { ensurePreferences, sendWelcome } = await import("@/lib/email/dispatch.server");
   await ensurePreferences(userId, email);
-  await sendWelcome(userId, email, bookSlug, origin);
+  await sendWelcome(userId, email, bookSlug, origin, actionLink);
 
   return { tokenHash, planId: planRow.id, bookSlug };
 }

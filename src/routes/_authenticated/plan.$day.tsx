@@ -2,7 +2,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { X, ArrowRight, Check, MessageCircleQuestion, Loader2 } from "lucide-react";
+import { X, ArrowLeft, ArrowRight, Check, MessageCircleQuestion, Loader2 } from "lucide-react";
 import { getSessionDay, saveStep, completeDay } from "@/lib/product/product.functions";
 import { askAboutPassage } from "@/lib/product/ask.functions";
 import { Input } from "@/components/ui/input";
@@ -124,6 +124,34 @@ function SessionPage() {
 
   const close = () => navigate({ to: "/plan" });
 
+  // Reading should feel like turning pages: tap the edge, swipe, or use arrows.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement | null;
+      if (target && /INPUT|TEXTAREA/.test(target.tagName)) return;
+      if (e.key === "ArrowLeft") go(index - 1);
+      if (e.key === "ArrowRight") go(index + 1);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  });
+
+  const touch = useRef<{ x: number; y: number } | null>(null);
+  const onTouchStart = (e: React.TouchEvent) => {
+    const t = e.touches[0]!;
+    touch.current = { x: t.clientX, y: t.clientY };
+  };
+  const onTouchEnd = (e: React.TouchEvent) => {
+    const start = touch.current;
+    touch.current = null;
+    if (!start) return;
+    const t = e.changedTouches[0]!;
+    const dx = t.clientX - start.x;
+    const dy = t.clientY - start.y;
+    if (Math.abs(dx) < 60 || Math.abs(dy) > Math.abs(dx)) return;
+    go(dx > 0 ? index - 1 : index + 1);
+  };
+
   const finish = async () => {
     await finishDay({ data: { day, note: note.trim() ? note.trim() : null } });
     setDone(true);
@@ -142,6 +170,15 @@ function SessionPage() {
         >
           <X className="h-5 w-5" />
         </button>
+        <button
+          type="button"
+          aria-label="Previous screen"
+          onClick={() => go(index - 1)}
+          disabled={index === 0}
+          className="grid h-9 w-9 shrink-0 place-items-center rounded-full text-muted-foreground transition-colors duration-150 hover:bg-secondary disabled:opacity-30"
+        >
+          <ArrowLeft className="h-5 w-5" />
+        </button>
         <div className="flex flex-1 gap-1.5">
           {steps.map((s, i) => (
             <span
@@ -158,16 +195,33 @@ function SessionPage() {
         </span>
       </header>
 
-      <div className="flex-1 py-8">
-        {current === "passage" ? <PassageStep data={data} onWord={setOpenWord} /> : null}
-        {current === "insight" ? <InsightStep data={data} /> : null}
-        {current === "context" ? <ContextStep data={data} /> : null}
-        {current === "divide" ? <DivideStep data={data} /> : null}
-        {current === "question" ? (
-          <QuestionStep data={data} note={note} onNote={setNote} />
-        ) : null}
-        {current === "close" ? <CloseStep data={data} done={done} /> : null}
-        {current === "close" ? null : <AskPanel data={data} />}
+      <div className="relative flex-1 py-8" onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
+        {/* Edge tap zones sit behind the content, so words and inputs still win. */}
+        <button
+          type="button"
+          aria-label="Previous screen"
+          tabIndex={-1}
+          onClick={() => go(index - 1)}
+          className="absolute inset-y-0 left-0 z-0 w-1/5 cursor-default"
+        />
+        <button
+          type="button"
+          aria-label="Next screen"
+          tabIndex={-1}
+          onClick={() => go(index + 1)}
+          className="absolute inset-y-0 right-0 z-0 w-1/5 cursor-default"
+        />
+        <div className="relative z-10">
+          {current === "passage" ? <PassageStep data={data} onWord={setOpenWord} /> : null}
+          {current === "insight" ? <InsightStep data={data} /> : null}
+          {current === "context" ? <ContextStep data={data} /> : null}
+          {current === "divide" ? <DivideStep data={data} /> : null}
+          {current === "question" ? (
+            <QuestionStep data={data} note={note} onNote={setNote} />
+          ) : null}
+          {current === "close" ? <CloseStep data={data} done={done} /> : null}
+          {current === "close" ? null : <AskPanel data={data} />}
+        </div>
       </div>
 
       <div className="sticky bottom-0 bg-background pb-2 pt-3">

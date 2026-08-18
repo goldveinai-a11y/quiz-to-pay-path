@@ -67,24 +67,30 @@ async function record(userId: string, kind: string, day: number | null) {
   await admin.from("email_events").insert({ user_id: userId, kind, day_number: day });
 }
 
-async function signInLink(email: string, redirectTo: string) {
-  const admin = await db();
-  const { data } = await admin.auth.admin.generateLink({
-    type: "magiclink",
-    email,
-    options: { redirectTo },
-  });
-  return data?.properties?.action_link ?? redirectTo;
+/**
+ * Recurring emails deep-link straight into the plan — they never mint a
+ * sign-in token. Minting one here would silently invalidate the code the
+ * reader is holding from their own sign-in email.
+ */
+function planLink(base: string, day?: number) {
+  return day ? `${base}/plan/${day}` : `${base}/plan`;
 }
 
 /** Sent once, right after payment. Carries the only key back into the product. */
-export async function sendWelcome(userId: string, email: string, bookSlug: string, origin?: string) {
+export async function sendWelcome(
+  userId: string,
+  email: string,
+  bookSlug: string,
+  origin?: string,
+  signInUrl?: string | null,
+) {
   const base = siteUrl(origin);
   const prefs = await ensurePreferences(userId, email);
   if (!prefs) return { delivered: false, reason: "no_preferences" };
   if (await alreadySent(userId, "welcome", null)) return { delivered: false, reason: "duplicate" };
 
-  const link = await signInLink(email, `${base}/plan/1`);
+  // The caller mints exactly one link for the purchase; we reuse it here.
+  const link = signInUrl || planLink(base, 1);
   const result = await deliver(
     "welcome",
     email,
@@ -226,7 +232,7 @@ export async function runDailyDispatch(origin?: string): Promise<Summary> {
           .eq("chapter", nextSession.chapter)
           .eq("verse", nextSession.verse_start)
           .maybeSingle();
-        const link = await signInLink(pref.email, `${base}/plan/${nextSession.day_number}`);
+        const link = planLink(base, nextSession.day_number);
         const result = await deliver(
           "win-back",
           pref.email,
@@ -249,7 +255,7 @@ export async function runDailyDispatch(origin?: string): Promise<Summary> {
 
     // Today's session, once per day number.
     if (pref.daily_reminder && !(await alreadySent(plan.user_id, "daily", nextSession.day_number))) {
-      const link = await signInLink(pref.email, `${base}/plan/${nextSession.day_number}`);
+      const link = planLink(base, nextSession.day_number);
       const result = await deliver(
         "daily-session",
         pref.email,
