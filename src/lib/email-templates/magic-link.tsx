@@ -1,68 +1,54 @@
 import * as React from 'react'
-
-import {
-  Body,
-  Button,
-  Container,
-  Head,
-  Heading,
-  Html,
-  Preview,
-  Text,
-} from '@react-email/components'
+import { Section, Text } from '@react-email/components'
+import { Shell, paragraph } from './_layout'
 
 interface MagicLinkEmailProps {
-  siteName: string
+  siteName?: string
   confirmationUrl: string
+  token?: string
 }
 
-export const MagicLinkEmail = ({
-  siteName,
-  confirmationUrl,
-}: MagicLinkEmailProps) => (
-  <Html lang="en" dir="ltr">
-    <Head />
-    <Preview>Your login link for {siteName}</Preview>
-    <Body style={main}>
-      <Container style={container}>
-        <Heading style={h1}>Your login link</Heading>
-        <Text style={text}>
-          Click the button below to log in to {siteName}. This link will expire
-          shortly.
-        </Text>
-        <Button style={button} href={confirmationUrl}>
-          Log In
-        </Button>
-        <Text style={footer}>
-          If you didn't request this link, you can safely ignore this email.
-        </Text>
-      </Container>
-    </Body>
-  </Html>
+export const MagicLinkEmail = ({ confirmationUrl, token }: MagicLinkEmailProps) => (
+  <Shell
+    preview="Your sign-in link for BibleRoutine"
+    title="Open your plan"
+    cta={{ label: 'Open my plan', href: confirmationUrl }}
+  >
+    <Text style={paragraph}>
+      No password needed. The button below signs you in on this device.
+    </Text>
+    {token ? (
+      <Section style={codeBox}>
+        <Text style={codeLabel}>Or type this code</Text>
+        <Text style={codeText}>{token}</Text>
+      </Section>
+    ) : null}
+    <Text style={footer}>
+      The link and code expire shortly. If you didn't ask for this, ignore this email.
+    </Text>
+  </Shell>
 )
 
 export default MagicLinkEmail
 
-const main = { backgroundColor: '#ffffff', fontFamily: 'Arial, sans-serif' }
-const container = { padding: '20px 25px' }
-const h1 = {
-  fontSize: '22px',
-  fontWeight: 'bold' as const,
-  color: '#000000',
-  margin: '0 0 20px',
+const codeBox = {
+  margin: '22px 0 0',
+  padding: '16px 18px',
+  backgroundColor: '#ffffff',
+  borderRadius: '12px',
 }
-const text = {
-  fontSize: '14px',
-  color: '#55575d',
-  lineHeight: '1.5',
-  margin: '0 0 25px',
+const codeLabel = {
+  margin: 0,
+  fontSize: '12px',
+  letterSpacing: '.18em',
+  textTransform: 'uppercase' as const,
+  color: '#6b6257',
 }
-const button = {
-  backgroundColor: '#000000',
-  color: '#ffffff',
-  fontSize: '14px',
-  borderRadius: '8px',
-  padding: '12px 20px',
-  textDecoration: 'none',
+const codeText = {
+  margin: '6px 0 0',
+  fontSize: '30px',
+  letterSpacing: '.28em',
+  fontWeight: 600,
+  color: '#1c1917',
 }
-const footer = { fontSize: '12px', color: '#999999', margin: '30px 0 0' }
+const footer = { margin: '26px 0 0', fontSize: '12px', lineHeight: '1.6', color: '#6b6257' }
