@@ -2,7 +2,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { X, ArrowLeft, ArrowRight, Check, MessageCircleQuestion, Loader2 } from "lucide-react";
+import { X, ArrowLeft, ArrowRight, Check, Flame, MessageCircleQuestion, Loader2 } from "lucide-react";
 import { getSessionDay, saveStep, completeDay } from "@/lib/product/product.functions";
 import { askAboutPassage } from "@/lib/product/ask.functions";
 import { Input } from "@/components/ui/input";
@@ -172,10 +172,7 @@ function SessionPage() {
     const result = await finishDay({ data: { day, note: note.trim() ? note.trim() : null } });
     setDone(true);
     await queryClient.invalidateQueries({ queryKey: ["my-plan"] });
-    const streak =
-      result && typeof result === "object" && "streak" in result
-        ? Number((result as { streak?: number }).streak) || 0
-        : 0;
+    const streak = result?.streak?.current ?? 0;
     setCelebrate({ streak, left: Math.max(0, 30 - day) });
   };
 
