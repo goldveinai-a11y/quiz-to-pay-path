@@ -109,11 +109,13 @@ function SessionPage() {
   const steps = useMemo(() => {
     const list: SessionStep[] = ["passage", "insight", "context"];
     if (data?.divide) list.push("divide");
+    if (data?.voices?.length) list.push("voices");
+    if (data?.application) list.push("apply");
     list.push("question");
     if (data?.quiz) list.push("quiz");
     list.push("close");
     return list;
-  }, [data?.divide, data?.quiz]);
+  }, [data?.divide, data?.quiz, data?.voices, data?.application]);
 
   useEffect(() => {
     if (!data || restored.current) return;
@@ -235,6 +237,8 @@ function SessionPage() {
           {current === "insight" ? <InsightStep data={data} /> : null}
           {current === "context" ? <ContextStep data={data} /> : null}
           {current === "divide" ? <DivideStep data={data} /> : null}
+          {current === "voices" ? <VoicesStep data={data} /> : null}
+          {current === "apply" ? <ApplyStep data={data} /> : null}
           {current === "question" ? (
             <QuestionStep data={data} note={note} onNote={setNote} />
           ) : null}
@@ -289,7 +293,51 @@ function SessionPage() {
   );
 }
 
-type SessionStep = "passage" | "insight" | "context" | "divide" | "question" | "quiz" | "close";
+type SessionStep =
+  | "passage"
+  | "insight"
+  | "context"
+  | "divide"
+  | "voices"
+  | "apply"
+  | "question"
+  | "quiz"
+  | "close";
+
+/** Commentary in the reader's own tradition — or all of them, if they asked. */
+function VoicesStep({ data }: { data: SessionDay }) {
+  if (!data.voices.length) return null;
+  const single = data.voices.length === 1;
+  return (
+    <section>
+      <p className="eyebrow text-muted-foreground">
+        {single ? `Read in your tradition` : "How the traditions read it"}
+      </p>
+      <div className="mt-5 space-y-4">
+        {data.voices.map((v) => (
+          <div key={v.tradition} className="rounded-2xl border border-border bg-card p-5">
+            <p className="eyebrow text-terra">{v.tradition}</p>
+            <p className="mt-2 text-[0.95rem] leading-relaxed">{v.reading}</p>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+/** The bridge from the passage to this week — the promise of a 7-minute session. */
+function ApplyStep({ data }: { data: SessionDay }) {
+  if (!data.application) return null;
+  return (
+    <section>
+      <p className="eyebrow text-muted-foreground">What it means today</p>
+      <h2 className="mt-3 font-serif text-2xl font-semibold leading-snug">
+        {data.application.prompt}
+      </h2>
+      <p className="mt-4 text-[0.95rem] leading-relaxed">{data.application.body}</p>
+    </section>
+  );
+}
 
 /** One question, no score, no punishment — just a moment of active recall. */
 function QuizStep({ data }: { data: SessionDay }) {
