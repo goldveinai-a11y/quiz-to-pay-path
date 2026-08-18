@@ -193,7 +193,7 @@ function ResultPage() {
         ) : null}
 
         {/* Plans */}
-        <section className="pt-11">
+        <section id="access" className="pt-11">
           <SectionTitle eyebrow="Step two">Choose your access</SectionTitle>
           <div className="mt-5 space-y-3">
             {PLANS.map((p) => {
