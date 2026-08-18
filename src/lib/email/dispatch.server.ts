@@ -111,6 +111,10 @@ export async function runDailyDispatch(origin?: string): Promise<Summary> {
     .select("id, user_id, book_slug, started_at, created_at, paused_until, streak_count")
     .eq("is_active", true);
 
+  // The streak belongs to the reader, not to one book.
+  const { data: states } = await admin.from("reader_state").select("user_id, streak_count");
+  const streakFor = new Map((states ?? []).map((s) => [s.user_id, s.streak_count ?? 0]));
+
   for (const plan of plans ?? []) {
     const prefs = await admin
       .from("email_preferences")
