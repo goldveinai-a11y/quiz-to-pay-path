@@ -510,9 +510,77 @@ export async function listNotes(userId: string, scoped?: Admin): Promise<SavedNo
     });
 }
 
-export async function switchBook(userId: string, bookSlug: string, scoped?: Admin) {
+/** Tapping a verse keeps it; tapping again lets it go. */
+export async function toggleHighlight(
+  userId: string,
+  day: number,
+  verse: number,
+  scoped?: Admin,
+) {
   const supabase = await db(scoped);
-  const slug = BOOK_TITLES[bookSlug] ? bookSlug : "john";
+  const plan = await activePlan(userId, scoped);
+  const { data: existing } = await supabase
+    .from("verse_highlights")
+    .select("id")
+    .eq("user_id", userId)
+    .eq("book_slug", plan.book_slug)
+    .eq("day_number", day)
+    .eq("verse", verse)
+    .maybeSingle();
+
+  if (existing) {
+    await supabase.from("verse_highlights").delete().eq("id", existing.id);
+    return { highlighted: false };
+  }
+
+  const { data: session } = await supabase
+    .from("study_sessions")
+    .select("book, chapter, reference")
+    .eq("book_slug", plan.book_slug)
+    .eq("day_number", day)
+    .maybeSingle();
+  if (!session) throw new Error("This session is not available.");
+
+  const { data: row } = await supabase
+    .from("verses")
+    .select("text")
+    .eq("translation", plan.translation)
+    .eq("book", session.book)
+    .eq("chapter", session.chapter)
+    .eq("verse", verse)
+    .maybeSingle();
+  if (!row) throw new Error("That verse is not part of this passage.");
+
+  await supabase.from("verse_highlights").insert({
+    user_id: userId,
+    book_slug: plan.book_slug,
+    day_number: day,
+    reference: `${session.reference.split(":")[0]}:${verse}`,
+    verse,
+    text: row.text,
+  });
+  return { highlighted: true };
+}
+
+/** Every verse the reader kept, newest first, for the Notes screen. */
+export async function listHighlights(userId: string, scoped?: Admin): Promise<SavedHighlight[]> {
+  const supabase = await db(scoped);
+  const plan = await activePlan(userId, scoped);
+  const { data } = await supabase
+    .from("verse_highlights")
+    .select("day_number, reference, verse, text")
+    .eq("user_id", userId)
+    .eq("book_slug", plan.book_slug)
+    .order("day_number", { ascending: false });
+  return (data ?? []).map((h) => ({
+    day: h.day_number,
+    reference: h.reference,
+    verse: h.verse,
+    text: h.text,
+  }));
+}
+
+export async function switchBook(userId: string, bookSlug: string, scoped?: Admin) {
   const supabase = await db(scoped);
   const slug = BOOK_TITLES[bookSlug] ? bookSlug : "john";
   // Reopen the reader's existing record for this book, never a fresh one.
