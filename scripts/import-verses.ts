@@ -22,7 +22,11 @@ for (const arg of args) {
   let total = 0;
   for (let c = 1; c <= chapters; c++) {
     const url = `https://bible-api.com/${encodeURIComponent(book)}+${c}?translation=web`;
-    const res = await fetch(url);
+    let res = await fetch(url);
+    for (let attempt = 0; attempt < 6 && res.status === 429; attempt++) {
+      await new Promise((r) => setTimeout(r, 15000 * (attempt + 1)));
+      res = await fetch(url);
+    }
     if (!res.ok) { console.error(`${book} ${c}: HTTP ${res.status}`); process.exit(1); }
     const json = (await res.json()) as { verses: { chapter: number; verse: number; text: string }[] };
     const rows = json.verses.map((v) => ({
