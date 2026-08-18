@@ -127,7 +127,6 @@ export async function runDailyDispatch(origin?: string): Promise<Summary> {
       continue;
     }
 
-    const startedAt = plan.started_at ?? plan.created_at;
     const { data: sessions } = await admin
       .from("study_sessions")
       .select("day_number, title, reference, setup, book, chapter, verse_start")
@@ -142,10 +141,10 @@ export async function runDailyDispatch(origin?: string): Promise<Summary> {
       (progress ?? []).filter((p) => p.completed_at).map((p) => p.day_number),
     );
     const total = (sessions ?? []).length;
-    const unlockedDays = (sessions ?? []).filter(
-      (s) => new Date(startedAt).getTime() + (s.day_number - 1) * DAY_MS <= Date.now(),
+    // A day is open once the one before it is finished.
+    const nextSession = (sessions ?? []).find(
+      (s) => !done.has(s.day_number) && (s.day_number === 1 || done.has(s.day_number - 1)),
     );
-    const nextSession = unlockedDays.find((s) => !done.has(s.day_number));
     const lastTouch = (progress ?? [])
       .map((p) => (p.completed_at ? new Date(p.completed_at).getTime() : 0))
       .reduce((a, b) => Math.max(a, b), 0);
@@ -235,7 +234,7 @@ export async function runDailyDispatch(origin?: string): Promise<Summary> {
           title: nextSession.title,
           reference: nextSession.reference,
           setup: nextSession.setup,
-          streak: plan.streak_count ?? 0,
+          streak: streakFor.get(plan.user_id) ?? 0,
           planUrl: link,
         },
         `daily-${plan.user_id}-${nextSession.day_number}`,
