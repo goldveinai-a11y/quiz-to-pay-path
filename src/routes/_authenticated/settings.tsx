@@ -2,7 +2,13 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { LogOut } from "lucide-react";
-import { getAccess, cancelAccessNow, changePlanNow } from "@/lib/product/product.functions";
+import {
+  getAccess,
+  cancelAccessNow,
+  changePlanNow,
+  getMyPlan,
+  setMyTranslation,
+} from "@/lib/product/product.functions";
 import { getEmailPrefs, setEmailPrefs } from "@/lib/email/email.functions";
 import { Switch } from "@/components/ui/switch";
 import { supabase } from "@/integrations/supabase/client";
@@ -37,6 +43,9 @@ function SettingsPage() {
   const navigate = useNavigate();
   const { data: access } = useQuery({ queryKey: ["access"], queryFn: () => fetchAccess() });
   const { data: prefs } = useQuery({ queryKey: ["email-prefs"], queryFn: () => fetchPrefs() });
+  const fetchPlan = useServerFn(getMyPlan);
+  const saveTranslation = useServerFn(setMyTranslation);
+  const { data: plan } = useQuery({ queryKey: ["my-plan"], queryFn: () => fetchPlan() });
 
   const signOut = async () => {
     await queryClient.cancelQueries();
@@ -110,6 +119,32 @@ function SettingsPage() {
           )}
         </section>
       ) : null}
+
+      <section className="mt-4 rounded-2xl border border-border bg-card p-5">
+        <h2 className="font-serif text-lg">Translation</h2>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Both are public domain. WEB reads in today's English; KJV keeps the old cadence.
+        </p>
+        <div className="mt-3 flex gap-2">
+          {(["WEB", "KJV"] as const).map((t) => (
+            <button
+              key={t}
+              type="button"
+              onClick={async () => {
+                await saveTranslation({ data: { translation: t } });
+                await queryClient.invalidateQueries();
+              }}
+              className={`rounded-full border px-4 py-2 text-sm transition-colors duration-150 ${
+                plan?.translation === t
+                  ? "border-foreground bg-foreground text-background"
+                  : "border-border hover:bg-secondary"
+              }`}
+            >
+              {t}
+            </button>
+          ))}
+        </div>
+      </section>
 
       <section className="mt-4 rounded-2xl border border-border bg-card p-5">
         <div className="flex items-center justify-between gap-4">
