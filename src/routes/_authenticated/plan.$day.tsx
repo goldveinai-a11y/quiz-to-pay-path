@@ -581,6 +581,12 @@ function ContextStep({ data }: { data: SessionDay }) {
           </p>
         ))}
       </div>
+      {data.crossReference ? (
+        <div className="mt-6 rounded-2xl border border-border bg-card p-5">
+          <p className="eyebrow text-muted-foreground">See also · {data.crossReference.reference}</p>
+          <p className="mt-2 text-[0.95rem] leading-relaxed">{data.crossReference.note}</p>
+        </div>
+      ) : null}
     </section>
   );
 }
