@@ -182,6 +182,39 @@ export type Database = {
         }
         Relationships: []
       }
+      session_quiz: {
+        Row: {
+          book_slug: string
+          correct_index: number
+          created_at: string
+          day_number: number
+          explanation: string
+          id: string
+          options: Json
+          question: string
+        }
+        Insert: {
+          book_slug: string
+          correct_index: number
+          created_at?: string
+          day_number: number
+          explanation: string
+          id?: string
+          options: Json
+          question: string
+        }
+        Update: {
+          book_slug?: string
+          correct_index?: number
+          created_at?: string
+          day_number?: number
+          explanation?: string
+          id?: string
+          options?: Json
+          question?: string
+        }
+        Relationships: []
+      }
       study_sessions: {
         Row: {
           art_tone: string

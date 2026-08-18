@@ -2,7 +2,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { X, ArrowLeft, ArrowRight, Check, MessageCircleQuestion, Loader2 } from "lucide-react";
+import { X, ArrowLeft, ArrowRight, Check, Flame, MessageCircleQuestion, Loader2 } from "lucide-react";
 import { getSessionDay, saveStep, completeDay } from "@/lib/product/product.functions";
 import { askAboutPassage } from "@/lib/product/ask.functions";
 import { Input } from "@/components/ui/input";
@@ -88,6 +88,7 @@ function SessionPage() {
   const [note, setNote] = useState("");
   const [done, setDone] = useState(false);
   const [openWord, setOpenWord] = useState<WordNote | null>(null);
+  const [celebrate, setCelebrate] = useState<{ streak: number; left: number } | null>(null);
   const restored = useRef(false);
   // Kept above the loading early-return so hook order never changes.
   const goRef = useRef<(next: number) => void>(() => {});
@@ -108,9 +109,11 @@ function SessionPage() {
   const steps = useMemo(() => {
     const list: SessionStep[] = ["passage", "insight", "context"];
     if (data?.divide) list.push("divide");
-    list.push("question", "close");
+    list.push("question");
+    if (data?.quiz) list.push("quiz");
+    list.push("close");
     return list;
-  }, [data?.divide]);
+  }, [data?.divide, data?.quiz]);
 
   useEffect(() => {
     if (!data || restored.current) return;
@@ -166,11 +169,24 @@ function SessionPage() {
   };
 
   const finish = async () => {
-    await finishDay({ data: { day, note: note.trim() ? note.trim() : null } });
+    const result = await finishDay({ data: { day, note: note.trim() ? note.trim() : null } });
     setDone(true);
     await queryClient.invalidateQueries({ queryKey: ["my-plan"] });
-    navigate({ to: "/plan" });
+    const streak = result?.streak?.current ?? 0;
+    setCelebrate({ streak, left: Math.max(0, 30 - day) });
   };
+
+  if (celebrate) {
+    return (
+      <DayFinished
+        day={day}
+        streak={celebrate.streak}
+        left={celebrate.left}
+        data={data}
+        onHome={() => navigate({ to: "/plan" })}
+      />
+    );
+  }
 
   return (
     <main className="mx-auto flex min-h-screen max-w-[480px] flex-col px-5 pb-8 pt-4">
@@ -222,6 +238,7 @@ function SessionPage() {
           {current === "question" ? (
             <QuestionStep data={data} note={note} onNote={setNote} />
           ) : null}
+          {current === "quiz" ? <QuizStep data={data} /> : null}
           {current === "close" ? <CloseStep data={data} done={done} /> : null}
           {current === "close" ? null : <AskPanel data={data} />}
         </div>
@@ -272,7 +289,103 @@ function SessionPage() {
   );
 }
 
-type SessionStep = "passage" | "insight" | "context" | "divide" | "question" | "close";
+type SessionStep = "passage" | "insight" | "context" | "divide" | "question" | "quiz" | "close";
+
+/** One question, no score, no punishment — just a moment of active recall. */
+function QuizStep({ data }: { data: SessionDay }) {
+  const quiz = data.quiz;
+  const [picked, setPicked] = useState<number | null>(null);
+  if (!quiz) return null;
+  return (
+    <section>
+      <p className="eyebrow text-muted-foreground">Did it land?</p>
+      <h2 className="mt-3 font-serif text-2xl font-semibold leading-snug">{quiz.question}</h2>
+      <div className="mt-6 space-y-2.5">
+        {quiz.options.map((option, i) => {
+          const chosen = picked === i;
+          const correct = i === quiz.correctIndex;
+          const reveal = picked !== null;
+          return (
+            <button
+              key={option}
+              type="button"
+              disabled={reveal}
+              onClick={() => setPicked(i)}
+              className={cn(
+                "w-full rounded-2xl border px-4 py-3.5 text-left text-[0.95rem] leading-relaxed transition-colors duration-200",
+                reveal && correct
+                  ? "border-success/50 bg-success/10"
+                  : reveal && chosen
+                    ? "border-border bg-secondary/60 text-muted-foreground"
+                    : "border-border bg-card hover:bg-secondary/60",
+              )}
+            >
+              {option}
+            </button>
+          );
+        })}
+      </div>
+      {picked !== null ? (
+        <p className="mt-5 animate-fade-in rounded-2xl border border-border bg-card p-4 text-[0.95rem] leading-relaxed">
+          {picked === quiz.correctIndex ? "That's it. " : "Not quite. "}
+          {quiz.explanation}
+        </p>
+      ) : (
+        <p className="mt-5 text-sm text-muted-foreground">
+          Nothing is scored. Pick the one that fits what you just read.
+        </p>
+      )}
+    </section>
+  );
+}
+
+/** The one moment of quiet reward: the day closes and the streak rolls over. */
+function DayFinished({
+  day,
+  streak,
+  left,
+  data,
+  onHome,
+}: {
+  day: number;
+  streak: number;
+  left: number;
+  data: SessionDay;
+  onHome: () => void;
+}) {
+  const verse = data.verses[0];
+  return (
+    <main className="mx-auto flex min-h-screen max-w-[480px] flex-col justify-center px-5 py-10">
+      <div className="animate-fade-in">
+        <p className="eyebrow text-muted-foreground">Day {day} closed</p>
+        <h1 className="mt-3 font-serif text-4xl font-semibold leading-tight">{data.title}</h1>
+        {streak > 0 ? (
+          <p className="mt-6 flex items-baseline gap-2 text-terra">
+            <Flame className="h-6 w-6 shrink-0 self-center" />
+            <span key={streak} className="animate-scale-in font-serif text-5xl font-semibold">
+              {streak}
+            </span>
+            <span className="eyebrow">day{streak === 1 ? "" : "s"} in a row</span>
+          </p>
+        ) : null}
+        <p className="mt-4 text-sm text-muted-foreground">
+          {left > 0 ? `${left} day${left === 1 ? "" : "s"} left in ${data.bookTitle}.` : `That was the last day of ${data.bookTitle}.`}
+        </p>
+        {verse ? (
+          <div className="mt-8">
+            <ShareCard text={verse.text} reference={data.reference} translation={data.translation} />
+          </div>
+        ) : null}
+        <Button
+          onClick={onHome}
+          className="mt-8 h-13 w-full rounded-xl bg-ink py-4 text-base font-semibold text-background hover:bg-ink/90"
+        >
+          Back to today
+        </Button>
+      </div>
+    </main>
+  );
+}
 
 /** Ask anything about the passage — the promise the funnel makes. */
 function AskPanel({ data }: { data: SessionDay }) {

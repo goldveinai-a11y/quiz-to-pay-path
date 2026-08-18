@@ -275,6 +275,15 @@ export async function buildSessionDay(userId: string, day: number, scoped?: Admi
     .eq("day_number", day + 1)
     .maybeSingle();
 
+  // One short comprehension question, seeded per session. Never generated at runtime.
+  const { data: quizRow } = await supabase
+    .from("session_quiz")
+    .select("question, options, correct_index, explanation")
+    .eq("book_slug", plan.book_slug)
+    .eq("day_number", day)
+    .maybeSingle();
+  const quizOptions = Array.isArray(quizRow?.options) ? (quizRow.options as string[]) : [];
+
   const readings = (session.divide_readings ?? null) as DivideReading[] | null;
   const showDivide = Boolean(session.divides && plan.show_both_sides !== false && readings?.length);
 
@@ -304,6 +313,15 @@ export async function buildSessionDay(userId: string, day: number, scoped?: Admi
         }
       : null,
     question: session.question,
+    quiz:
+      quizRow && quizOptions.length >= 2
+        ? {
+            question: quizRow.question,
+            options: quizOptions,
+            correctIndex: quizRow.correct_index,
+            explanation: quizRow.explanation,
+          }
+        : null,
     step: progress?.step ?? 1,
     note: progress?.note ?? null,
     done: Boolean(progress?.completed_at),
