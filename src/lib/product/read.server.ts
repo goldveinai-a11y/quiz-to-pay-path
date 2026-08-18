@@ -128,22 +128,42 @@ export async function buildMyPlan(userId: string, scoped?: Admin): Promise<MyPla
   ]);
 
   const byDay = new Map((progress ?? []).map((p) => [p.day_number, p]));
-  const now = Date.now();
   const startedAt = plan.started_at ?? plan.created_at;
 
+  // A day opens as soon as the one before it is finished — the plan waits for
+  // the reader, never the clock.
+  let previousDone = true;
   const days: PlanDay[] = (sessions ?? []).map((s) => {
-    const at = unlockAt(startedAt, s.day_number);
     const p = byDay.get(s.day_number);
+    const done = Boolean(p?.completed_at);
+    const unlocked = previousDone;
+    previousDone = done;
     return {
       day: s.day_number,
       title: s.title,
       reference: s.reference,
-      unlockAt: at.toISOString(),
-      unlocked: at.getTime() <= now,
-      done: Boolean(p?.completed_at),
+      unlocked,
+      done,
       step: p?.step ?? 1,
     };
   });
+
+  const state = await readerState(userId, scoped);
+  const { data: allPlans } = await supabase
+    .from("user_plans")
+    .select("id, book_slug")
+    .eq("user_id", userId);
+  const otherIds = (allPlans ?? []).filter((p) => p.id !== plan.id).map((p) => p.id);
+  const { data: otherProgress } = otherIds.length
+    ? await supabase
+        .from("user_progress")
+        .select("plan_id, completed_at")
+        .in("plan_id", otherIds)
+        .not("completed_at", "is", null)
+    : { data: [] as { plan_id: string; completed_at: string | null }[] };
+  const doneByPlan = new Map<string, number>();
+  for (const row of otherProgress ?? [])
+    doneByPlan.set(row.plan_id, (doneByPlan.get(row.plan_id) ?? 0) + 1);
 
   const unlocked = days.filter((d) => d.unlocked);
   const finished = days.filter((d) => d.done).length;
@@ -166,10 +186,10 @@ export async function buildMyPlan(userId: string, scoped?: Admin): Promise<MyPla
     total: days.length,
     days,
     streak: {
-      current: plan.streak_count ?? 0,
-      longest: plan.longest_streak ?? 0,
-      todayDone: plan.last_completed_on === dayKey(new Date()),
-      freezesLeft: Math.max(0, MAX_FREEZES - (plan.freezes_used ?? 0)),
+      current: state.streak_count ?? 0,
+      longest: state.longest_streak ?? 0,
+      todayDone: state.last_completed_on === dayKey(new Date()),
+      freezesLeft: Math.max(0, MAX_FREEZES - (state.freezes_used ?? 0)),
     },
     notesCount: (progress ?? []).filter((p) => p.note && p.note.trim()).length,
     complete: days.length > 0 && finished >= days.length,
@@ -185,16 +205,24 @@ export async function buildMyPlan(userId: string, scoped?: Admin): Promise<MyPla
       : null,
     otherBooks: Object.entries(BOOK_TITLES)
       .filter(([slug]) => slug !== plan.book_slug)
-      .map(([slug, title]) => ({ slug, title })),
+      .map(([slug, title]) => {
+        const row = (allPlans ?? []).find((p) => p.book_slug === slug);
+        return { slug, title, finished: row ? (doneByPlan.get(row.id) ?? 0) : 0 };
+      }),
   };
 }
 
 export async function buildSessionDay(userId: string, day: number, scoped?: Admin): Promise<SessionDay> {
   const supabase = await db(scoped);
   const plan = await activePlan(userId, scoped);
-  const startedAt = plan.started_at ?? plan.created_at;
-  if (unlockAt(startedAt, day).getTime() > Date.now()) {
-    throw new Error("This day has not opened yet.");
+  if (day > 1) {
+    const { data: prev } = await supabase
+      .from("user_progress")
+      .select("completed_at")
+      .eq("plan_id", plan.id)
+      .eq("day_number", day - 1)
+      .maybeSingle();
+    if (!prev?.completed_at) throw new Error(`Finish day ${day - 1} first.`);
   }
 
   const { data: session } = await supabase
