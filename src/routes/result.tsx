@@ -64,6 +64,13 @@ function ResultPage() {
   }, []);
 
   const selectedPlan = useMemo(() => PLANS.find((p) => p.id === selected)!, [selected]);
+  const renewalDate = useMemo(() => {
+    const days = selected === "1-week" ? 7 : selected === "3-month" ? 90 : 30;
+    return new Date(Date.now() + days * 86400000).toLocaleDateString("en-US", {
+      month: "long",
+      day: "numeric",
+    });
+  }, [selected]);
 
   if (!plan) return <div className="min-h-screen bg-background" />;
 
