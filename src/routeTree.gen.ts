@@ -21,8 +21,10 @@ import { Route as RefundRouteImport } from './routes/refund'
 import { Route as ResultRouteImport } from './routes/result'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as AuthenticatedNotesRouteImport } from './routes/_authenticated/notes'
+import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 import { Route as AuthenticatedPlanIndexRouteImport } from './routes/_authenticated/plan.index'
 import { Route as AuthenticatedPlanDayRouteImport } from './routes/_authenticated/plan.$day'
+import { Route as AuthenticatedPlanAllRouteImport } from './routes/_authenticated/plan.all'
 import { Route as ApiPublicEmailsDailyRouteImport } from './routes/api/public/emails/daily'
 import { Route as ApiPublicPaymentsWebhookRouteImport } from './routes/api/public/payments/webhook'
 import { Route as LovableEmailAuthPreviewRouteImport } from './routes/lovable/email/auth/preview'
@@ -88,6 +90,11 @@ const AuthenticatedNotesRoute = AuthenticatedNotesRouteImport.update({
   path: '/notes',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedPlanIndexRoute = AuthenticatedPlanIndexRouteImport.update({
   id: '/plan/',
   path: '/plan/',
@@ -96,6 +103,11 @@ const AuthenticatedPlanIndexRoute = AuthenticatedPlanIndexRouteImport.update({
 const AuthenticatedPlanDayRoute = AuthenticatedPlanDayRouteImport.update({
   id: '/plan/$day',
   path: '/plan/$day',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedPlanAllRoute = AuthenticatedPlanAllRouteImport.update({
+  id: '/plan/all',
+  path: '/plan/all',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const ApiPublicEmailsDailyRoute = ApiPublicEmailsDailyRouteImport.update({
@@ -138,7 +150,9 @@ export interface FileRoutesByFullPath {
   '/result': typeof ResultRoute
   '/terms': typeof TermsRoute
   '/notes': typeof AuthenticatedNotesRoute
+  '/settings': typeof AuthenticatedSettingsRoute
   '/plan/$day': typeof AuthenticatedPlanDayRoute
+  '/plan/all': typeof AuthenticatedPlanAllRoute
   '/plan/': typeof AuthenticatedPlanIndexRoute
   '/api/public/emails/daily': typeof ApiPublicEmailsDailyRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
@@ -158,7 +172,9 @@ export interface FileRoutesByTo {
   '/result': typeof ResultRoute
   '/terms': typeof TermsRoute
   '/notes': typeof AuthenticatedNotesRoute
+  '/settings': typeof AuthenticatedSettingsRoute
   '/plan/$day': typeof AuthenticatedPlanDayRoute
+  '/plan/all': typeof AuthenticatedPlanAllRoute
   '/plan': typeof AuthenticatedPlanIndexRoute
   '/api/public/emails/daily': typeof ApiPublicEmailsDailyRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
@@ -180,7 +196,9 @@ export interface FileRoutesById {
   '/result': typeof ResultRoute
   '/terms': typeof TermsRoute
   '/_authenticated/notes': typeof AuthenticatedNotesRoute
+  '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/plan/$day': typeof AuthenticatedPlanDayRoute
+  '/_authenticated/plan/all': typeof AuthenticatedPlanAllRoute
   '/_authenticated/plan/': typeof AuthenticatedPlanIndexRoute
   '/api/public/emails/daily': typeof ApiPublicEmailsDailyRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
@@ -202,7 +220,9 @@ export interface FileRouteTypes {
     | '/result'
     | '/terms'
     | '/notes'
+    | '/settings'
     | '/plan/$day'
+    | '/plan/all'
     | '/plan/'
     | '/api/public/emails/daily'
     | '/api/public/payments/webhook'
@@ -222,7 +242,9 @@ export interface FileRouteTypes {
     | '/result'
     | '/terms'
     | '/notes'
+    | '/settings'
     | '/plan/$day'
+    | '/plan/all'
     | '/plan'
     | '/api/public/emails/daily'
     | '/api/public/payments/webhook'
@@ -243,7 +265,9 @@ export interface FileRouteTypes {
     | '/result'
     | '/terms'
     | '/_authenticated/notes'
+    | '/_authenticated/settings'
     | '/_authenticated/plan/$day'
+    | '/_authenticated/plan/all'
     | '/_authenticated/plan/'
     | '/api/public/emails/daily'
     | '/api/public/payments/webhook'
@@ -357,6 +381,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedNotesRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/settings': {
+      id: '/_authenticated/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof AuthenticatedSettingsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/plan/': {
       id: '/_authenticated/plan/'
       path: '/plan'
@@ -369,6 +400,13 @@ declare module '@tanstack/react-router' {
       path: '/plan/$day'
       fullPath: '/plan/$day'
       preLoaderRoute: typeof AuthenticatedPlanDayRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/plan/all': {
+      id: '/_authenticated/plan/all'
+      path: '/plan/all'
+      fullPath: '/plan/all'
+      preLoaderRoute: typeof AuthenticatedPlanAllRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/api/public/emails/daily': {
@@ -411,13 +449,17 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedNotesRoute: typeof AuthenticatedNotesRoute
+  AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
   AuthenticatedPlanDayRoute: typeof AuthenticatedPlanDayRoute
+  AuthenticatedPlanAllRoute: typeof AuthenticatedPlanAllRoute
   AuthenticatedPlanIndexRoute: typeof AuthenticatedPlanIndexRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedNotesRoute: AuthenticatedNotesRoute,
+  AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
   AuthenticatedPlanDayRoute: AuthenticatedPlanDayRoute,
+  AuthenticatedPlanAllRoute: AuthenticatedPlanAllRoute,
   AuthenticatedPlanIndexRoute: AuthenticatedPlanIndexRoute,
 }
 
