@@ -202,24 +202,26 @@ function SessionPage() {
           aria-label="Previous screen"
           tabIndex={-1}
           onClick={() => go(index - 1)}
-          className="absolute inset-y-0 left-0 -z-10 w-1/4 cursor-default"
+          className="absolute inset-y-0 left-0 z-0 w-1/5 cursor-default"
         />
         <button
           type="button"
           aria-label="Next screen"
           tabIndex={-1}
           onClick={() => go(index + 1)}
-          className="absolute inset-y-0 right-0 -z-10 w-1/4 cursor-default"
+          className="absolute inset-y-0 right-0 z-0 w-1/5 cursor-default"
         />
-        {current === "passage" ? <PassageStep data={data} onWord={setOpenWord} /> : null}
-        {current === "insight" ? <InsightStep data={data} /> : null}
-        {current === "context" ? <ContextStep data={data} /> : null}
-        {current === "divide" ? <DivideStep data={data} /> : null}
-        {current === "question" ? (
-          <QuestionStep data={data} note={note} onNote={setNote} />
-        ) : null}
-        {current === "close" ? <CloseStep data={data} done={done} /> : null}
-        {current === "close" ? null : <AskPanel data={data} />}
+        <div className="relative z-10">
+          {current === "passage" ? <PassageStep data={data} onWord={setOpenWord} /> : null}
+          {current === "insight" ? <InsightStep data={data} /> : null}
+          {current === "context" ? <ContextStep data={data} /> : null}
+          {current === "divide" ? <DivideStep data={data} /> : null}
+          {current === "question" ? (
+            <QuestionStep data={data} note={note} onNote={setNote} />
+          ) : null}
+          {current === "close" ? <CloseStep data={data} done={done} /> : null}
+          {current === "close" ? null : <AskPanel data={data} />}
+        </div>
       </div>
 
       <div className="sticky bottom-0 bg-background pb-2 pt-3">
