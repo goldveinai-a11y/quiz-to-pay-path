@@ -513,6 +513,8 @@ export async function listNotes(userId: string, scoped?: Admin): Promise<SavedNo
 export async function switchBook(userId: string, bookSlug: string, scoped?: Admin) {
   const supabase = await db(scoped);
   const slug = BOOK_TITLES[bookSlug] ? bookSlug : "john";
+  const supabase = await db(scoped);
+  const slug = BOOK_TITLES[bookSlug] ? bookSlug : "john";
   // Reopen the reader's existing record for this book, never a fresh one.
   const plan = await ensurePlan(userId, slug, scoped);
   await supabase.from("user_plans").update({ is_active: false }).eq("user_id", userId);
