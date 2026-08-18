@@ -64,6 +64,13 @@ function ResultPage() {
   }, []);
 
   const selectedPlan = useMemo(() => PLANS.find((p) => p.id === selected)!, [selected]);
+  const renewalDate = useMemo(() => {
+    const days = selected === "1-week" ? 7 : selected === "3-month" ? 90 : 30;
+    return new Date(Date.now() + days * 86400000).toLocaleDateString("en-US", {
+      month: "long",
+      day: "numeric",
+    });
+  }, [selected]);
 
   if (!plan) return <div className="min-h-screen bg-background" />;
 
@@ -186,7 +193,7 @@ function ResultPage() {
         ) : null}
 
         {/* Plans */}
-        <section className="pt-11">
+        <section id="access" className="pt-11">
           <SectionTitle eyebrow="Step two">Choose your access</SectionTitle>
           <div className="mt-5 space-y-3">
             {PLANS.map((p) => {
@@ -241,6 +248,10 @@ function ResultPage() {
           <p className="mt-3 flex items-center justify-center gap-1.5 font-mono text-[10px] uppercase tracking-wider text-faint">
             <Lock className="h-3 w-3" /> Cancel any time · no hidden charges
           </p>
+          <p className="mt-2 text-center text-[12px] text-muted-foreground">
+            ${selectedPlan.price.toFixed(2)} today · next charge {renewalDate}, cancel in one click
+            before then
+          </p>
         </section>
 
         {/* Inside */}
@@ -280,6 +291,13 @@ function ResultPage() {
               after="'Word' is logos — the reason and order behind everything. John is claiming the logic of the universe has a face."
             />
           </div>
+          <button
+            type="button"
+            onClick={go}
+            className="mt-8 h-[54px] w-full rounded-2xl bg-ink text-[15px] font-medium text-background shadow-s2 transition hover:bg-ink/90"
+          >
+            Start my plan · ${selectedPlan.price.toFixed(2)}
+          </button>
         </section>
 
         {/* Product */}

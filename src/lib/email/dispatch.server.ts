@@ -95,7 +95,28 @@ export async function sendWelcome(userId: string, email: string, bookSlug: strin
   return result;
 }
 
-type Summary = { daily: number; winBack: number; finish: number; skipped: number };
+type Summary = {
+  daily: number;
+  winBack: number;
+  finish: number;
+  skipped: number;
+  reasons: Record<string, number>;
+};
+
+/** A reader without a preferences row would silently drop out of every email. */
+async function preferencesFor(userId: string) {
+  const admin = await db();
+  const { data } = await admin
+    .from("email_preferences")
+    .select("*")
+    .eq("user_id", userId)
+    .maybeSingle();
+  if (data) return data;
+  const { data: user } = await admin.auth.admin.getUserById(userId);
+  const email = user?.user?.email;
+  if (!email) return null;
+  return await ensurePreferences(userId, email);
+}
 
 /**
  * One pass over every active plan. Each reader gets at most one email:
@@ -104,7 +125,11 @@ type Summary = { daily: number; winBack: number; finish: number; skipped: number
 export async function runDailyDispatch(origin?: string): Promise<Summary> {
   const admin = await db();
   const base = siteUrl(origin);
-  const summary: Summary = { daily: 0, winBack: 0, finish: 0, skipped: 0 };
+  const summary: Summary = { daily: 0, winBack: 0, finish: 0, skipped: 0, reasons: {} };
+  const skip = (reason: string) => {
+    summary.skipped += 1;
+    summary.reasons[reason] = (summary.reasons[reason] ?? 0) + 1;
+  };
 
   const { data: plans } = await admin
     .from("user_plans")
@@ -116,18 +141,13 @@ export async function runDailyDispatch(origin?: string): Promise<Summary> {
   const streakFor = new Map((states ?? []).map((s) => [s.user_id, s.streak_count ?? 0]));
 
   for (const plan of plans ?? []) {
-    const prefs = await admin
-      .from("email_preferences")
-      .select("*")
-      .eq("user_id", plan.user_id)
-      .maybeSingle();
-    const pref = prefs.data;
+    const pref = await preferencesFor(plan.user_id);
     if (!pref) {
-      summary.skipped += 1;
+      skip("no_email_address");
       continue;
     }
     if (plan.paused_until && new Date(plan.paused_until).getTime() > Date.now()) {
-      summary.skipped += 1;
+      skip("paused");
       continue;
     }
 
@@ -175,12 +195,12 @@ export async function runDailyDispatch(origin?: string): Promise<Summary> {
           continue;
         }
       }
-      summary.skipped += 1;
+      skip("finished");
       continue;
     }
 
     if (!nextSession) {
-      summary.skipped += 1;
+      skip("no_open_session");
       continue;
     }
 
@@ -250,7 +270,7 @@ export async function runDailyDispatch(origin?: string): Promise<Summary> {
       }
     }
 
-    summary.skipped += 1;
+    skip(pref.daily_reminder ? "already_sent_today" : "daily_reminder_off");
   }
 
   return summary;

@@ -2,8 +2,10 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { X, ArrowRight, Check } from "lucide-react";
+import { X, ArrowRight, Check, MessageCircleQuestion, Loader2 } from "lucide-react";
 import { getSessionDay, saveStep, completeDay } from "@/lib/product/product.functions";
+import { askAboutPassage } from "@/lib/product/ask.functions";
+import { Input } from "@/components/ui/input";
 import { Plate } from "@/components/product/Plate";
 import { WordSheet } from "@/components/product/WordSheet";
 import { ShareCard } from "@/components/product/ShareCard";
@@ -165,6 +167,7 @@ function SessionPage() {
           <QuestionStep data={data} note={note} onNote={setNote} />
         ) : null}
         {current === "close" ? <CloseStep data={data} done={done} /> : null}
+        {current === "close" ? null : <AskPanel data={data} />}
       </div>
 
       <div className="sticky bottom-0 bg-background pb-2 pt-3">
@@ -213,6 +216,85 @@ function SessionPage() {
 }
 
 type SessionStep = "passage" | "insight" | "context" | "divide" | "question" | "close";
+
+/** Ask anything about the passage — the promise the funnel makes. */
+function AskPanel({ data }: { data: SessionDay }) {
+  const ask = useServerFn(askAboutPassage);
+  const [open, setOpen] = useState(false);
+  const [question, setQuestion] = useState("");
+  const [answer, setAnswer] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [pending, setPending] = useState(false);
+
+  const send = async () => {
+    setPending(true);
+    setError(null);
+    setAnswer(null);
+    try {
+      const result = await ask({
+        data: {
+          day: data.day,
+          question,
+          reference: data.reference,
+          passage: data.verses.map((v) => `${v.verse}. ${v.text}`).join(" "),
+          context: data.context,
+        },
+      });
+      if ("error" in result) setError(result.error);
+      else {
+        setAnswer(result.answer);
+        setQuestion("");
+      }
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Couldn't answer that just now.");
+    }
+    setPending(false);
+  };
+
+  if (!open) {
+    return (
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        className="mt-8 flex w-full items-center justify-center gap-2 rounded-2xl border border-border bg-card py-3 text-sm text-muted-foreground transition-colors duration-150 hover:text-foreground"
+      >
+        <MessageCircleQuestion className="h-4 w-4" />
+        Ask anything about this passage
+      </button>
+    );
+  }
+
+  return (
+    <section className="mt-8 rounded-2xl border border-border bg-card p-4">
+      <p className="eyebrow text-muted-foreground">Ask about {data.reference}</p>
+      <div className="mt-3 flex gap-2">
+        <Input
+          value={question}
+          onChange={(e) => setQuestion(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && question.trim().length > 2 && !pending) void send();
+          }}
+          placeholder="Who is he talking to here?"
+          className="h-11 rounded-xl bg-background"
+        />
+        <Button
+          onClick={send}
+          disabled={pending || question.trim().length < 3}
+          className="h-11 rounded-xl px-4"
+        >
+          {pending ? <Loader2 className="h-4 w-4 animate-spin" /> : "Ask"}
+        </Button>
+      </div>
+      <p className="mt-2 text-xs text-muted-foreground">
+        No question is too basic. Answers stay with this passage.
+      </p>
+      {error ? <p className="mt-3 text-sm text-destructive">{error}</p> : null}
+      {answer ? (
+        <p className="mt-3 whitespace-pre-wrap text-[15px] leading-relaxed text-ink">{answer}</p>
+      ) : null}
+    </section>
+  );
+}
 
 function PassageStep({ data, onWord }: { data: SessionDay; onWord: (w: WordNote) => void }) {
   const words = new Map(data.words.map((w) => [w.word.toLowerCase(), w]));
