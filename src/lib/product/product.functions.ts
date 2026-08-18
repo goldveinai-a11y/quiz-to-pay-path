@@ -12,7 +12,7 @@ import {
   changePlan,
   listNotes,
 } from "./read.server";
-import { toggleHighlight, listHighlights } from "./read.server";
+import { toggleHighlight, listHighlights, setTranslation } from "./read.server";
 
 // Fulfilment is not a public endpoint: it runs only from finalizePurchase,
 // after the payment session has been verified with the card processor.
@@ -60,6 +60,13 @@ export const getMyNotes = createServerFn({ method: "GET" })
 export const getMyHighlights = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => listHighlights(context.userId, context.supabase as never));
+
+export const setMyTranslation = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data) => z.object({ translation: z.enum(["WEB", "KJV"]) }).parse(data))
+  .handler(async ({ data, context }) =>
+    setTranslation(context.userId, data.translation, context.supabase as never),
+  );
 
 export const toggleVerseHighlight = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
