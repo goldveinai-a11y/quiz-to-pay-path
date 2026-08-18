@@ -89,6 +89,21 @@ function SessionPage() {
   const [done, setDone] = useState(false);
   const [openWord, setOpenWord] = useState<WordNote | null>(null);
   const restored = useRef(false);
+  // Kept above the loading early-return so hook order never changes.
+  const goRef = useRef<(next: number) => void>(() => {});
+  const touch = useRef<{ x: number; y: number } | null>(null);
+
+  // Reading should feel like turning pages: tap the edge, swipe, or use arrows.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement | null;
+      if (target && /INPUT|TEXTAREA/.test(target.tagName)) return;
+      if (e.key === "ArrowLeft") goRef.current(-1);
+      if (e.key === "ArrowRight") goRef.current(1);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
 
   const steps = useMemo(() => {
     const list: SessionStep[] = ["passage", "insight", "context"];
@@ -123,20 +138,8 @@ function SessionPage() {
   };
 
   const close = () => navigate({ to: "/plan" });
+  goRef.current = (delta: number) => go(index + delta);
 
-  // Reading should feel like turning pages: tap the edge, swipe, or use arrows.
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      const target = e.target as HTMLElement | null;
-      if (target && /INPUT|TEXTAREA/.test(target.tagName)) return;
-      if (e.key === "ArrowLeft") go(index - 1);
-      if (e.key === "ArrowRight") go(index + 1);
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  });
-
-  const touch = useRef<{ x: number; y: number } | null>(null);
   const onTouchStart = (e: React.TouchEvent) => {
     const t = e.touches[0]!;
     touch.current = { x: t.clientX, y: t.clientY };
