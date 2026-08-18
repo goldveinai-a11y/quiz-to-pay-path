@@ -3,7 +3,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { X, ArrowLeft, ArrowRight, Check, Flame, MessageCircleQuestion, Loader2 } from "lucide-react";
-import { getSessionDay, saveStep, completeDay } from "@/lib/product/product.functions";
+import { getSessionDay, saveStep, completeDay, toggleVerseHighlight } from "@/lib/product/product.functions";
 import { askAboutPassage } from "@/lib/product/ask.functions";
 import { Input } from "@/components/ui/input";
 import { Plate } from "@/components/product/Plate";
