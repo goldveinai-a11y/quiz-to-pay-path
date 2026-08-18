@@ -155,6 +155,16 @@ function SessionPage() {
     go(dx > 0 ? index - 1 : index + 1);
   };
 
+  // Tapping the outer fifth of the page turns it; interactive elements keep their own clicks.
+  const onAreaClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    const target = e.target as HTMLElement;
+    if (target.closest("button, a, input, textarea, select, label, [role='button']")) return;
+    const box = e.currentTarget.getBoundingClientRect();
+    const x = e.clientX - box.left;
+    if (x < box.width * 0.22) go(index - 1);
+    else if (x > box.width * 0.78) go(index + 1);
+  };
+
   const finish = async () => {
     await finishDay({ data: { day, note: note.trim() ? note.trim() : null } });
     setDone(true);
@@ -198,23 +208,13 @@ function SessionPage() {
         </span>
       </header>
 
-      <div className="relative flex-1 py-8" onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
-        {/* Edge tap zones sit behind the content, so words and inputs still win. */}
-        <button
-          type="button"
-          aria-label="Previous screen"
-          tabIndex={-1}
-          onClick={() => go(index - 1)}
-          className="absolute inset-y-0 left-0 z-0 w-1/5 cursor-default"
-        />
-        <button
-          type="button"
-          aria-label="Next screen"
-          tabIndex={-1}
-          onClick={() => go(index + 1)}
-          className="absolute inset-y-0 right-0 z-0 w-1/5 cursor-default"
-        />
-        <div className="relative z-10">
+      <div
+        className="relative flex-1 py-8"
+        onClick={onAreaClick}
+        onTouchStart={onTouchStart}
+        onTouchEnd={onTouchEnd}
+      >
+        <div>
           {current === "passage" ? <PassageStep data={data} onWord={setOpenWord} /> : null}
           {current === "insight" ? <InsightStep data={data} /> : null}
           {current === "context" ? <ContextStep data={data} /> : null}
