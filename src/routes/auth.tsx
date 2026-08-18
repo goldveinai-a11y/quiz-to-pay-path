@@ -26,9 +26,17 @@ function AuthPage() {
   const [email, setEmail] = useState("");
   const [code, setCode] = useState("");
   const [sent, setSent] = useState(false);
+  const [codeMode, setCodeMode] = useState(false);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [checking, setChecking] = useState(true);
+  const [cooldown, setCooldown] = useState(0);
+
+  useEffect(() => {
+    if (cooldown <= 0) return;
+    const t = window.setInterval(() => setCooldown((s) => (s > 0 ? s - 1 : 0)), 1000);
+    return () => window.clearInterval(t);
+  }, [cooldown]);
 
   useEffect(() => {
     let cancelled = false;
@@ -73,25 +81,85 @@ function AuthPage() {
       options: { shouldCreateUser: false, emailRedirectTo: `${window.location.origin}/auth` },
     });
     setPending(false);
-    if (err) setError("We couldn't find that email. Use the address you paid with.");
-    else {
-      window.localStorage.setItem("br:email", address);
-      setSent(true);
+    if (err) {
+      // One generic message used to hide rate limits as "email not found".
+      const message = err.message.toLowerCase();
+      if (err.status === 429 || message.includes("seconds")) {
+        const seconds = Number(message.match(/(\d+)\s*second/)?.[1] ?? 60);
+        setCooldown(seconds);
+        setError(`Too many requests. Try again in ${seconds} seconds.`);
+      } else if (message.includes("signups not allowed") || message.includes("not found")) {
+        setError("We couldn't find that email. Use the address you paid with.");
+      } else {
+        setError(err.message);
+      }
+      return;
     }
+    window.localStorage.setItem("br:email", address);
+    setCooldown(60);
+    setSent(true);
   };
 
-  const verify = async () => {
+  const verify = async (value = code) => {
     setPending(true);
     setError(null);
     const { error: err } = await supabase.auth.verifyOtp({
       email: email.trim().toLowerCase(),
-      token: code.trim(),
+      token: value.trim(),
       type: "email",
     });
     setPending(false);
-    if (err) setError("That code didn't work. Check the latest email.");
-    else navigate({ to: "/plan", replace: true });
+    if (err) {
+      const message = err.message.toLowerCase();
+      if (message.includes("expired"))
+        setError("That code has expired. Send a fresh link and use the newest code.");
+      else if (err.status === 429) setError("Too many tries. Wait a minute and try again.");
+      else setError("That code didn't work. Use the code from the most recent email.");
+      return;
+    }
+    navigate({ to: "/plan", replace: true });
   };
+
+  // Codes are 6-10 digits depending on the provider setting; never hard-cap at 6.
+  const onCode = (raw: string) => {
+    const digits = raw.replace(/\D/g, "").slice(0, 10);
+    setCode(digits);
+  };
+
+  const codeBlock = (
+    <div>
+      <p className="text-sm text-muted-foreground">
+        Type the code from that email — it's 6 to 8 digits.
+      </p>
+      <Input
+        inputMode="numeric"
+        autoComplete="one-time-code"
+        value={code}
+        onChange={(e) => onCode(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" && code.length >= 6 && !pending) void verify();
+        }}
+        placeholder="123456"
+        className="mt-3 h-12 rounded-xl bg-background text-center font-mono text-lg tracking-[0.3em]"
+      />
+      {error ? <p className="mt-2 text-sm text-destructive">{error}</p> : null}
+      <Button
+        onClick={() => verify()}
+        disabled={pending || code.length < 6}
+        className="mt-3 h-12 w-full rounded-xl text-base"
+      >
+        {pending ? "Checking…" : "Open my plan"}
+      </Button>
+      <button
+        type="button"
+        onClick={send}
+        disabled={pending || cooldown > 0}
+        className="mt-3 w-full text-sm text-muted-foreground underline-offset-4 hover:underline disabled:opacity-60"
+      >
+        {cooldown > 0 ? `Send a new email in ${cooldown}s` : "Send me a new email"}
+      </button>
+    </div>
+  );
 
   return (
     <main className="grid min-h-screen place-items-center px-5 py-12">
@@ -101,35 +169,27 @@ function AuthPage() {
 
         {checking ? (
           <p className="mt-6 text-sm text-muted-foreground">Checking your link…</p>
-        ) : sent ? (
+        ) : sent || codeMode ? (
           <div className="mt-6 rounded-2xl border border-border bg-card p-6 shadow-s1">
-            <Check className="h-8 w-8 text-success" />
-            <p className="mt-3 font-serif text-xl">Check your email</p>
-            <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">
-              We sent a link to <span className="text-foreground">{email}</span>. Opening it signs you
-              in — on this device or any other.
-            </p>
-            <div className="mt-5 border-t border-border pt-4">
-              <p className="text-sm text-muted-foreground">
-                Or type the 6-digit code from that email.
-              </p>
-              <Input
-                inputMode="numeric"
-                autoComplete="one-time-code"
-                value={code}
-                onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
-                placeholder="123456"
-                className="mt-3 h-12 rounded-xl bg-background text-center font-mono text-lg tracking-[0.4em]"
-              />
-              {error ? <p className="mt-2 text-sm text-destructive">{error}</p> : null}
-              <Button
-                onClick={verify}
-                disabled={pending || code.length !== 6}
-                className="mt-3 h-12 w-full rounded-xl text-base"
-              >
-                {pending ? "Checking…" : "Open my plan"}
-              </Button>
-            </div>
+            {sent ? (
+              <>
+                <Check className="h-8 w-8 text-success" />
+                <p className="mt-3 font-serif text-xl">Check your email</p>
+                <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">
+                  We sent a link to <span className="text-foreground">{email}</span>. Opening it
+                  signs you in — on this device or any other.
+                </p>
+              </>
+            ) : (
+              <>
+                <p className="font-serif text-xl">Enter your code</p>
+                <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">
+                  For <span className="text-foreground">{email || "your email"}</span>. Only the code
+                  from the newest email works.
+                </p>
+              </>
+            )}
+            <div className="mt-5 border-t border-border pt-4">{codeBlock}</div>
           </div>
         ) : (
           <>
@@ -153,6 +213,13 @@ function AuthPage() {
                 <Mail className="mr-2 h-4 w-4" />
                 {pending ? "Sending…" : "Email me a link"}
               </Button>
+              <button
+                type="button"
+                onClick={() => setCodeMode(true)}
+                className="w-full pt-1 text-sm text-muted-foreground underline-offset-4 hover:underline"
+              >
+                I already have a code
+              </button>
             </div>
           </>
         )}

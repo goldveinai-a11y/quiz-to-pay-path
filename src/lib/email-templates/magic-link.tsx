@@ -24,7 +24,8 @@ export const MagicLinkEmail = ({ confirmationUrl, token }: MagicLinkEmailProps) 
       </Section>
     ) : null}
     <Text style={footer}>
-      The link and code expire shortly. If you didn't ask for this, ignore this email.
+      Link and code work for 60 minutes, and only from this newest email. If you didn't ask for
+      this, ignore it.
     </Text>
   </Shell>
 )
