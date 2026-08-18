@@ -190,7 +190,7 @@ function PlanPage() {
               {d.unlocked ? null : (
                 <span className="flex shrink-0 items-center gap-1.5 text-muted-foreground">
                   <Lock className="h-3.5 w-3.5" />
-                  <span className="eyebrow">{formatUnlock(d.unlockAt)}</span>
+                  <span className="eyebrow">Day {d.day - 1} first</span>
                 </span>
               )}
             </div>
@@ -226,6 +226,9 @@ function PlanPage() {
               className="rounded-full border border-border px-4 py-2 text-sm transition-colors duration-150 hover:bg-secondary"
             >
               {b.title}
+              {b.finished > 0 ? (
+                <span className="eyebrow ml-2 text-muted-foreground">{b.finished} done</span>
+              ) : null}
             </button>
           ))}
         </div>
