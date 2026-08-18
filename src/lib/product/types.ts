@@ -33,6 +33,13 @@ export type SavedNote = {
   completedAt: string | null;
 };
 
+export type SavedHighlight = {
+  day: number;
+  reference: string;
+  verse: number;
+  text: string;
+};
+
 export type MyPlan = {
   planId: string;
   bookSlug: string;
@@ -103,6 +110,8 @@ export type SessionDay = {
   quiz: SessionQuiz | null;
   step: number;
   note: string | null;
+  /** Verse numbers this reader has highlighted in this passage. */
+  highlights: number[];
   done: boolean;
   next: { day: number; title: string } | null;
 };
