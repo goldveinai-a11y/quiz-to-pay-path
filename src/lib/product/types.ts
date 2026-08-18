@@ -63,6 +63,13 @@ export type MyPlan = {
 
 export type DivideReading = { tradition: string; reading: string; verses?: string };
 
+export type SessionQuiz = {
+  question: string;
+  options: string[];
+  correctIndex: number;
+  explanation: string;
+};
+
 export type SessionDay = {
   day: number;
   bookTitle: string;
@@ -82,6 +89,7 @@ export type SessionDay = {
     common: string | null;
   } | null;
   question: string;
+  quiz: SessionQuiz | null;
   step: number;
   note: string | null;
   done: boolean;
