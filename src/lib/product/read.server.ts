@@ -510,6 +510,15 @@ export async function listNotes(userId: string, scoped?: Admin): Promise<SavedNo
     });
 }
 
+/** WEB or KJV — both public domain, both fully imported for every plan book. */
+export async function setTranslation(userId: string, translation: string, scoped?: Admin) {
+  const supabase = await db(scoped);
+  const value = translation === "KJV" ? "KJV" : "WEB";
+  const plan = await activePlan(userId, scoped);
+  await supabase.from("user_plans").update({ translation: value }).eq("id", plan.id);
+  return { translation: value };
+}
+
 /** Tapping a verse keeps it; tapping again lets it go. */
 export async function toggleHighlight(
   userId: string,
