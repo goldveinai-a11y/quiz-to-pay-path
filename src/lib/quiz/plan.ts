@@ -131,7 +131,7 @@ export function buildPlan(answers: Answers): PlanResult {
   }
 
   return {
-    name: ((answers["name"] as string) ?? "friend").trim() || "friend",
+    name: ((answers["name"] as string) ?? "").trim(),
     email: (answers["email"] as string) ?? "",
     book: book.book,
     bookWhy: book.why,
