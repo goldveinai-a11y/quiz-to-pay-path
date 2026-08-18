@@ -122,6 +122,36 @@ export type Database = {
         }
         Relationships: []
       }
+      reader_state: {
+        Row: {
+          created_at: string
+          freezes_used: number
+          last_completed_on: string | null
+          longest_streak: number
+          streak_count: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          freezes_used?: number
+          last_completed_on?: string | null
+          longest_streak?: number
+          streak_count?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          freezes_used?: number
+          last_completed_on?: string | null
+          longest_streak?: number
+          streak_count?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       study_sessions: {
         Row: {
           art_tone: string

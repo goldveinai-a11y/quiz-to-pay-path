@@ -2,7 +2,6 @@ export type PlanDay = {
   day: number;
   title: string;
   reference: string;
-  unlockAt: string;
   unlocked: boolean;
   done: boolean;
   step: number;
@@ -59,7 +58,7 @@ export type MyPlan = {
     tone: string;
     complete: boolean;
   } | null;
-  otherBooks: { slug: string; title: string }[];
+  otherBooks: { slug: string; title: string; finished: number }[];
 };
 
 export type DivideReading = { tradition: string; reading: string; verses?: string };
@@ -86,7 +85,7 @@ export type SessionDay = {
   step: number;
   note: string | null;
   done: boolean;
-  next: { day: number; title: string; unlockAt: string } | null;
+  next: { day: number; title: string } | null;
 };
 
 export const BOOK_TITLES: Record<string, string> = {
