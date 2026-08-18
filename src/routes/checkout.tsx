@@ -9,7 +9,8 @@ import { loadAnswers } from "@/lib/quiz/store";
 import { createIntroCheckout } from "@/lib/payments/payments.functions";
 import { getStripe, getStripeEnvironment } from "@/lib/stripe";
 import { PaymentTestModeBanner } from "@/components/PaymentTestModeBanner";
-import { THEME_TO_BOOK } from "@/lib/product/types";
+import { THEME_TO_BOOK, BOOK_TITLES } from "@/lib/product/types";
+import { getAccessPlan } from "@/lib/product/pricing";
 
 type Search = { plan?: string };
 
@@ -49,12 +50,20 @@ function CheckoutPage() {
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [clientSecret, setClientSecret] = useState<string | null>(null);
+  const [bookTitle, setBookTitle] = useState("Your 30-day plan");
 
   const selected = PRICES[plan ?? "1-month"] ?? PRICES["1-month"]!;
+  const access = getAccessPlan(plan);
+  const renewalDate = new Date(Date.now() + access.introDays * 86400000).toLocaleDateString(
+    "en-US",
+    { month: "long", day: "numeric" },
+  );
 
   useEffect(() => {
     const a = loadAnswers();
     if (typeof a["email"] === "string") setEmail(a["email"] as string);
+    const theme = typeof a["theme"] === "string" ? (a["theme"] as string) : "";
+    setBookTitle(BOOK_TITLES[THEME_TO_BOOK[theme] ?? "john"] ?? "Your 30-day plan");
   }, []);
 
   const pay = async () => {
@@ -95,6 +104,9 @@ function CheckoutPage() {
             <p className="mt-1 text-xs text-muted-foreground">
               {selected.label} · then {selected.renews}
             </p>
+            <p className="mt-2 text-xs text-muted-foreground">
+              {bookTitle} · 7 minutes a day · renews {renewalDate}, cancel any time before then
+            </p>
           </div>
           <button
             type="button"
@@ -129,6 +141,11 @@ function CheckoutPage() {
               <p className="mt-1.5 text-xs text-muted-foreground">
                 Your receipt and plan link go here.
               </p>
+              {!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ? (
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Enter a valid email to continue.
+                </p>
+              ) : null}
               {error ? <p className="mt-2 text-sm text-destructive">{error}</p> : null}
             </div>
 

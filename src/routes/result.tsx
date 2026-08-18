@@ -241,6 +241,10 @@ function ResultPage() {
           <p className="mt-3 flex items-center justify-center gap-1.5 font-mono text-[10px] uppercase tracking-wider text-faint">
             <Lock className="h-3 w-3" /> Cancel any time · no hidden charges
           </p>
+          <p className="mt-2 text-center text-[12px] text-muted-foreground">
+            ${selectedPlan.price.toFixed(2)} today · next charge {renewalDate}, cancel in one click
+            before then
+          </p>
         </section>
 
         {/* Inside */}
