@@ -516,6 +516,12 @@ function AskPanel({ data }: { data: SessionDay }) {
 
 function PassageStep({ data, onWord }: { data: SessionDay; onWord: (w: WordNote) => void }) {
   const words = new Map(data.words.map((w) => [w.word.toLowerCase(), w]));
+  const toggle = useServerFn(toggleVerseHighlight);
+  const [kept, setKept] = useState<number[]>(data.highlights);
+  const flip = (verse: number) => {
+    setKept((prev) => (prev.includes(verse) ? prev.filter((v) => v !== verse) : [...prev, verse]));
+    void toggle({ data: { day: data.day, verse } });
+  };
   return (
     <section>
       <p className="eyebrow text-muted-foreground">
@@ -525,14 +531,35 @@ function PassageStep({ data, onWord }: { data: SessionDay; onWord: (w: WordNote)
       <h1 className="mt-3 font-serif text-2xl font-semibold leading-snug">{data.title}</h1>
       <div className="mt-6 space-y-4">
         {data.verses.map((v) => (
-            <p key={v.verse} className="font-serif text-xl leading-relaxed">
+            <p
+              key={v.verse}
+              onDoubleClick={() => flip(v.verse)}
+              className={cn(
+                "rounded-lg font-serif text-xl leading-relaxed transition-colors duration-200",
+                kept.includes(v.verse) && "bg-terra/15 px-2 py-1",
+              )}
+            >
               <span className="mr-2 align-super font-mono text-[0.6rem] text-muted-foreground">
                 {v.verse}
               </span>
             <VerseText text={v.text} words={words} onWord={onWord} />
+            <button
+              type="button"
+              aria-label={kept.includes(v.verse) ? `Remove highlight on verse ${v.verse}` : `Highlight verse ${v.verse}`}
+              onClick={() => flip(v.verse)}
+              className={cn(
+                "ml-2 align-middle text-muted-foreground transition-colors duration-150 hover:text-terra",
+                kept.includes(v.verse) && "text-terra",
+              )}
+            >
+              <Highlighter className="inline h-4 w-4" />
+            </button>
             </p>
         ))}
       </div>
+      <p className="eyebrow mt-6 text-muted-foreground">
+        Tap the marker to keep a verse — it lands in your notes
+      </p>
       {words.size > 0 ? (
         <p className="eyebrow mt-6 text-muted-foreground">
           Tap an underlined word for the {data.words[0]?.language ?? "original"} behind it
