@@ -9,7 +9,15 @@
 import { readFileSync } from "node:fs";
 import { createClient } from "@supabase/supabase-js";
 
-const BOOKS: Record<string, string> = { john: "John", mark: "Mark", psalms: "Psalms" };
+const BOOKS: Record<string, string> = {
+  john: "John",
+  mark: "Mark",
+  psalms: "Psalms",
+  philippians: "Philippians",
+  ruth: "Ruth",
+  proverbs: "Proverbs",
+  ephesians: "Ephesians",
+};
 const AUTHORS: Record<string, string> = {
   "Matthew Henry": "1710",
   "John Gill": "1746",
@@ -31,6 +39,11 @@ type Seed = {
   divergence?: { question: string; readings: Reading[]; common: string } | null;
   question: string;
   art_tone?: string;
+  word_study?: { word: string; original: string; language: string; gloss: string; body: string } | null;
+  cross_reference?: { reference: string; note: string } | null;
+  application?: { prompt: string; body: string } | null;
+  voices?: { tradition: string; reading: string }[] | null;
+  quiz?: { question: string; options: string[]; answer_index: number; explanation: string } | null;
 };
 
 const file = process.argv[2];
@@ -54,6 +67,7 @@ const supabase = createClient(process.env["SUPABASE_URL"]!, process.env["SUPABAS
 
 const rejected: string[] = [];
 const rows: Record<string, unknown>[] = [];
+const quizRows: Record<string, unknown>[] = [];
 
 for (const s of seeds) {
   const where = `${s?.book_slug}/${s?.day_number}`;
@@ -103,7 +117,27 @@ for (const s of seeds) {
     divide_common: divergence?.common ?? null,
     question: s.question,
     art_tone: TONES.has(s.art_tone ?? "") ? s.art_tone : "teal",
+    word_study: s.word_study ?? null,
+    cross_reference: s.cross_reference ?? null,
+    application: s.application ?? null,
+    voices: s.voices?.length ? s.voices : null,
   });
+
+  const q = s.quiz;
+  if (q && Array.isArray(q.options) && q.options.length >= 2) {
+    if (q.answer_index < 0 || q.answer_index >= q.options.length) {
+      rejected.push(`${where}: quiz answer_index out of range`);
+    } else {
+      quizRows.push({
+        book_slug: s.book_slug,
+        day_number: s.day_number,
+        question: q.question,
+        options: q.options,
+        correct_index: q.answer_index,
+        explanation: q.explanation,
+      });
+    }
+  }
 }
 
 if (rows.length) {
@@ -111,7 +145,12 @@ if (rows.length) {
   if (error) { console.error("Import failed:", error.message); process.exit(1); }
 }
 
-console.log(`Imported ${rows.length} session(s).`);
+if (quizRows.length) {
+  const { error } = await supabase.from("session_quiz").upsert(quizRows, { onConflict: "book_slug,day_number" });
+  if (error) { console.error("Quiz import failed:", error.message); process.exit(1); }
+}
+
+console.log(`Imported ${rows.length} session(s), ${quizRows.length} quiz question(s).`);
 if (rejected.length) {
   console.log(`Rejected ${rejected.length}:`);
   for (const r of rejected) console.log(" -", r);

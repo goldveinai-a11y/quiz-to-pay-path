@@ -217,12 +217,14 @@ export type Database = {
       }
       study_sessions: {
         Row: {
+          application: Json | null
           art_tone: string
           book: string
           book_slug: string
           chapter: number
           context_body: string
           created_at: string
+          cross_reference: Json | null
           day_number: number
           divide_common: string | null
           divide_question: string | null
@@ -240,14 +242,18 @@ export type Database = {
           title: string
           verse_end: number
           verse_start: number
+          voices: Json | null
+          word_study: Json | null
         }
         Insert: {
+          application?: Json | null
           art_tone?: string
           book: string
           book_slug: string
           chapter: number
           context_body: string
           created_at?: string
+          cross_reference?: Json | null
           day_number: number
           divide_common?: string | null
           divide_question?: string | null
@@ -265,14 +271,18 @@ export type Database = {
           title: string
           verse_end: number
           verse_start: number
+          voices?: Json | null
+          word_study?: Json | null
         }
         Update: {
+          application?: Json | null
           art_tone?: string
           book?: string
           book_slug?: string
           chapter?: number
           context_body?: string
           created_at?: string
+          cross_reference?: Json | null
           day_number?: number
           divide_common?: string | null
           divide_question?: string | null
@@ -290,6 +300,8 @@ export type Database = {
           title?: string
           verse_end?: number
           verse_start?: number
+          voices?: Json | null
+          word_study?: Json | null
         }
         Relationships: []
       }
