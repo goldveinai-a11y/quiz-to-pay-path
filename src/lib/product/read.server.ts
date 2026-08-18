@@ -354,10 +354,11 @@ type PlanRow = Awaited<ReturnType<typeof activePlan>>;
  */
 async function bumpStreak(plan: PlanRow, userId: string, scoped?: Admin) {
   const supabase = await db(scoped);
+  const state = await readerState(userId, scoped);
   const today = dayKey(new Date());
-  const last = plan.last_completed_on ?? null;
-  let current = plan.streak_count ?? 0;
-  let freezesUsed = plan.freezes_used ?? 0;
+  const last = state.last_completed_on ?? null;
+  let current = state.streak_count ?? 0;
+  let freezesUsed = state.freezes_used ?? 0;
   let usedFreeze = false;
 
   if (last === today) {
@@ -372,7 +373,7 @@ async function bumpStreak(plan: PlanRow, userId: string, scoped?: Admin) {
     current = 1;
   }
 
-  const longest = Math.max(plan.longest_streak ?? 0, current);
+  const longest = Math.max(state.longest_streak ?? 0, current);
 
   const { count } = await supabase
     .from("user_progress")
@@ -385,17 +386,24 @@ async function bumpStreak(plan: PlanRow, userId: string, scoped?: Admin) {
     .eq("book_slug", plan.book_slug);
   const finishedAll = Boolean(total && count && count >= total);
 
-  await supabase
-    .from("user_plans")
-    .update({
+  await supabase.from("reader_state").upsert(
+    {
+      user_id: userId,
       streak_count: current,
       longest_streak: longest,
       last_completed_on: today,
       freezes_used: freezesUsed,
-      ...(finishedAll && !plan.completed_at ? { completed_at: new Date().toISOString() } : {}),
-    })
-    .eq("id", plan.id)
-    .eq("user_id", userId);
+    },
+    { onConflict: "user_id" },
+  );
+
+  if (finishedAll && !plan.completed_at) {
+    await supabase
+      .from("user_plans")
+      .update({ completed_at: new Date().toISOString() })
+      .eq("id", plan.id)
+      .eq("user_id", userId);
+  }
 
   return { current, longest, usedFreeze, freezesLeft: Math.max(0, MAX_FREEZES - freezesUsed), finishedAll };
 }
@@ -435,14 +443,16 @@ export async function listNotes(userId: string, scoped?: Admin): Promise<SavedNo
 export async function switchBook(userId: string, bookSlug: string, scoped?: Admin) {
   const supabase = await db(scoped);
   const slug = BOOK_TITLES[bookSlug] ? bookSlug : "john";
+  // Reopen the reader's existing record for this book, never a fresh one.
+  const plan = await ensurePlan(userId, slug, scoped);
   await supabase.from("user_plans").update({ is_active: false }).eq("user_id", userId);
-  const { data, error } = await supabase
+  const { error } = await supabase
     .from("user_plans")
-    .insert({ user_id: userId, book_slug: slug, book_title: BOOK_TITLES[slug]!, translation: "WEB", is_active: true })
-    .select("id")
-    .single();
+    .update({ is_active: true })
+    .eq("id", plan.id)
+    .eq("user_id", userId);
   if (error) throw new Error(error.message);
-  return { planId: data.id, bookSlug: slug };
+  return { planId: plan.id, bookSlug: slug };
 }
 
 export async function readAccess(userId: string, scoped?: Admin) {
