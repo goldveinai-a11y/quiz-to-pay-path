@@ -9,6 +9,7 @@ import {
   type DivideReading,
   type WordNote,
 } from "./types";
+import type { Application, CrossReference, TraditionVoice } from "./types";
 import { ACCESS_PLANS, getAccessPlan } from "./pricing";
 import { RENEWALS } from "@/lib/payments/renewals";
 
