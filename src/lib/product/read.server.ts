@@ -28,10 +28,6 @@ export type ScopedClient = Admin;
 
 const DAY_MS = 86400000;
 
-function unlockAt(startedAt: string, day: number) {
-  return new Date(new Date(startedAt).getTime() + (day - 1) * DAY_MS);
-}
-
 function dayKey(date: Date) {
   return date.toISOString().slice(0, 10);
 }
@@ -41,6 +37,40 @@ function daysBetween(a: string, b: string) {
 }
 
 const MAX_FREEZES = 3;
+
+/**
+ * Exactly one plan record per reader per book, kept forever. Coming back to a
+ * book reopens the same record, so nothing a reader finished can be lost by
+ * switching between books.
+ */
+async function ensurePlan(userId: string, bookSlug: string, scoped?: Admin) {
+  const supabase = await db(scoped);
+  const slug = BOOK_TITLES[bookSlug] ? bookSlug : "john";
+  const { data: existing } = await supabase
+    .from("user_plans")
+    .select("*")
+    .eq("user_id", userId)
+    .eq("book_slug", slug)
+    .maybeSingle();
+  if (existing) return existing;
+
+  const { data: created, error } = await supabase
+    .from("user_plans")
+    .upsert(
+      {
+        user_id: userId,
+        book_slug: slug,
+        book_title: BOOK_TITLES[slug]!,
+        translation: "WEB",
+        is_active: true,
+      },
+      { onConflict: "user_id,book_slug" },
+    )
+    .select("*")
+    .single();
+  if (error || !created) throw new Error(error?.message ?? "Could not open a plan");
+  return created;
+}
 
 async function activePlan(userId: string, scoped?: Admin) {
   const supabase = await db(scoped);
@@ -53,15 +83,33 @@ async function activePlan(userId: string, scoped?: Admin) {
     .limit(1)
     .maybeSingle();
   if (data) return data;
-
   // The product must work for someone who never took the quiz.
-  const { data: created, error } = await supabase
-    .from("user_plans")
-    .insert({ user_id: userId, book_slug: "john", book_title: BOOK_TITLES["john"]!, translation: "WEB", is_active: true })
+  return ensurePlan(userId, "john", scoped);
+}
+
+/** The streak follows the reader, not a single book. */
+async function readerState(userId: string, scoped?: Admin) {
+  const supabase = await db(scoped);
+  const { data } = await supabase
+    .from("reader_state")
+    .select("*")
+    .eq("user_id", userId)
+    .maybeSingle();
+  if (data) return data;
+  const { data: created } = await supabase
+    .from("reader_state")
+    .upsert({ user_id: userId }, { onConflict: "user_id" })
     .select("*")
     .single();
-  if (error || !created) throw new Error(error?.message ?? "Could not open a plan");
-  return created;
+  return (
+    created ?? {
+      user_id: userId,
+      streak_count: 0,
+      longest_streak: 0,
+      last_completed_on: null as string | null,
+      freezes_used: 0,
+    }
+  );
 }
 
 export async function buildMyPlan(userId: string, scoped?: Admin): Promise<MyPlan> {
