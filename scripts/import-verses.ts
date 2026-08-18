@@ -35,7 +35,7 @@ for (const arg of args) {
     const { error } = await supabase.from("verses").upsert(rows, { onConflict: "translation,book,chapter,verse" });
     if (error) { console.error(`${book} ${c}: ${error.message}`); process.exit(1); }
     total += rows.length;
-    await new Promise((r) => setTimeout(r, 250));
+    await new Promise((r) => setTimeout(r, 2500));
   }
   console.log(`${book}: ${total} verses.`);
 }
