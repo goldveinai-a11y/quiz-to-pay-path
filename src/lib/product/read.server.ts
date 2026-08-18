@@ -9,6 +9,8 @@ import {
   type DivideReading,
   type WordNote,
 } from "./types";
+import type { SavedHighlight } from "./types";
+import type { Application, CrossReference, TraditionVoice } from "./types";
 import { ACCESS_PLANS, getAccessPlan } from "./pricing";
 import { RENEWALS } from "@/lib/payments/renewals";
 
@@ -268,12 +270,34 @@ export async function buildSessionDay(userId: string, day: number, scoped?: Admi
     alsoIn: w.also_in,
   }));
 
+  // Seeded books ship one lexicon note with the session itself.
+  const seedWord = (session.word_study ?? null) as
+    | { word: string; original: string; language: string; gloss: string; body: string }
+    | null;
+  if (seedWord?.word && !words.some((w) => w.word.toLowerCase() === seedWord.word.toLowerCase())) {
+    words.push({
+      word: seedWord.word,
+      original: seedWord.original,
+      transliteration: seedWord.gloss,
+      language: seedWord.language,
+      meaning: seedWord.body,
+      alsoIn: null,
+    });
+  }
+
   const { data: next } = await supabase
     .from("study_sessions")
     .select("day_number, title")
     .eq("book_slug", plan.book_slug)
     .eq("day_number", day + 1)
     .maybeSingle();
+
+  const { data: highlightRows } = await supabase
+    .from("verse_highlights")
+    .select("verse")
+    .eq("user_id", userId)
+    .eq("book_slug", plan.book_slug)
+    .eq("day_number", day);
 
   // One short comprehension question, seeded per session. Never generated at runtime.
   const { data: quizRow } = await supabase
@@ -286,6 +310,29 @@ export async function buildSessionDay(userId: string, day: number, scoped?: Admi
 
   const readings = (session.divide_readings ?? null) as DivideReading[] | null;
   const showDivide = Boolean(session.divides && plan.show_both_sides !== false && readings?.length);
+
+  const crossReference = (session.cross_reference ?? null) as CrossReference | null;
+  const application = (session.application ?? null) as Application | null;
+  const allVoices = ((session.voices ?? []) as TraditionVoice[]).filter((v) => v?.reading);
+  const tradition = (plan.tradition ?? "unsure").toLowerCase();
+  const own = allVoices.find((v) => v.tradition.toLowerCase().startsWith(tradition.slice(0, 6)));
+  // Show every tradition when the reader asked for both sides or never told us.
+  const voices = plan.show_both_sides !== false || !own ? allVoices : [own];
+
+  const wordCount =
+    [
+      session.insight_body,
+      session.context_body,
+      application?.body ?? "",
+      crossReference?.note ?? "",
+      voices.map((v) => v.reading).join(" "),
+      (verses ?? []).map((v) => v.text).join(" "),
+    ]
+      .join(" ")
+      .trim()
+      .split(/\s+/).length;
+  // ~130 words a minute for close reading, plus a minute for the question.
+  const minutes = Math.max(3, Math.round(wordCount / 130) + 1);
 
   return {
     day,
@@ -305,6 +352,10 @@ export async function buildSessionDay(userId: string, day: number, scoped?: Admi
       year: session.insight_year,
     },
     context: session.context_body,
+    crossReference,
+    application,
+    voices,
+    minutes,
     divide: showDivide
       ? {
           question: session.divide_question ?? "How traditions read this",
@@ -324,6 +375,7 @@ export async function buildSessionDay(userId: string, day: number, scoped?: Admi
         : null,
     step: progress?.step ?? 1,
     note: progress?.note ?? null,
+    highlights: (highlightRows ?? []).map((h) => h.verse),
     done: Boolean(progress?.completed_at),
     next: next
       ? {
@@ -456,6 +508,85 @@ export async function listNotes(userId: string, scoped?: Admin): Promise<SavedNo
         completedAt: p.completed_at,
       };
     });
+}
+
+/** WEB or KJV — both public domain, both fully imported for every plan book. */
+export async function setTranslation(userId: string, translation: string, scoped?: Admin) {
+  const supabase = await db(scoped);
+  const value = translation === "KJV" ? "KJV" : "WEB";
+  const plan = await activePlan(userId, scoped);
+  await supabase.from("user_plans").update({ translation: value }).eq("id", plan.id);
+  return { translation: value };
+}
+
+/** Tapping a verse keeps it; tapping again lets it go. */
+export async function toggleHighlight(
+  userId: string,
+  day: number,
+  verse: number,
+  scoped?: Admin,
+) {
+  const supabase = await db(scoped);
+  const plan = await activePlan(userId, scoped);
+  const { data: existing } = await supabase
+    .from("verse_highlights")
+    .select("id")
+    .eq("user_id", userId)
+    .eq("book_slug", plan.book_slug)
+    .eq("day_number", day)
+    .eq("verse", verse)
+    .maybeSingle();
+
+  if (existing) {
+    await supabase.from("verse_highlights").delete().eq("id", existing.id);
+    return { highlighted: false };
+  }
+
+  const { data: session } = await supabase
+    .from("study_sessions")
+    .select("book, chapter, reference")
+    .eq("book_slug", plan.book_slug)
+    .eq("day_number", day)
+    .maybeSingle();
+  if (!session) throw new Error("This session is not available.");
+
+  const { data: row } = await supabase
+    .from("verses")
+    .select("text")
+    .eq("translation", plan.translation)
+    .eq("book", session.book)
+    .eq("chapter", session.chapter)
+    .eq("verse", verse)
+    .maybeSingle();
+  if (!row) throw new Error("That verse is not part of this passage.");
+
+  await supabase.from("verse_highlights").insert({
+    user_id: userId,
+    book_slug: plan.book_slug,
+    day_number: day,
+    reference: `${session.reference.split(":")[0]}:${verse}`,
+    verse,
+    text: row.text,
+  });
+  return { highlighted: true };
+}
+
+/** Every verse the reader kept, newest first, for the Notes screen. */
+export async function listHighlights(userId: string, scoped?: Admin): Promise<SavedHighlight[]> {
+  const supabase = await db(scoped);
+  const plan = await activePlan(userId, scoped);
+  const { data } = await supabase
+    .from("verse_highlights")
+    .select("day_number, reference, verse, text")
+    .eq("user_id", userId)
+    .eq("book_slug", plan.book_slug)
+    .order("day_number", { ascending: false });
+  return (data ?? []).map((h) => ({
+    day: h.day_number,
+    reference: h.reference,
+    verse: h.verse,
+    text: h.text,
+  }));
 }
 
 export async function switchBook(userId: string, bookSlug: string, scoped?: Admin) {

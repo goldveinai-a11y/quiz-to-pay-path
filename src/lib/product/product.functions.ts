@@ -12,6 +12,7 @@ import {
   changePlan,
   listNotes,
 } from "./read.server";
+import { toggleHighlight, listHighlights, setTranslation } from "./read.server";
 
 // Fulfilment is not a public endpoint: it runs only from finalizePurchase,
 // after the payment session has been verified with the card processor.
@@ -55,6 +56,31 @@ export const getAccess = createServerFn({ method: "GET" })
 export const getMyNotes = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => listNotes(context.userId, context.supabase as never));
+
+export const getMyHighlights = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => listHighlights(context.userId, context.supabase as never));
+
+export const setMyTranslation = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data) => z.object({ translation: z.enum(["WEB", "KJV"]) }).parse(data))
+  .handler(async ({ data, context }) =>
+    setTranslation(context.userId, data.translation, context.supabase as never),
+  );
+
+export const toggleVerseHighlight = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data) =>
+    z
+      .object({
+        day: z.number().int().min(1).max(30),
+        verse: z.number().int().min(1).max(200),
+      })
+      .parse(data),
+  )
+  .handler(async ({ data, context }) =>
+    toggleHighlight(context.userId, data.day, data.verse, context.supabase as never),
+  );
 
 export const cancelAccessNow = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])

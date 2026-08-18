@@ -2,8 +2,8 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { X, ArrowLeft, ArrowRight, Check, Flame, MessageCircleQuestion, Loader2 } from "lucide-react";
-import { getSessionDay, saveStep, completeDay } from "@/lib/product/product.functions";
+import { X, ArrowLeft, ArrowRight, Check, Flame, MessageCircleQuestion, Loader2, Highlighter } from "lucide-react";
+import { getSessionDay, saveStep, completeDay, toggleVerseHighlight } from "@/lib/product/product.functions";
 import { askAboutPassage } from "@/lib/product/ask.functions";
 import { Input } from "@/components/ui/input";
 import { Plate } from "@/components/product/Plate";
@@ -109,11 +109,13 @@ function SessionPage() {
   const steps = useMemo(() => {
     const list: SessionStep[] = ["passage", "insight", "context"];
     if (data?.divide) list.push("divide");
+    if (data?.voices?.length) list.push("voices");
+    if (data?.application) list.push("apply");
     list.push("question");
     if (data?.quiz) list.push("quiz");
     list.push("close");
     return list;
-  }, [data?.divide, data?.quiz]);
+  }, [data?.divide, data?.quiz, data?.voices, data?.application]);
 
   useEffect(() => {
     if (!data || restored.current) return;
@@ -235,6 +237,8 @@ function SessionPage() {
           {current === "insight" ? <InsightStep data={data} /> : null}
           {current === "context" ? <ContextStep data={data} /> : null}
           {current === "divide" ? <DivideStep data={data} /> : null}
+          {current === "voices" ? <VoicesStep data={data} /> : null}
+          {current === "apply" ? <ApplyStep data={data} /> : null}
           {current === "question" ? (
             <QuestionStep data={data} note={note} onNote={setNote} />
           ) : null}
@@ -289,7 +293,51 @@ function SessionPage() {
   );
 }
 
-type SessionStep = "passage" | "insight" | "context" | "divide" | "question" | "quiz" | "close";
+type SessionStep =
+  | "passage"
+  | "insight"
+  | "context"
+  | "divide"
+  | "voices"
+  | "apply"
+  | "question"
+  | "quiz"
+  | "close";
+
+/** Commentary in the reader's own tradition — or all of them, if they asked. */
+function VoicesStep({ data }: { data: SessionDay }) {
+  if (!data.voices.length) return null;
+  const single = data.voices.length === 1;
+  return (
+    <section>
+      <p className="eyebrow text-muted-foreground">
+        {single ? `Read in your tradition` : "How the traditions read it"}
+      </p>
+      <div className="mt-5 space-y-4">
+        {data.voices.map((v) => (
+          <div key={v.tradition} className="rounded-2xl border border-border bg-card p-5">
+            <p className="eyebrow text-terra">{v.tradition}</p>
+            <p className="mt-2 text-[0.95rem] leading-relaxed">{v.reading}</p>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+/** The bridge from the passage to this week — the promise of a 7-minute session. */
+function ApplyStep({ data }: { data: SessionDay }) {
+  if (!data.application) return null;
+  return (
+    <section>
+      <p className="eyebrow text-muted-foreground">What it means today</p>
+      <h2 className="mt-3 font-serif text-2xl font-semibold leading-snug">
+        {data.application.prompt}
+      </h2>
+      <p className="mt-4 text-[0.95rem] leading-relaxed">{data.application.body}</p>
+    </section>
+  );
+}
 
 /** One question, no score, no punishment — just a moment of active recall. */
 function QuizStep({ data }: { data: SessionDay }) {
@@ -468,22 +516,50 @@ function AskPanel({ data }: { data: SessionDay }) {
 
 function PassageStep({ data, onWord }: { data: SessionDay; onWord: (w: WordNote) => void }) {
   const words = new Map(data.words.map((w) => [w.word.toLowerCase(), w]));
+  const toggle = useServerFn(toggleVerseHighlight);
+  const [kept, setKept] = useState<number[]>(data.highlights);
+  const flip = (verse: number) => {
+    setKept((prev) => (prev.includes(verse) ? prev.filter((v) => v !== verse) : [...prev, verse]));
+    void toggle({ data: { day: data.day, verse } });
+  };
   return (
     <section>
       <p className="eyebrow text-muted-foreground">
         {data.reference} · {data.translation}
       </p>
+      <p className="eyebrow mt-1 text-muted-foreground">About {data.minutes} minutes</p>
       <h1 className="mt-3 font-serif text-2xl font-semibold leading-snug">{data.title}</h1>
       <div className="mt-6 space-y-4">
         {data.verses.map((v) => (
-            <p key={v.verse} className="font-serif text-xl leading-relaxed">
+            <p
+              key={v.verse}
+              onDoubleClick={() => flip(v.verse)}
+              className={cn(
+                "rounded-lg font-serif text-xl leading-relaxed transition-colors duration-200",
+                kept.includes(v.verse) && "bg-terra/15 px-2 py-1",
+              )}
+            >
               <span className="mr-2 align-super font-mono text-[0.6rem] text-muted-foreground">
                 {v.verse}
               </span>
             <VerseText text={v.text} words={words} onWord={onWord} />
+            <button
+              type="button"
+              aria-label={kept.includes(v.verse) ? `Remove highlight on verse ${v.verse}` : `Highlight verse ${v.verse}`}
+              onClick={() => flip(v.verse)}
+              className={cn(
+                "ml-2 align-middle text-muted-foreground transition-colors duration-150 hover:text-terra",
+                kept.includes(v.verse) && "text-terra",
+              )}
+            >
+              <Highlighter className="inline h-4 w-4" />
+            </button>
             </p>
         ))}
       </div>
+      <p className="eyebrow mt-6 text-muted-foreground">
+        Tap the marker to keep a verse — it lands in your notes
+      </p>
       {words.size > 0 ? (
         <p className="eyebrow mt-6 text-muted-foreground">
           Tap an underlined word for the {data.words[0]?.language ?? "original"} behind it
@@ -533,6 +609,12 @@ function ContextStep({ data }: { data: SessionDay }) {
           </p>
         ))}
       </div>
+      {data.crossReference ? (
+        <div className="mt-6 rounded-2xl border border-border bg-card p-5">
+          <p className="eyebrow text-muted-foreground">See also · {data.crossReference.reference}</p>
+          <p className="mt-2 text-[0.95rem] leading-relaxed">{data.crossReference.note}</p>
+        </div>
+      ) : null}
     </section>
   );
 }

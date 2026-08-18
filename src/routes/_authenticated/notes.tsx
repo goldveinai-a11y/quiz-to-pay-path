@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { ArrowLeft } from "lucide-react";
-import { getMyNotes } from "@/lib/product/product.functions";
+import { getMyNotes, getMyHighlights } from "@/lib/product/product.functions";
 
 export const Route = createFileRoute("/_authenticated/notes")({
   head: () => ({
@@ -29,7 +29,12 @@ export const Route = createFileRoute("/_authenticated/notes")({
 
 function NotesPage() {
   const fetchNotes = useServerFn(getMyNotes);
+  const fetchHighlights = useServerFn(getMyHighlights);
   const { data, isLoading } = useQuery({ queryKey: ["my-notes"], queryFn: () => fetchNotes() });
+  const { data: highlights } = useQuery({
+    queryKey: ["my-highlights"],
+    queryFn: () => fetchHighlights(),
+  });
 
   return (
     <main className="mx-auto max-w-[480px] px-5 pb-20 pt-6">
@@ -71,6 +76,25 @@ function NotesPage() {
           there lands here.
         </p>
       )}
+
+      {highlights && highlights.length > 0 ? (
+        <section className="mt-10">
+          <h2 className="font-serif text-2xl font-semibold">Verses you kept</h2>
+          <ul className="mt-5 space-y-3">
+            {highlights.map((h) => (
+              <li
+                key={`${h.day}-${h.verse}`}
+                className="rounded-2xl border border-terra/30 bg-terra/5 p-5"
+              >
+                <p className="eyebrow text-muted-foreground">
+                  Day {h.day} · {h.reference}
+                </p>
+                <p className="mt-2 font-serif text-lg leading-relaxed">{h.text}</p>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
     </main>
   );
 }

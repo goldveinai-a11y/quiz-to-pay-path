@@ -33,6 +33,13 @@ export type SavedNote = {
   completedAt: string | null;
 };
 
+export type SavedHighlight = {
+  day: number;
+  reference: string;
+  verse: number;
+  text: string;
+};
+
 export type MyPlan = {
   planId: string;
   bookSlug: string;
@@ -63,6 +70,12 @@ export type MyPlan = {
 
 export type DivideReading = { tradition: string; reading: string; verses?: string };
 
+export type TraditionVoice = { tradition: string; reading: string };
+
+export type CrossReference = { reference: string; note: string };
+
+export type Application = { prompt: string; body: string };
+
 export type SessionQuiz = {
   question: string;
   options: string[];
@@ -83,6 +96,11 @@ export type SessionDay = {
   words: WordNote[];
   insight: { title: string; body: string; author: string; year: string };
   context: string;
+  crossReference: CrossReference | null;
+  application: Application | null;
+  voices: TraditionVoice[];
+  /** Honest reading estimate, derived from the length of the session. */
+  minutes: number;
   divide: {
     question: string;
     readings: DivideReading[];
@@ -92,6 +110,8 @@ export type SessionDay = {
   quiz: SessionQuiz | null;
   step: number;
   note: string | null;
+  /** Verse numbers this reader has highlighted in this passage. */
+  highlights: number[];
   done: boolean;
   next: { day: number; title: string } | null;
 };
@@ -100,16 +120,20 @@ export const BOOK_TITLES: Record<string, string> = {
   john: "John in 30 days",
   mark: "Mark in 30 days",
   psalms: "Psalms in 30 days",
+  philippians: "Philippians in 30 days",
+  ruth: "Ruth in 30 days",
+  proverbs: "Proverbs in 30 days",
+  ephesians: "Ephesians in 30 days",
 };
 
-/** Quiz themes map onto the three books that exist today. */
+/** Quiz themes map onto the book the paywall promises. */
 export const THEME_TO_BOOK: Record<string, string> = {
-  anxiety: "psalms",
+  anxiety: "philippians",
   grief: "psalms",
   guilt: "psalms",
   doubt: "john",
-  purpose: "john",
-  relationship: "mark",
-  money: "mark",
+  purpose: "ephesians",
+  relationship: "ruth",
+  money: "proverbs",
   nothing: "john",
 };

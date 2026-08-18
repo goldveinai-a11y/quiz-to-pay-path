@@ -466,6 +466,39 @@ export type Database = {
           },
         ]
       }
+      verse_highlights: {
+        Row: {
+          book_slug: string
+          created_at: string
+          day_number: number
+          id: string
+          reference: string
+          text: string
+          user_id: string
+          verse: number
+        }
+        Insert: {
+          book_slug: string
+          created_at?: string
+          day_number: number
+          id?: string
+          reference: string
+          text: string
+          user_id: string
+          verse: number
+        }
+        Update: {
+          book_slug?: string
+          created_at?: string
+          day_number?: number
+          id?: string
+          reference?: string
+          text?: string
+          user_id?: string
+          verse?: number
+        }
+        Relationships: []
+      }
       verses: {
         Row: {
           book: string

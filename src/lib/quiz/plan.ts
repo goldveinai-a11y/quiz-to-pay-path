@@ -1,8 +1,8 @@
 import type { Answers } from "./types";
 
 const TRADITION_MAP: Record<string, { translation: string; voices: string }> = {
-  catholic: { translation: "WEB (with the deuterocanon)", voices: "Augustine, Aquinas, Ratzinger" },
-  orthodox: { translation: "WEB (with the deuterocanon)", voices: "Chrysostom, Athanasius, Schmemann" },
+  catholic: { translation: "WEB", voices: "Augustine, Aquinas, Ratzinger" },
+  orthodox: { translation: "WEB", voices: "Chrysostom, Athanasius, Schmemann" },
   baptist: { translation: "KJV", voices: "Spurgeon, Stott, Keller" },
   reformed: { translation: "WEB", voices: "Calvin, Owen, Sproul" },
   pentecostal: { translation: "WEB", voices: "Fee, Yong, Cho" },
