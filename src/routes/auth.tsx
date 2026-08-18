@@ -24,6 +24,7 @@ export const Route = createFileRoute("/auth")({
 function AuthPage() {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
+  const [code, setCode] = useState("");
   const [sent, setSent] = useState(false);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -32,6 +33,9 @@ function AuthPage() {
   useEffect(() => {
     let cancelled = false;
     const run = async () => {
+      // The address is remembered so coming back is one tap, not a retype.
+      const remembered = window.localStorage.getItem("br:email");
+      if (remembered) setEmail(remembered);
       const hash = new URLSearchParams(window.location.hash.replace(/^#/, ""));
       const url = new URL(window.location.href);
       const tokenHash = url.searchParams.get("token_hash");
@@ -63,13 +67,30 @@ function AuthPage() {
   const send = async () => {
     setPending(true);
     setError(null);
+    const address = email.trim().toLowerCase();
     const { error: err } = await supabase.auth.signInWithOtp({
-      email: email.trim().toLowerCase(),
+      email: address,
       options: { shouldCreateUser: false, emailRedirectTo: `${window.location.origin}/auth` },
     });
     setPending(false);
     if (err) setError("We couldn't find that email. Use the address you paid with.");
-    else setSent(true);
+    else {
+      window.localStorage.setItem("br:email", address);
+      setSent(true);
+    }
+  };
+
+  const verify = async () => {
+    setPending(true);
+    setError(null);
+    const { error: err } = await supabase.auth.verifyOtp({
+      email: email.trim().toLowerCase(),
+      token: code.trim(),
+      type: "email",
+    });
+    setPending(false);
+    if (err) setError("That code didn't work. Check the latest email.");
+    else navigate({ to: "/plan", replace: true });
   };
 
   return (
@@ -88,6 +109,27 @@ function AuthPage() {
               We sent a link to <span className="text-foreground">{email}</span>. Opening it signs you
               in — on this device or any other.
             </p>
+            <div className="mt-5 border-t border-border pt-4">
+              <p className="text-sm text-muted-foreground">
+                Or type the 6-digit code from that email.
+              </p>
+              <Input
+                inputMode="numeric"
+                autoComplete="one-time-code"
+                value={code}
+                onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                placeholder="123456"
+                className="mt-3 h-12 rounded-xl bg-background text-center font-mono text-lg tracking-[0.4em]"
+              />
+              {error ? <p className="mt-2 text-sm text-destructive">{error}</p> : null}
+              <Button
+                onClick={verify}
+                disabled={pending || code.length !== 6}
+                className="mt-3 h-12 w-full rounded-xl text-base"
+              >
+                {pending ? "Checking…" : "Open my plan"}
+              </Button>
+            </div>
           </div>
         ) : (
           <>
