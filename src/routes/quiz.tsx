@@ -5,6 +5,7 @@ import { StepRenderer } from "@/components/quiz/StepRenderer";
 import { steps, SECTIONS } from "@/lib/quiz/steps";
 import { captureUtm, useAnswers } from "@/lib/quiz/store";
 import { useReturningReader } from "@/lib/auth/useReturningReader";
+import { track } from "@/lib/analytics";
 
 export const Route = createFileRoute("/quiz")({
   head: () => ({
@@ -36,6 +37,7 @@ function QuizPage() {
 
   useEffect(() => {
     captureUtm();
+    track("quiz_start", { total_steps: steps.length });
   }, []);
 
   useEffect(() => {
@@ -44,8 +46,14 @@ function QuizPage() {
 
   const step = steps[index]!;
 
+  useEffect(() => {
+    track("quiz_step_view", { step_index: index + 1, step_id: step.id, step_kind: step.kind });
+  }, [index, step.id, step.kind]);
+
   const next = () => {
+    track("quiz_step_complete", { step_index: index + 1, step_id: step.id, step_kind: step.kind });
     if (index >= steps.length - 1) {
+      track("quiz_complete", { total_steps: steps.length });
       navigate({ to: "/result" });
       return;
     }
