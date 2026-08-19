@@ -119,7 +119,7 @@ function Index() {
           Answer 2 minutes of questions and get your 30-day plan.
         </p>
         <div className="mt-6">
-          <StartButton label="Start the quiz" />
+          <StartButton label="Start the quiz" placement="footer" />
         </div>
       </section>
 
