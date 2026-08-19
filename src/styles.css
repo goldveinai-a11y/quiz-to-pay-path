@@ -230,3 +230,125 @@
   background-image: radial-gradient(rgb(25 23 18 / 0.035) 1px, transparent 1px);
   background-size: 3px 3px;
 }
+
+/* --- Live product loop inside phone mockups --- */
+@keyframes scene-cycle {
+  0% {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  4% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  30% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  35% {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+}
+
+@keyframes sheet-up {
+  0%,
+  6% {
+    transform: translateY(100%);
+  }
+  16%,
+  100% {
+    transform: translateY(0);
+  }
+}
+
+@keyframes mark-in {
+  0%,
+  10% {
+    background-size: 0% 42%;
+  }
+  22%,
+  100% {
+    background-size: 100% 42%;
+  }
+}
+
+@keyframes dot-pop {
+  0%,
+  14% {
+    transform: scale(0.4);
+    opacity: 0;
+  }
+  24%,
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@utility scene-1 {
+  animation: scene-cycle 9s ease-in-out infinite both;
+}
+@utility scene-2 {
+  animation: scene-cycle 9s ease-in-out 3s infinite both;
+}
+@utility scene-3 {
+  animation: scene-cycle 9s ease-in-out 6s infinite both;
+}
+@utility anim-sheet-up {
+  animation: sheet-up 9s ease-out 3s infinite both;
+}
+@utility anim-mark-in {
+  background-image: linear-gradient(var(--gold), var(--gold));
+  background-repeat: no-repeat;
+  background-position: 0 88%;
+  background-size: 0% 42%;
+  animation: mark-in 9s ease-out 3s infinite both;
+}
+@utility anim-dot-pop {
+  animation: dot-pop 9s ease-out 6s infinite both;
+}
+
+/* Scroll reveal for mockup compositions */
+@utility reveal {
+  opacity: 0;
+  transform: translateY(18px);
+  transition:
+    opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+}
+@utility reveal-in {
+  opacity: 1;
+  transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scene-1,
+  .scene-2,
+  .scene-3,
+  .anim-sheet-up,
+  .anim-mark-in,
+  .anim-dot-pop {
+    animation: none !important;
+  }
+  .scene-2,
+  .scene-3 {
+    display: none;
+  }
+  .scene-1 {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+  .anim-mark-in {
+    background-size: 100% 42%;
+  }
+  .reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
