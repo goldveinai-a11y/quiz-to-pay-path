@@ -463,6 +463,7 @@ export function StepRenderer({ step, answers, onAnswer, onNext }: Props) {
             onClick={() => {
               onAnswer("email", email.trim());
               onAnswer("newsletter", optIn ? "yes" : "no");
+              track("quiz_email_submit", { newsletter: optIn });
               onNext();
             }}
           >
