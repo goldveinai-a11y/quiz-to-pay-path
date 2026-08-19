@@ -16,6 +16,7 @@ import { PAYWALL_REVIEWS } from "@/lib/reviews";
 import { ART } from "@/lib/quiz/art";
 import { loadAnswers } from "@/lib/quiz/store";
 import { buildPlan, THEME_LABELS, type PlanResult } from "@/lib/quiz/plan";
+import { track } from "@/lib/analytics";
 
 export const Route = createFileRoute("/result")({
   head: () => ({
@@ -63,6 +64,7 @@ function ResultPage() {
 
   useEffect(() => {
     setPlan(buildPlan(loadAnswers()));
+    track("paywall_view");
   }, []);
 
   const selectedPlan = useMemo(() => PLANS.find((p) => p.id === selected)!, [selected]);
@@ -76,7 +78,14 @@ function ResultPage() {
 
   if (!plan) return <div className="min-h-screen bg-background" />;
 
-  const go = () => navigate({ to: "/checkout", search: { plan: selected } });
+  const go = () => {
+    track("begin_checkout", {
+      plan: selected,
+      value: selectedPlan.price,
+      currency: "USD",
+    });
+    navigate({ to: "/checkout", search: { plan: selected } });
+  };
 
   return (
     <main className="paper-grain min-h-screen bg-background pb-28">
@@ -204,7 +213,10 @@ function ResultPage() {
                 <button
                   key={p.id}
                   type="button"
-                  onClick={() => setSelected(p.id)}
+                  onClick={() => {
+                    setSelected(p.id);
+                    track("plan_select", { plan: p.id, value: p.price, currency: "USD" });
+                  }}
                   className={`relative flex w-full items-center gap-4 rounded-2xl border-2 bg-card p-4 text-left transition ${
                     on ? "border-teal shadow-s2" : "border-border"
                   }`}

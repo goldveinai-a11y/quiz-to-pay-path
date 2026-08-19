@@ -4,6 +4,7 @@ import { Mail, Check } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { track } from "@/lib/analytics";
 
 export const Route = createFileRoute("/auth")({
   ssr: false,
@@ -61,6 +62,7 @@ function AuthPage() {
       const { data } = await supabase.auth.getUser();
       if (cancelled) return;
       if (data.user) {
+        track("login_success", { method: "link" });
         navigate({ to: "/plan", replace: true });
         return;
       }
@@ -96,6 +98,7 @@ function AuthPage() {
       return;
     }
     window.localStorage.setItem("br:email", address);
+    track("login_link_request");
     setCooldown(60);
     setSent(true);
   };
@@ -117,6 +120,7 @@ function AuthPage() {
       else setError("That code didn't work. Use the code from the most recent email.");
       return;
     }
+    track("login_success", { method: "code" });
     navigate({ to: "/plan", replace: true });
   };
 
