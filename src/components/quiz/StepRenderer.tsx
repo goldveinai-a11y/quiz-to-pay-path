@@ -7,6 +7,7 @@ import { Slider } from "@/components/ui/slider";
 import { ArtBlock, type ArtTone } from "@/components/art/ArtBlock";
 import { ART } from "@/lib/quiz/art";
 import type { Answers, Step } from "@/lib/quiz/types";
+import { track } from "@/lib/analytics";
 import { AnalysisStep } from "./AnalysisStep";
 
 type Props = {
