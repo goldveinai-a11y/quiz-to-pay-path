@@ -11,6 +11,7 @@ import { getStripe, getStripeEnvironment } from "@/lib/stripe";
 import { PaymentTestModeBanner } from "@/components/PaymentTestModeBanner";
 import { THEME_TO_BOOK, BOOK_TITLES } from "@/lib/product/types";
 import { getAccessPlan } from "@/lib/product/pricing";
+import { track } from "@/lib/analytics";
 
 type Search = { plan?: string };
 
@@ -69,6 +70,11 @@ function CheckoutPage() {
   const pay = async () => {
     setPending(true);
     setError(null);
+    track("checkout_email_submit", {
+      plan: plan ?? "1-month",
+      value: selected.price,
+      currency: "USD",
+    });
     try {
       const answers = loadAnswers();
       const theme = typeof answers["theme"] === "string" ? (answers["theme"] as string) : "";
