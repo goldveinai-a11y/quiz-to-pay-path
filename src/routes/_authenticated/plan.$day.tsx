@@ -454,6 +454,7 @@ function AskPanel({ data }: { data: SessionDay }) {
     setPending(true);
     setError(null);
     setAnswer(null);
+    track("ask_question", { day: data.day });
     try {
       const result = await ask({
         data: {
