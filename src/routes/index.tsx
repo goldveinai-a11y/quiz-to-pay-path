@@ -7,6 +7,7 @@ import { Faq } from "@/components/landing/Faq";
 import { SiteFooter } from "@/components/landing/SiteFooter";
 import { StartButton } from "@/components/landing/StartButton";
 import { ArtBlock } from "@/components/art/ArtBlock";
+import { LiveSessionLoop } from "@/components/product/LiveSessionLoop";
 import { useReturningReader } from "@/lib/auth/useReturningReader";
 
 export const Route = createFileRoute("/")({
@@ -55,17 +56,18 @@ function Index() {
             text="One passage a day, sized to the time you actually have. The streak does the rest."
           >
             <div className="flex h-full flex-col bg-card">
-              <ArtBlock tone="teal" height={110} eyebrow="Day 4" />
-              <div className="p-4">
-                <p className="font-serif text-[16px] leading-snug text-ink">Psalm 23</p>
+              <ArtBlock tone="teal" height={168} eyebrow="Day 4" />
+              <div className="flex flex-1 flex-col p-4">
+                <p className="font-serif text-[17px] leading-snug text-ink">Psalm 23</p>
                 <p className="mt-1 text-[12px] text-muted-foreground">6 min · shepherd imagery</p>
-                <div className="mt-4 space-y-2">
-                  {["Read", "Explain", "Reflect"].map((s) => (
-                    <div key={s} className="rounded-lg bg-secondary px-3 py-2 text-[12px] text-ink2">
+                <div className="mt-5 space-y-2.5">
+                  {["Read", "Explain", "Reflect", "Note it down"].map((s) => (
+                    <div key={s} className="rounded-lg bg-secondary px-3 py-2.5 text-[12px] text-ink2">
                       {s}
                     </div>
                   ))}
                 </div>
+                <span className="mt-auto block h-[34px] rounded-xl bg-ink" />
               </div>
             </div>
           </FeatureRow>
@@ -74,21 +76,7 @@ function Index() {
             title="The word behind the word"
             text="Hebrew and Greek made readable — what the word meant, how often it appears, why it matters here."
           >
-            <div className="h-full bg-card p-4 pt-7">
-              <p className="eyebrow text-faint">Greek · verb</p>
-              <p className="mt-2 font-serif text-[26px] text-ink">ἠγάπησεν</p>
-              <p className="mt-1 font-mono text-[11px] text-teal">ēgapēsen</p>
-              <p className="mt-3 text-[12px] leading-relaxed text-muted-foreground">
-                Aorist tense: a single, completed act of love — a decision, not a mood.
-              </p>
-              <div className="mt-4 space-y-2">
-                {["Romans 5:8", "1 John 4:10", "Ephesians 2:4"].map((v) => (
-                  <div key={v} className="rounded-lg border border-border px-3 py-2 font-mono text-[11px] text-ink2">
-                    {v}
-                  </div>
-                ))}
-              </div>
-            </div>
+            <LiveSessionLoop book="John" />
           </FeatureRow>
 
           <FeatureRow
@@ -96,17 +84,26 @@ function Index() {
             text="Who wrote it, to whom, and what came before — so the next chapter isn't a cold start."
           >
             <div className="flex h-full flex-col bg-card">
-              <ArtBlock tone="terra" height={100} eyebrow="Context" />
-              <div className="p-4">
-                <p className="font-serif text-[16px] text-ink">Letter to Rome, ~57 AD</p>
+              <ArtBlock tone="terra" height={158} eyebrow="Context" />
+              <div className="flex flex-1 flex-col p-4">
+                <p className="font-serif text-[17px] text-ink">Letter to Rome, ~57 AD</p>
                 <p className="mt-2 text-[12px] leading-relaxed text-muted-foreground">
                   Paul writes to a church he has never visited, arguing that grace reaches Jew and
                   Gentile on the same terms.
                 </p>
-                <div className="mt-4 h-1.5 w-full rounded-full bg-secondary">
-                  <div className="h-1.5 w-2/3 rounded-full bg-teal" />
+                <div className="mt-4 space-y-2">
+                  {["Who wrote it", "Who heard it first", "What came before"].map((s) => (
+                    <div key={s} className="rounded-lg bg-secondary px-3 py-2 text-[11.5px] text-ink2">
+                      {s}
+                    </div>
+                  ))}
                 </div>
-                <p className="mt-2 font-mono text-[10px] text-faint">CHAPTER 9 OF 16</p>
+                <div className="mt-auto">
+                  <div className="h-1.5 w-full rounded-full bg-secondary">
+                    <div className="h-1.5 w-2/3 rounded-full bg-teal" />
+                  </div>
+                  <p className="mt-2 font-mono text-[10px] text-faint">CHAPTER 9 OF 16</p>
+                </div>
               </div>
             </div>
           </FeatureRow>
