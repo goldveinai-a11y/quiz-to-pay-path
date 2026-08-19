@@ -175,6 +175,8 @@ function SessionPage() {
     setDone(true);
     await queryClient.invalidateQueries({ queryKey: ["my-plan"] });
     const streak = result?.streak?.current ?? 0;
+    track("session_complete", { day, streak });
+    if (note.trim()) track("note_saved", { day, length: note.trim().length });
     setCelebrate({ streak, left: Math.max(0, 30 - day) });
   };
 
@@ -358,7 +360,10 @@ function QuizStep({ data }: { data: SessionDay }) {
               key={option}
               type="button"
               disabled={reveal}
-              onClick={() => setPicked(i)}
+              onClick={() => {
+                setPicked(i);
+                track(correct ? "quiz_answer_correct" : "quiz_answer_wrong", { day: data.day });
+              }}
               className={cn(
                 "w-full rounded-2xl border px-4 py-3.5 text-left text-[0.95rem] leading-relaxed transition-colors duration-200",
                 reveal && correct
@@ -519,7 +524,9 @@ function PassageStep({ data, onWord }: { data: SessionDay; onWord: (w: WordNote)
   const toggle = useServerFn(toggleVerseHighlight);
   const [kept, setKept] = useState<number[]>(data.highlights);
   const flip = (verse: number) => {
+    const adding = !kept.includes(verse);
     setKept((prev) => (prev.includes(verse) ? prev.filter((v) => v !== verse) : [...prev, verse]));
+    if (adding) track("highlight_created", { day: data.day, verse });
     void toggle({ data: { day: data.day, verse } });
   };
   return (
