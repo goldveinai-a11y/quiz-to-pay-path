@@ -4,6 +4,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { finalizePurchase } from "@/lib/payments/payments.functions";
 import { getStripeEnvironment } from "@/lib/stripe";
 import { supabase } from "@/integrations/supabase/client";
+import { trackOnce } from "@/lib/analytics";
 
 export const Route = createFileRoute("/checkout-complete")({
   ssr: false,
@@ -42,6 +43,13 @@ function CheckoutReturn() {
         setError(result.error);
         return;
       }
+      // Keyed by session id so a refresh of this URL never double-counts revenue.
+      trackOnce(`purchase-${sessionId}`, "purchase", {
+        transaction_id: sessionId,
+        plan: result.planCode,
+        value: result.amount,
+        currency: result.currency,
+      });
       if (result.tokenHash) {
         await supabase.auth.verifyOtp({ type: "email", token_hash: result.tokenHash });
       }
