@@ -80,7 +80,14 @@ export const createIntroCheckout = createServerFn({ method: "POST" })
   });
 
 type FinalizeResult =
-  | { ok: true; tokenHash: string | null }
+  | {
+      ok: true;
+      tokenHash: string | null;
+      // Non-identifying purchase facts, used only for analytics on the return screen.
+      planCode: string;
+      amount: number;
+      currency: string;
+    }
   | { ok: false; error: string };
 
 /**
@@ -117,7 +124,13 @@ export const finalizePurchase = createServerFn({ method: "POST" })
             ? session.subscription
             : (session.subscription?.id ?? null),
       });
-      return { ok: true, tokenHash: result.tokenHash };
+      return {
+        ok: true,
+        tokenHash: result.tokenHash,
+        planCode: meta["planCode"] ?? "1-month",
+        amount: (session.amount_total ?? 0) / 100,
+        currency: (session.currency ?? "usd").toUpperCase(),
+      };
     } catch (error) {
       return { ok: false, error: getStripeErrorMessage(error) };
     }
