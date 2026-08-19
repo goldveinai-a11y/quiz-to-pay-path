@@ -12,6 +12,7 @@ import { ShareCard } from "@/components/product/ShareCard";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
+import { track } from "@/lib/analytics";
 import type { SessionDay, WordNote } from "@/lib/product/types";
 
 export const Route = createFileRoute("/_authenticated/plan/$day")({
