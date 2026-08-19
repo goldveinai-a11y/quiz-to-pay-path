@@ -5,6 +5,8 @@ import { ArrowRight, Flame, Settings } from "lucide-react";
 import { getMyPlan } from "@/lib/product/product.functions";
 import { Plate } from "@/components/product/Plate";
 import { Button } from "@/components/ui/button";
+import { track, trackReturnVisit } from "@/lib/analytics";
+import { useEffect } from "react";
 
 export const Route = createFileRoute("/_authenticated/plan/")({
   head: () => ({
@@ -32,6 +34,20 @@ export const Route = createFileRoute("/_authenticated/plan/")({
 function TodayPage() {
   const fetchPlan = useServerFn(getMyPlan);
   const { data, isLoading } = useQuery({ queryKey: ["my-plan"], queryFn: () => fetchPlan() });
+
+  useEffect(() => {
+    trackReturnVisit();
+  }, []);
+
+  useEffect(() => {
+    if (!data) return;
+    track("plan_view", {
+      current_day: data.currentDay,
+      finished: data.finished,
+      streak: data.streak.current,
+      complete: data.complete,
+    });
+  }, [data]);
 
   if (isLoading || !data) {
     return (
@@ -109,7 +125,10 @@ function TodayPage() {
               </p>
             </div>
             <Link to="/plan/$day" params={{ day: String(hero.day) }}>
-              <Button className="mt-5 h-13 w-full rounded-xl bg-ink py-4 text-base font-semibold text-background hover:bg-ink/90">
+              <Button
+                onClick={() => track("session_start", { day: hero.day, replay: hero.complete })}
+                className="mt-5 h-13 w-full rounded-xl bg-ink py-4 text-base font-semibold text-background hover:bg-ink/90"
+              >
                 {hero.complete ? "Read again" : "Continue"}
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
