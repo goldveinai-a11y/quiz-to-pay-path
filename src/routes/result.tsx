@@ -10,6 +10,8 @@ import {
 import { BeforeAfter } from "@/components/paywall/BeforeAfter";
 import { GrowthChart } from "@/components/paywall/GrowthChart";
 import { PhoneMock } from "@/components/paywall/PhoneMock";
+import { Reveal } from "@/components/product/Reveal";
+import { LiveSessionLoop } from "@/components/product/LiveSessionLoop";
 import { PAYWALL_REVIEWS } from "@/lib/reviews";
 import { ART } from "@/lib/quiz/art";
 import { loadAnswers } from "@/lib/quiz/store";
@@ -303,17 +305,18 @@ function ResultPage() {
         {/* Product */}
         <section className="pt-12">
           <SectionTitle eyebrow="The app">Your Bible, finally readable</SectionTitle>
-          <div className="mt-6 flex items-end justify-center gap-3">
-            <PhoneMock className="h-[228px] w-[132px] translate-y-3">
+          <div className="mt-6 flex items-end justify-center gap-2.5">
+            <Reveal delay={0}>
+            <PhoneMock size="sm" className="translate-y-6">
               <div className="flex h-full flex-col">
-                <img src={ART["habit"]!} alt="" className="h-[86px] w-full object-cover" />
-                <div className="flex-1 p-2.5">
+                <img src={ART["habit"]!} alt="" className="h-[104px] w-full object-cover" />
+                <div className="flex flex-1 flex-col p-2.5">
                   <p className="font-mono text-[7px] uppercase tracking-wider text-faint">Day 4</p>
                   <p className="font-serif text-[13px] font-semibold leading-tight">
                     {plan.book} 1:1–11
                   </p>
                   <div className="mt-2 space-y-1.5">
-                    {[100, 82, 92, 60].map((w, i) => (
+                    {[100, 82, 92, 60, 88, 70].map((w, i) => (
                       <span
                         key={i}
                         className="block h-[4px] rounded-full bg-secondary"
@@ -321,35 +324,19 @@ function ResultPage() {
                       />
                     ))}
                   </div>
-                  <span className="mt-3 block h-[22px] rounded-lg bg-ink" />
+                  <span className="mt-auto block h-[22px] rounded-lg bg-ink" />
                 </div>
               </div>
             </PhoneMock>
-            <PhoneMock className="h-[262px] w-[148px]">
-              <div className="flex h-full flex-col bg-parchment">
-                <div className="p-3 pt-5">
-                  <p className="font-serif text-[12px] leading-[1.55]">
-                    For God so <span className="border-b-2 border-terra/50">loved</span> the world…
-                  </p>
-                </div>
-                <div className="mt-auto rounded-t-2xl bg-card p-3 shadow-s2">
-                  <span className="mx-auto mb-2 block h-[3px] w-6 rounded-full bg-border" />
-                  <p className="font-serif text-[17px] font-semibold leading-none">ἠγάπησεν</p>
-                  <p className="mt-1 font-mono text-[7.5px] text-terra">agapaō · G25</p>
-                  <div className="mt-2 space-y-1.5">
-                    {[100, 90, 70].map((w, i) => (
-                      <span
-                        key={i}
-                        className="block h-[4px] rounded-full bg-secondary"
-                        style={{ width: `${w}%` }}
-                      />
-                    ))}
-                  </div>
-                </div>
-              </div>
+            </Reveal>
+            <Reveal delay={90}>
+            <PhoneMock size="md" className="z-10">
+              <LiveSessionLoop book={plan.book} />
             </PhoneMock>
-            <PhoneMock className="h-[228px] w-[132px] translate-y-3">
-              <div className="flex h-full flex-col p-2.5 pt-5">
+            </Reveal>
+            <Reveal delay={180}>
+            <PhoneMock size="sm" className="translate-y-6">
+              <div className="flex h-full flex-col p-2.5 pt-6">
                 <p className="font-mono text-[7px] uppercase tracking-wider text-faint">Streak</p>
                 <p className="font-serif text-[26px] font-semibold leading-none">12</p>
                 <div className="mt-3 grid grid-cols-7 gap-1">
@@ -362,8 +349,12 @@ function ResultPage() {
                     />
                   ))}
                 </div>
+                <p className="mt-auto text-[9px] leading-snug text-muted-foreground">
+                  Miss a day? The plan waits for you.
+                </p>
               </div>
             </PhoneMock>
+            </Reveal>
           </div>
           <div className="mt-7 grid grid-cols-2 gap-3">
             {[
