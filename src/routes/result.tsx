@@ -213,7 +213,10 @@ function ResultPage() {
                 <button
                   key={p.id}
                   type="button"
-                  onClick={() => setSelected(p.id)}
+                  onClick={() => {
+                    setSelected(p.id);
+                    track("plan_select", { plan: p.id, value: p.price, currency: "USD" });
+                  }}
                   className={`relative flex w-full items-center gap-4 rounded-2xl border-2 bg-card p-4 text-left transition ${
                     on ? "border-teal shadow-s2" : "border-border"
                   }`}
