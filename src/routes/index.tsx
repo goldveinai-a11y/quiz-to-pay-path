@@ -98,7 +98,7 @@ function Index() {
                     </div>
                   ))}
                 </div>
-                <div className="mt-auto">
+                <div className="mt-auto pt-4">
                   <div className="h-1.5 w-full rounded-full bg-secondary">
                     <div className="h-1.5 w-2/3 rounded-full bg-teal" />
                   </div>
