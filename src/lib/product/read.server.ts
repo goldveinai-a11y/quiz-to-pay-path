@@ -627,7 +627,7 @@ export async function readAccess(userId: string, scoped?: Admin) {
 }
 
 /** One click, no retention flow: access stays until the paid period ends. */
-export async function cancelAccess(userId: string, environment: "sandbox" | "live" = "sandbox") {
+export async function cancelAccess(userId: string) {
   const supabase = await db();
   const { data: current } = await supabase
     .from("subscriptions")
@@ -640,7 +640,8 @@ export async function cancelAccess(userId: string, environment: "sandbox" | "liv
 
   if (current?.provider_subscription_id) {
     const { createStripeClient } = await import("@/lib/stripe.server");
-    const stripe = createStripeClient(environment);
+    const { resolveStripeEnv } = await import("@/lib/payments/env.server");
+    const stripe = createStripeClient(resolveStripeEnv());
     await stripe.subscriptions.update(current.provider_subscription_id, {
       cancel_at_period_end: true,
     });
@@ -677,11 +678,7 @@ export function upgradeOptions(currentCode: string) {
  * Moves the live subscription onto a longer renewal cycle. Access is never
  * interrupted; the card processor prorates the difference.
  */
-export async function changePlan(
-  userId: string,
-  targetCode: string,
-  environment: "sandbox" | "live" = "sandbox",
-) {
+export async function changePlan(userId: string, targetCode: string) {
   const supabase = await db();
   const { data: current } = await supabase
     .from("subscriptions")
@@ -703,21 +700,10 @@ export async function changePlan(
 
   if (current.provider_subscription_id) {
     const { createStripeClient } = await import("@/lib/stripe.server");
-    const stripe = createStripeClient(environment);
-    const lookupKey = `plainly_renewal_${renewal.intervalCount}_${renewal.interval}_${renewal.amountCents}`;
-
-    const existing = await stripe.prices.list({ lookup_keys: [lookupKey], limit: 1 });
-    const price =
-      existing.data[0] ??
-      (await stripe.prices.create({
-        currency: "usd",
-        unit_amount: renewal.amountCents,
-        recurring: { interval: renewal.interval, interval_count: renewal.intervalCount },
-        lookup_key: lookupKey,
-        transfer_lookup_key: true,
-        nickname: `BibleRoutine — continued access (${target.label})`,
-        product_data: { name: "BibleRoutine — continued access" },
-      }));
+    const { resolveStripeEnv } = await import("@/lib/payments/env.server");
+    const { ensureRenewalPrice } = await import("@/lib/payments/catalog.server");
+    const stripe = createStripeClient(resolveStripeEnv());
+    const price = await ensureRenewalPrice(stripe, renewal);
 
     const subscription = await stripe.subscriptions.retrieve(current.provider_subscription_id);
     const item =

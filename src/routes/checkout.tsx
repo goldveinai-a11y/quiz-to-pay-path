@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { loadAnswers } from "@/lib/quiz/store";
 import { createIntroCheckout } from "@/lib/payments/payments.functions";
-import { getStripe, getStripeEnvironment } from "@/lib/stripe";
+import { getStripe } from "@/lib/stripe";
 import { PaymentTestModeBanner } from "@/components/PaymentTestModeBanner";
 import { THEME_TO_BOOK, BOOK_TITLES } from "@/lib/product/types";
 import { getAccessPlan } from "@/lib/product/pricing";
@@ -87,7 +87,6 @@ function CheckoutPage() {
             typeof answers["tradition"] === "string" ? (answers["tradition"] as string) : "unsure",
           readerName: typeof answers["name"] === "string" ? (answers["name"] as string) : undefined,
           returnUrl: `${window.location.origin}/checkout-complete?session_id={CHECKOUT_SESSION_ID}`,
-          environment: getStripeEnvironment(),
         },
       });
       if ("error" in result) throw new Error(result.error);

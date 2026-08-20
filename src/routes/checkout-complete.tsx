@@ -2,7 +2,6 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { finalizePurchase } from "@/lib/payments/payments.functions";
-import { getStripeEnvironment } from "@/lib/stripe";
 import { supabase } from "@/integrations/supabase/client";
 import { trackOnce } from "@/lib/analytics";
 
@@ -37,7 +36,7 @@ function CheckoutReturn() {
     ran.current = true;
     void (async () => {
       const result = await finalize({
-        data: { sessionId, environment: getStripeEnvironment(), origin: window.location.origin },
+        data: { sessionId, origin: window.location.origin },
       });
       if (!result.ok) {
         setError(result.error);
@@ -52,8 +51,11 @@ function CheckoutReturn() {
       });
       if (result.tokenHash) {
         await supabase.auth.verifyOtp({ type: "email", token_hash: result.tokenHash });
+        navigate({ to: "/plan", replace: true });
+        return;
       }
-      navigate({ to: "/plan", replace: true });
+      // Already fulfilled elsewhere (e.g. the payment webhook) — sign in by link.
+      navigate({ to: "/auth", replace: true });
     })();
   }, [sessionId, finalize, navigate]);
 

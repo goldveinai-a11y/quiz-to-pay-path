@@ -1,0 +1,2 @@
+DELETE FROM public.subscriptions a USING public.subscriptions b WHERE a.provider_subscription_id IS NOT NULL AND a.provider_subscription_id = b.provider_subscription_id AND a.ctid > b.ctid;
+CREATE UNIQUE INDEX IF NOT EXISTS subscriptions_provider_subscription_key ON public.subscriptions (provider_subscription_id) WHERE provider_subscription_id IS NOT NULL;

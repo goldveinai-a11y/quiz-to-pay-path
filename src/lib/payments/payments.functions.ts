@@ -1,11 +1,10 @@
 import { createServerFn } from "@tanstack/react-start";
-import {
-  type StripeEnv,
-  createStripeClient,
-  getStripeErrorMessage,
-} from "@/lib/stripe.server";
+import type Stripe from "stripe";
+import { createStripeClient, getStripeErrorMessage } from "@/lib/stripe.server";
+import { resolveStripeEnv } from "./env.server";
 import { getAccessPlan } from "@/lib/product/pricing";
 import { RENEWALS } from "./renewals";
+import { ensureIntroPrice, ensureRenewalPrice } from "./catalog.server";
 
 type SessionInput = {
   planCode: string;
@@ -14,14 +13,14 @@ type SessionInput = {
   tradition: string;
   readerName?: string | undefined;
   returnUrl: string;
-  environment: StripeEnv;
 };
 
 type SessionResult = { clientSecret: string } | { error: string };
 
 /**
- * One session: the intro amount is charged immediately as a one-off line item,
- * and the renewal price starts only after the intro period ends.
+ * One subscription: the intro amount is billed on the first invoice (so the
+ * card is charged today), and the renewal price takes over when the intro
+ * period ends.
  */
 export const createIntroCheckout = createServerFn({ method: "POST" })
   .inputValidator((data: SessionInput) => {
@@ -30,9 +29,15 @@ export const createIntroCheckout = createServerFn({ method: "POST" })
   })
   .handler(async ({ data }): Promise<SessionResult> => {
     try {
-      const stripe = createStripeClient(data.environment);
+      const environment = resolveStripeEnv();
+      const stripe = createStripeClient(environment);
       const plan = getAccessPlan(data.planCode);
       const renewal = RENEWALS[plan.code] ?? RENEWALS["1-month"]!;
+
+      const [introPrice, renewalPrice] = await Promise.all([
+        ensureIntroPrice(stripe, plan.code),
+        ensureRenewalPrice(stripe, renewal),
+      ]);
 
       const session = await stripe.checkout.sessions.create({
         mode: "subscription",
@@ -40,30 +45,20 @@ export const createIntroCheckout = createServerFn({ method: "POST" })
         return_url: data.returnUrl,
         customer_email: data.email,
         line_items: [
-          {
-            quantity: 1,
-            price_data: {
-              currency: "usd",
-              unit_amount: plan.amountCents,
-              product_data: { name: `BibleRoutine — ${plan.label}` },
-            },
-          },
-          {
-            quantity: 1,
-            price_data: {
-              currency: "usd",
-              unit_amount: renewal.amountCents,
-              recurring: {
-                interval: renewal.interval,
-                interval_count: renewal.intervalCount,
-              },
-              product_data: { name: "BibleRoutine — continued access" },
-            },
-          },
+          // The intro amount is a one-off item on the first invoice — charged
+          // today — while the recurring item starts after the intro period.
+          { price: introPrice.id, quantity: 1 },
+          { price: renewalPrice.id, quantity: 1 },
         ],
         subscription_data: {
           trial_period_days: plan.introDays,
-          metadata: { planCode: plan.code },
+          description: `BibleRoutine — ${plan.label}`,
+          metadata: {
+            planCode: plan.code,
+            bookSlug: data.bookSlug,
+            tradition: data.tradition,
+            readerName: data.readerName ?? "",
+          },
         },
         metadata: {
           planCode: plan.code,
@@ -71,7 +66,9 @@ export const createIntroCheckout = createServerFn({ method: "POST" })
           tradition: data.tradition,
           readerName: data.readerName ?? "",
         },
-      });
+        // Stripe takes on tax calculation, collection, filing and remittance.
+        managed_payments: { enabled: true },
+      } as Stripe.Checkout.SessionCreateParams);
 
       return { clientSecret: session.client_secret ?? "" };
     } catch (error) {
@@ -91,17 +88,19 @@ type FinalizeResult =
   | { ok: false; error: string };
 
 /**
- * Runs once, right after the card clears: verifies the session server-side,
- * then freezes the plan record and signs the buyer in.
+ * Runs right after the card clears: verifies the session server-side, then
+ * freezes the plan record and signs the buyer in. The webhook does the same
+ * work if the buyer closes the tab first; fulfilment is idempotent.
  */
 export const finalizePurchase = createServerFn({ method: "POST" })
-  .inputValidator((data: { sessionId: string; environment: StripeEnv; origin: string }) => {
+  .inputValidator((data: { sessionId: string; origin: string }) => {
     if (!/^cs_[a-zA-Z0-9_]+$/.test(data.sessionId)) throw new Error("Invalid session");
     return data;
   })
   .handler(async ({ data }): Promise<FinalizeResult> => {
     try {
-      const stripe = createStripeClient(data.environment);
+      const environment = resolveStripeEnv();
+      const stripe = createStripeClient(environment);
       const session = await stripe.checkout.sessions.retrieve(data.sessionId);
       if (session.payment_status === "unpaid") return { ok: false, error: "Payment not completed" };
 
