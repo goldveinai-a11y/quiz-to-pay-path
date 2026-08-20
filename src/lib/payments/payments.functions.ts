@@ -44,10 +44,14 @@ export const createIntroCheckout = createServerFn({ method: "POST" })
         ui_mode: "embedded_page",
         return_url: data.returnUrl,
         customer_email: data.email,
-        line_items: [{ price: renewalPrice.id, quantity: 1 }],
+        line_items: [
+          // The intro amount is a one-off item on the first invoice — charged
+          // today — while the recurring item starts after the intro period.
+          { price: introPrice.id, quantity: 1 },
+          { price: renewalPrice.id, quantity: 1 },
+        ],
         subscription_data: {
           trial_period_days: plan.introDays,
-          add_invoice_items: [{ price: introPrice.id, quantity: 1 }],
           description: `BibleRoutine — ${plan.label}`,
           metadata: {
             planCode: plan.code,
