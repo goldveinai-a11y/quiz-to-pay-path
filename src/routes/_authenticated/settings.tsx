@@ -12,7 +12,6 @@ import {
 import { getEmailPrefs, setEmailPrefs } from "@/lib/email/email.functions";
 import { Switch } from "@/components/ui/switch";
 import { supabase } from "@/integrations/supabase/client";
-import { getStripeEnvironment } from "@/lib/stripe";
 
 export const Route = createFileRoute("/_authenticated/settings")({
   head: () => ({
@@ -85,10 +84,7 @@ function SettingsPage() {
                         type="button"
                         onClick={async () => {
                           await changePlan({
-                            data: {
-                              planCode: u.code as "1-month" | "3-month",
-                              environment: getStripeEnvironment(),
-                            },
+                            data: { planCode: u.code as "1-month" | "3-month" },
                           });
                           await queryClient.invalidateQueries({ queryKey: ["access"] });
                         }}
@@ -107,7 +103,7 @@ function SettingsPage() {
                 <button
                   type="button"
                   onClick={async () => {
-                    await cancelNow({ data: { environment: getStripeEnvironment() } });
+                    await cancelNow();
                     await queryClient.invalidateQueries({ queryKey: ["access"] });
                   }}
                   className="mt-3 block text-sm text-muted-foreground underline underline-offset-4 transition-colors duration-150 hover:text-foreground"

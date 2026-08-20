@@ -84,17 +84,13 @@ export const toggleVerseHighlight = createServerFn({ method: "POST" })
 
 export const cancelAccessNow = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((data: { environment: "sandbox" | "live" }) => data)
-  .handler(async ({ context, data }) => cancelAccess(context.userId, data.environment));
+  .handler(async ({ context }) => cancelAccess(context.userId));
 
 export const changePlanNow = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((data) =>
     z
-      .object({
-        planCode: z.enum(["1-week", "1-month", "3-month"]),
-        environment: z.enum(["sandbox", "live"]),
-      })
+      .object({ planCode: z.enum(["1-week", "1-month", "3-month"]) })
       .parse(data),
   )
-  .handler(async ({ context, data }) => changePlan(context.userId, data.planCode, data.environment));
+  .handler(async ({ context, data }) => changePlan(context.userId, data.planCode));
