@@ -18,6 +18,18 @@ const MEASUREMENT_ID = import.meta.env["VITE_LOVABLE_CONNECTOR_GOOGLE_ANALYTICS_
 
 let started = false;
 
+/**
+ * Anything that is not the live domain is treated as a preview: events are sent
+ * with debug_mode (visible instantly in GA DebugView) and tagged env=preview so
+ * production reports can filter them out.
+ */
+function environment(): "production" | "preview" {
+  if (typeof window === "undefined") return "production";
+  return /(^|\.)bibleroutine\.app$/.test(window.location.hostname) ? "production" : "preview";
+}
+
+const isPreview = () => environment() === "preview";
+
 function push(...args: unknown[]) {
   if (typeof window === "undefined") return;
   window.dataLayer = window.dataLayer ?? [];
@@ -35,7 +47,10 @@ export function initAnalytics() {
 
   push("js", new Date());
   // Route changes are reported by trackPageView, so the automatic one would double count.
-  push("config", MEASUREMENT_ID, { send_page_view: false });
+  push("config", MEASUREMENT_ID, {
+    send_page_view: false,
+    ...(isPreview() ? { debug_mode: true } : {}),
+  });
 }
 
 export type EventParams = Record<string, string | number | boolean | undefined>;
@@ -43,7 +58,11 @@ export type EventParams = Record<string, string | number | boolean | undefined>;
 /** Never pass emails, names or anything else that identifies a reader. */
 export function track(event: string, params: EventParams = {}) {
   if (typeof window === "undefined" || !MEASUREMENT_ID) return;
-  push("event", event, params);
+  push("event", event, {
+    ...params,
+    env: environment(),
+    ...(isPreview() ? { debug_mode: true } : {}),
+  });
 }
 
 export function trackPageView(path: string, title?: string) {
