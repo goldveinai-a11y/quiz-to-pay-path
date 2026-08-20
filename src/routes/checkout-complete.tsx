@@ -37,7 +37,7 @@ function CheckoutReturn() {
     ran.current = true;
     void (async () => {
       const result = await finalize({
-        data: { sessionId, environment: getStripeEnvironment(), origin: window.location.origin },
+        data: { sessionId, origin: window.location.origin },
       });
       if (!result.ok) {
         setError(result.error);
