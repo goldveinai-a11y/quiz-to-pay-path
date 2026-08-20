@@ -1,9 +1,9 @@
 /**
  * Google Analytics 4 — funnel instrumentation.
  *
- * The measurement ID arrives from the Google Analytics connector as a build-time
- * env var. When it is absent (local dev, preview without the connector) every
- * call here is a no-op, so instrumentation can be sprinkled freely.
+ * The measurement ID is the BibleRoutine web stream. It is a public identifier,
+ * so it lives in code instead of depending on whichever stream the connector
+ * happens to sync. VITE_GA_MEASUREMENT_ID can override it if the stream changes.
  */
 
 declare global {
@@ -12,9 +12,8 @@ declare global {
   }
 }
 
-const MEASUREMENT_ID = import.meta.env["VITE_LOVABLE_CONNECTOR_GOOGLE_ANALYTICS_API_KEY"] as
-  | string
-  | undefined;
+const MEASUREMENT_ID =
+  (import.meta.env["VITE_GA_MEASUREMENT_ID"] as string | undefined) || "G-N9C5ENM381";
 
 let started = false;
 
