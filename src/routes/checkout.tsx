@@ -87,7 +87,6 @@ function CheckoutPage() {
             typeof answers["tradition"] === "string" ? (answers["tradition"] as string) : "unsure",
           readerName: typeof answers["name"] === "string" ? (answers["name"] as string) : undefined,
           returnUrl: `${window.location.origin}/checkout-complete?session_id={CHECKOUT_SESSION_ID}`,
-          environment: getStripeEnvironment(),
         },
       });
       if ("error" in result) throw new Error(result.error);
