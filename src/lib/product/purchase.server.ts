@@ -31,6 +31,16 @@ export type PurchaseInput = {
 export async function fulfillPurchase(input: PurchaseInput) {
   const admin = await adminClient();
   const email = input.email.trim().toLowerCase();
+
+  // The return screen and the webhook both fulfil; whichever lands first wins.
+  if (input.providerSubscriptionId) {
+    const { data: already } = await admin
+      .from("subscriptions")
+      .select("id")
+      .eq("provider_subscription_id", input.providerSubscriptionId)
+      .maybeSingle();
+    if (already) return { tokenHash: null, planId: null, bookSlug: input.bookSlug ?? "john" };
+  }
   const bookSlug = BOOK_TITLES[input.bookSlug ?? ""] ? input.bookSlug! : "john";
   const plan = getAccessPlan(input.planCode);
 
