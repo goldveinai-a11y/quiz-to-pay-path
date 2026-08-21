@@ -72,9 +72,27 @@ function SettingsPage() {
               : ""}
           </p>
           {access.cancelAtPeriodEnd ? (
-            <p className="mt-3 text-sm text-muted-foreground">
-              Cancelled. You keep everything until the date above.
-            </p>
+            <>
+              <p className="mt-3 text-sm text-muted-foreground">
+                Cancelled. You keep everything until the date above.
+              </p>
+              <button
+                type="button"
+                disabled={busy}
+                onClick={async () => {
+                  setBusy(true);
+                  try {
+                    await resumeNow();
+                    await queryClient.invalidateQueries({ queryKey: ["access"] });
+                  } finally {
+                    setBusy(false);
+                  }
+                }}
+                className="mt-3 rounded-full border border-foreground bg-foreground px-4 py-2 text-sm text-background transition-opacity duration-150 disabled:opacity-60"
+              >
+                {busy ? "Restoring…" : "Resume access"}
+              </button>
+            </>
           ) : (
             <>
               {access.upgrades?.length ? (
@@ -105,16 +123,49 @@ function SettingsPage() {
                 <summary className="eyebrow cursor-pointer list-none text-muted-foreground">
                   Manage billing
                 </summary>
-                <button
-                  type="button"
-                  onClick={async () => {
-                    await cancelNow();
-                    await queryClient.invalidateQueries({ queryKey: ["access"] });
-                  }}
-                  className="mt-3 block text-sm text-muted-foreground underline underline-offset-4 transition-colors duration-150 hover:text-foreground"
-                >
-                  Cancel access
-                </button>
+                {confirmingCancel ? (
+                  <div className="mt-3 rounded-xl border border-border p-3">
+                    <p className="text-sm">
+                      You keep everything until{" "}
+                      {access.renewsAt ? formatDate(access.renewsAt) : "the end of the period"}.
+                      Cancel renewal?
+                    </p>
+                    <div className="mt-3 flex gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setConfirmingCancel(false)}
+                        className="rounded-full border border-foreground bg-foreground px-4 py-2 text-sm text-background"
+                      >
+                        Keep access
+                      </button>
+                      <button
+                        type="button"
+                        disabled={busy}
+                        onClick={async () => {
+                          setBusy(true);
+                          try {
+                            await cancelNow();
+                            await queryClient.invalidateQueries({ queryKey: ["access"] });
+                            setConfirmingCancel(false);
+                          } finally {
+                            setBusy(false);
+                          }
+                        }}
+                        className="rounded-full border border-border px-4 py-2 text-sm text-muted-foreground transition-colors duration-150 hover:bg-secondary disabled:opacity-60"
+                      >
+                        {busy ? "Cancelling…" : "Cancel access"}
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => setConfirmingCancel(true)}
+                    className="mt-3 block text-sm text-muted-foreground underline underline-offset-4 transition-colors duration-150 hover:text-foreground"
+                  >
+                    Cancel access
+                  </button>
+                )}
               </details>
             </>
           )}
