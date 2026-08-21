@@ -47,56 +47,47 @@ function CheckoutPage() {
   const { plan } = Route.useSearch();
   const navigate = useNavigate();
   const startCheckout = useServerFn(createIntroCheckout);
-  const [email, setEmail] = useState("");
-  const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [clientSecret, setClientSecret] = useState<string | null>(null);
-  const [bookTitle, setBookTitle] = useState("Your 30-day plan");
 
   const selected = PRICES[plan ?? "1-month"] ?? PRICES["1-month"]!;
-  const access = getAccessPlan(plan);
-  const renewalDate = new Date(Date.now() + access.introDays * 86400000).toLocaleDateString(
-    "en-US",
-    { month: "long", day: "numeric" },
-  );
 
+  // The payment form is opened straight away: no email step, no extra click.
   useEffect(() => {
-    const a = loadAnswers();
-    if (typeof a["email"] === "string") setEmail(a["email"] as string);
-    const theme = typeof a["theme"] === "string" ? (a["theme"] as string) : "";
-    setBookTitle(BOOK_TITLES[THEME_TO_BOOK[theme] ?? "john"] ?? "Your 30-day plan");
-  }, []);
-
-  const pay = async () => {
-    setPending(true);
-    setError(null);
+    let cancelled = false;
+    const answers = loadAnswers();
+    const theme = typeof answers["theme"] === "string" ? (answers["theme"] as string) : "";
+    const email = typeof answers["email"] === "string" ? (answers["email"] as string).trim() : "";
     track("checkout_email_submit", {
       plan: plan ?? "1-month",
       value: selected.price,
       currency: "USD",
     });
-    try {
-      const answers = loadAnswers();
-      const theme = typeof answers["theme"] === "string" ? (answers["theme"] as string) : "";
-      const result = await startCheckout({
-        data: {
-          email: email.trim().toLowerCase(),
-          planCode: plan ?? "1-month",
-          bookSlug: THEME_TO_BOOK[theme] ?? "john",
-          tradition:
-            typeof answers["tradition"] === "string" ? (answers["tradition"] as string) : "unsure",
-          readerName: typeof answers["name"] === "string" ? (answers["name"] as string) : undefined,
-          returnUrl: `${window.location.origin}/checkout-complete?session_id={CHECKOUT_SESSION_ID}`,
-        },
+    startCheckout({
+      data: {
+        ...(/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ? { email: email.toLowerCase() } : {}),
+        planCode: plan ?? "1-month",
+        bookSlug: THEME_TO_BOOK[theme] ?? "john",
+        tradition:
+          typeof answers["tradition"] === "string" ? (answers["tradition"] as string) : "unsure",
+        readerName: typeof answers["name"] === "string" ? (answers["name"] as string) : undefined,
+        returnUrl: `${window.location.origin}/checkout-complete?session_id={CHECKOUT_SESSION_ID}`,
+      },
+    })
+      .then((result) => {
+        if (cancelled) return;
+        if ("error" in result) throw new Error(result.error);
+        setClientSecret(result.clientSecret);
+      })
+      .catch((e: unknown) => {
+        if (cancelled) return;
+        setError(e instanceof Error ? e.message : "We couldn't open the payment form.");
       });
-      if ("error" in result) throw new Error(result.error);
-      setClientSecret(result.clientSecret);
-      setPending(false);
-    } catch (e) {
-      setPending(false);
-      setError(e instanceof Error ? e.message : "We couldn't complete that payment.");
-    }
-  };
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [plan]);
 
   return (
     <main className="min-h-screen bg-ink/60 px-4 py-8 backdrop-blur-sm sm:grid sm:place-items-center">
@@ -107,10 +98,7 @@ function CheckoutPage() {
             <p className="text-sm text-muted-foreground">Total today</p>
             <p className="font-serif text-4xl font-semibold">${selected.price.toFixed(2)}</p>
             <p className="mt-1 text-xs text-muted-foreground">
-              {selected.label} · then {selected.renews}
-            </p>
-            <p className="mt-2 text-xs text-muted-foreground">
-              {bookTitle} · 7 minutes a day · renews {renewalDate}, cancel any time before then
+              Then {selected.renews.replace(/^\$/, "$")} · cancel any time
             </p>
           </div>
           <button
@@ -123,54 +111,20 @@ function CheckoutPage() {
           </button>
         </div>
 
-        {clientSecret ? (
+        {error ? (
+          <p className="mt-6 text-sm text-destructive">{error}</p>
+        ) : clientSecret ? (
           <div className="mt-6">
             <EmbeddedCheckoutProvider stripe={getStripe()} options={{ clientSecret }}>
               <EmbeddedCheckout />
             </EmbeddedCheckoutProvider>
           </div>
         ) : (
-          <>
-            <div className="mt-6">
-              <label className="text-sm font-medium" htmlFor="checkout-email">
-                Email
-              </label>
-              <Input
-                id="checkout-email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="you@email.com"
-                className="mt-1.5 h-12 rounded-xl bg-background"
-              />
-              <p className="mt-1.5 text-xs text-muted-foreground">
-                Your receipt and plan link go here.
-              </p>
-              {!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ? (
-                <p className="mt-1 text-xs text-muted-foreground">
-                  Enter a valid email to continue.
-                </p>
-              ) : null}
-              {error ? <p className="mt-2 text-sm text-destructive">{error}</p> : null}
-            </div>
-
-            <div className="mt-6 space-y-3">
-              <Button
-                onClick={pay}
-                disabled={pending || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)}
-                className="h-13 w-full rounded-xl py-4 text-base font-semibold"
-              >
-                <CreditCard className="mr-2 h-4 w-4" />
-                {pending ? "Opening…" : `Pay $${selected.price.toFixed(2)} now`}
-              </Button>
-            </div>
-
-            <p className="mt-5 flex items-center justify-center gap-1.5 text-xs text-muted-foreground">
-              <Lock className="h-3.5 w-3.5" /> Secure payment · cancel any time
-            </p>
-          </>
+          <div className="mt-8 flex items-center justify-center gap-2 py-10 text-sm text-muted-foreground">
+            <Lock className="h-3.5 w-3.5" /> Opening secure payment…
+          </div>
         )}
       </div>
     </main>
   );
-      }
+}
