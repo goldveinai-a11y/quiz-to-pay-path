@@ -203,7 +203,7 @@ function SettingsPage() {
           <div>
             <h2 className="font-serif text-lg">Daily nudge</h2>
             <p className="mt-1 text-sm text-muted-foreground">
-              One short email when the next day opens. Nothing else.
+              One short email a day, once the next day opens. Nothing else.
             </p>
           </div>
           <Switch
