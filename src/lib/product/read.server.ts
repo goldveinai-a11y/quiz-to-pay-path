@@ -510,12 +510,14 @@ export async function listNotes(userId: string, scoped?: Admin): Promise<SavedNo
     });
 }
 
-/** WEB or KJV — both public domain, both fully imported for every plan book. */
+/**
+ * WEB or KJV — both public domain, both fully imported for every plan book.
+ * The choice belongs to the reader, so it is written to every book they hold.
+ */
 export async function setTranslation(userId: string, translation: string, scoped?: Admin) {
   const supabase = await db(scoped);
   const value = translation === "KJV" ? "KJV" : "WEB";
-  const plan = await activePlan(userId, scoped);
-  await supabase.from("user_plans").update({ translation: value }).eq("id", plan.id);
+  await supabase.from("user_plans").update({ translation: value }).eq("user_id", userId);
   return { translation: value };
 }
 
@@ -650,6 +652,36 @@ export async function cancelAccess(userId: string) {
   const { error } = await supabase
     .from("subscriptions")
     .update({ cancel_at_period_end: true, canceled_at: new Date().toISOString() })
+    .eq("user_id", userId)
+    .eq("status", "active");
+  if (error) throw new Error(error.message);
+  return { ok: true };
+}
+
+/** Undo a cancellation before the period ends — nothing is charged again. */
+export async function resumeAccess(userId: string) {
+  const supabase = await db();
+  const { data: current } = await supabase
+    .from("subscriptions")
+    .select("provider_subscription_id")
+    .eq("user_id", userId)
+    .eq("status", "active")
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (current?.provider_subscription_id) {
+    const { createStripeClient } = await import("@/lib/stripe.server");
+    const { resolveStripeEnv } = await import("@/lib/payments/env.server");
+    const stripe = createStripeClient(resolveStripeEnv());
+    await stripe.subscriptions.update(current.provider_subscription_id, {
+      cancel_at_period_end: false,
+    });
+  }
+
+  const { error } = await supabase
+    .from("subscriptions")
+    .update({ cancel_at_period_end: false, canceled_at: null })
     .eq("user_id", userId)
     .eq("status", "active");
   if (error) throw new Error(error.message);
