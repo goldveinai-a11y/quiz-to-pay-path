@@ -2,23 +2,20 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { EmbeddedCheckoutProvider, EmbeddedCheckout } from "@stripe/react-stripe-js";
-import { X, Lock, CreditCard } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { X, Lock } from "lucide-react";
 import { loadAnswers } from "@/lib/quiz/store";
 import { createIntroCheckout } from "@/lib/payments/payments.functions";
 import { getStripe } from "@/lib/stripe";
 import { PaymentTestModeBanner } from "@/components/PaymentTestModeBanner";
-import { THEME_TO_BOOK, BOOK_TITLES } from "@/lib/product/types";
-import { getAccessPlan } from "@/lib/product/pricing";
+import { THEME_TO_BOOK } from "@/lib/product/types";
 import { track } from "@/lib/analytics";
 
 type Search = { plan?: string };
 
 const PRICES: Record<string, { label: string; price: number; renews: string }> = {
-  "1-week": { label: "1-week trial", price: 6.99, renews: "$29.99 every 3 months after the trial" },
-  "1-month": { label: "1-month access", price: 14.99, renews: "$29.99 every 3 months after" },
-  "3-month": { label: "3-month access", price: 29.99, renews: "$69.99 every year after" },
+  "1-week": { label: "1-week trial", price: 6.99, renews: "$29.99 every 3 months" },
+  "1-month": { label: "1-month access", price: 14.99, renews: "$29.99 every 3 months" },
+  "3-month": { label: "3-month access", price: 29.99, renews: "$69.99 every year" },
 };
 
 export const Route = createFileRoute("/checkout")({
