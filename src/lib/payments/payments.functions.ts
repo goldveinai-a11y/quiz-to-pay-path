@@ -50,13 +50,11 @@ export const createIntroCheckout = createServerFn({ method: "POST" })
         line_items: [
           // Charged today, on the first invoice.
           { price: introPrice.id, quantity: 1 },
-          // Starts only at the anchor below, so it costs nothing today and the
-          // checkout never speaks of a "free trial".
+          // Starts only when the intro period ends, so nothing extra today.
           { price: renewalPrice.id, quantity: 1 },
         ],
         subscription_data: {
-          billing_cycle_anchor: Math.floor(Date.now() / 1000) + plan.introDays * 86400,
-          proration_behavior: "none",
+          trial_period_days: plan.introDays,
           description: `BibleRoutine — ${plan.label}`,
           metadata: {
             planCode: plan.code,
