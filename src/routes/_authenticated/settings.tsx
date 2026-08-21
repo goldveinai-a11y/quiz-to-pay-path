@@ -37,6 +37,9 @@ function formatDate(iso: string) {
 function SettingsPage() {
   const fetchAccess = useServerFn(getAccess);
   const cancelNow = useServerFn(cancelAccessNow);
+  const resumeNow = useServerFn(resumeAccessNow);
+  const [confirmingCancel, setConfirmingCancel] = useState(false);
+  const [busy, setBusy] = useState(false);
   const changePlan = useServerFn(changePlanNow);
   const fetchPrefs = useServerFn(getEmailPrefs);
   const savePrefs = useServerFn(setEmailPrefs);
