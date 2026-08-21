@@ -90,14 +90,10 @@ function CheckoutPage() {
     <main className="min-h-screen bg-ink/60 px-4 py-8 backdrop-blur-sm sm:grid sm:place-items-center">
       <PaymentTestModeBanner />
       <div className="mx-auto w-full max-w-md rounded-3xl border border-border bg-card p-6 shadow-2xl">
-        <div className="flex items-start justify-between">
-          <div>
-            <p className="text-sm text-muted-foreground">Total today</p>
-            <p className="font-serif text-4xl font-semibold">${selected.price.toFixed(2)}</p>
-            <p className="mt-1 text-xs text-muted-foreground">
-              Then {selected.renews.replace(/^\$/, "$")} · cancel any time
-            </p>
-          </div>
+        <div className="flex items-center justify-between">
+          <p className="text-sm text-muted-foreground">
+            {selected.label} · cancel any time
+          </p>
           <button
             type="button"
             aria-label="Close checkout"
