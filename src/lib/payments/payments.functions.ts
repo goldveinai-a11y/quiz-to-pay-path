@@ -43,16 +43,20 @@ export const createIntroCheckout = createServerFn({ method: "POST" })
       const session = await stripe.checkout.sessions.create({
         mode: "subscription",
         ui_mode: "embedded_page",
+        // One language everywhere; the auto locale made the pay button overflow.
+        locale: "en",
         return_url: data.returnUrl,
-        customer_email: data.email,
+        ...(data.email ? { customer_email: data.email } : {}),
         line_items: [
-          // The intro amount is a one-off item on the first invoice — charged
-          // today — while the recurring item starts after the intro period.
+          // Charged today, on the first invoice.
           { price: introPrice.id, quantity: 1 },
+          // Starts only at the anchor below, so it costs nothing today and the
+          // checkout never speaks of a "free trial".
           { price: renewalPrice.id, quantity: 1 },
         ],
         subscription_data: {
-          trial_period_days: plan.introDays,
+          billing_cycle_anchor: Math.floor(Date.now() / 1000) + plan.introDays * 86400,
+          proration_behavior: "none",
           description: `BibleRoutine — ${plan.label}`,
           metadata: {
             planCode: plan.code,
