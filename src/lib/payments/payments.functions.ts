@@ -8,7 +8,7 @@ import { ensureIntroPrice, ensureRenewalPrice } from "./catalog.server";
 
 type SessionInput = {
   planCode: string;
-  email: string;
+  email?: string | undefined;
   bookSlug: string;
   tradition: string;
   readerName?: string | undefined;
@@ -24,7 +24,8 @@ type SessionResult = { clientSecret: string } | { error: string };
  */
 export const createIntroCheckout = createServerFn({ method: "POST" })
   .inputValidator((data: SessionInput) => {
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email)) throw new Error("Enter a valid email");
+    if (data.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email))
+      throw new Error("Enter a valid email");
     return data;
   })
   .handler(async ({ data }): Promise<SessionResult> => {
@@ -42,12 +43,14 @@ export const createIntroCheckout = createServerFn({ method: "POST" })
       const session = await stripe.checkout.sessions.create({
         mode: "subscription",
         ui_mode: "embedded_page",
+        // One language everywhere; the auto locale made the pay button overflow.
+        locale: "en",
         return_url: data.returnUrl,
-        customer_email: data.email,
+        ...(data.email ? { customer_email: data.email } : {}),
         line_items: [
-          // The intro amount is a one-off item on the first invoice — charged
-          // today — while the recurring item starts after the intro period.
+          // Charged today, on the first invoice.
           { price: introPrice.id, quantity: 1 },
+          // Starts only when the intro period ends, so nothing extra today.
           { price: renewalPrice.id, quantity: 1 },
         ],
         subscription_data: {

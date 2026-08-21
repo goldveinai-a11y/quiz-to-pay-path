@@ -1,10 +1,12 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { LogOut } from "lucide-react";
 import {
   getAccess,
   cancelAccessNow,
+  resumeAccessNow,
   changePlanNow,
   getMyPlan,
   setMyTranslation,
@@ -35,6 +37,9 @@ function formatDate(iso: string) {
 function SettingsPage() {
   const fetchAccess = useServerFn(getAccess);
   const cancelNow = useServerFn(cancelAccessNow);
+  const resumeNow = useServerFn(resumeAccessNow);
+  const [confirmingCancel, setConfirmingCancel] = useState(false);
+  const [busy, setBusy] = useState(false);
   const changePlan = useServerFn(changePlanNow);
   const fetchPrefs = useServerFn(getEmailPrefs);
   const savePrefs = useServerFn(setEmailPrefs);
@@ -67,9 +72,27 @@ function SettingsPage() {
               : ""}
           </p>
           {access.cancelAtPeriodEnd ? (
-            <p className="mt-3 text-sm text-muted-foreground">
-              Cancelled. You keep everything until the date above.
-            </p>
+            <>
+              <p className="mt-3 text-sm text-muted-foreground">
+                Cancelled. You keep everything until the date above.
+              </p>
+              <button
+                type="button"
+                disabled={busy}
+                onClick={async () => {
+                  setBusy(true);
+                  try {
+                    await resumeNow();
+                    await queryClient.invalidateQueries({ queryKey: ["access"] });
+                  } finally {
+                    setBusy(false);
+                  }
+                }}
+                className="mt-3 rounded-full border border-foreground bg-foreground px-4 py-2 text-sm text-background transition-opacity duration-150 disabled:opacity-60"
+              >
+                {busy ? "Restoring…" : "Resume access"}
+              </button>
+            </>
           ) : (
             <>
               {access.upgrades?.length ? (
@@ -100,16 +123,49 @@ function SettingsPage() {
                 <summary className="eyebrow cursor-pointer list-none text-muted-foreground">
                   Manage billing
                 </summary>
-                <button
-                  type="button"
-                  onClick={async () => {
-                    await cancelNow();
-                    await queryClient.invalidateQueries({ queryKey: ["access"] });
-                  }}
-                  className="mt-3 block text-sm text-muted-foreground underline underline-offset-4 transition-colors duration-150 hover:text-foreground"
-                >
-                  Cancel access
-                </button>
+                {confirmingCancel ? (
+                  <div className="mt-3 rounded-xl border border-border p-3">
+                    <p className="text-sm">
+                      You keep everything until{" "}
+                      {access.renewsAt ? formatDate(access.renewsAt) : "the end of the period"}.
+                      Cancel renewal?
+                    </p>
+                    <div className="mt-3 flex gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setConfirmingCancel(false)}
+                        className="rounded-full border border-foreground bg-foreground px-4 py-2 text-sm text-background"
+                      >
+                        Keep access
+                      </button>
+                      <button
+                        type="button"
+                        disabled={busy}
+                        onClick={async () => {
+                          setBusy(true);
+                          try {
+                            await cancelNow();
+                            await queryClient.invalidateQueries({ queryKey: ["access"] });
+                            setConfirmingCancel(false);
+                          } finally {
+                            setBusy(false);
+                          }
+                        }}
+                        className="rounded-full border border-border px-4 py-2 text-sm text-muted-foreground transition-colors duration-150 hover:bg-secondary disabled:opacity-60"
+                      >
+                        {busy ? "Cancelling…" : "Cancel access"}
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => setConfirmingCancel(true)}
+                    className="mt-3 block text-sm text-muted-foreground underline underline-offset-4 transition-colors duration-150 hover:text-foreground"
+                  >
+                    Cancel access
+                  </button>
+                )}
               </details>
             </>
           )}
@@ -147,7 +203,7 @@ function SettingsPage() {
           <div>
             <h2 className="font-serif text-lg">Daily nudge</h2>
             <p className="mt-1 text-sm text-muted-foreground">
-              One short email when the next day opens. Nothing else.
+              One short email a day, once the next day opens. Nothing else.
             </p>
           </div>
           <Switch

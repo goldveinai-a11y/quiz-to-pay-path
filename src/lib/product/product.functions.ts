@@ -9,6 +9,7 @@ import {
   switchBook,
   readAccess,
   cancelAccess,
+  resumeAccess,
   changePlan,
   listNotes,
 } from "./read.server";
@@ -85,6 +86,10 @@ export const toggleVerseHighlight = createServerFn({ method: "POST" })
 export const cancelAccessNow = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => cancelAccess(context.userId));
+
+export const resumeAccessNow = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => resumeAccess(context.userId));
 
 export const changePlanNow = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
