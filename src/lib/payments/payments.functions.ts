@@ -8,7 +8,7 @@ import { ensureIntroPrice, ensureRenewalPrice } from "./catalog.server";
 
 type SessionInput = {
   planCode: string;
-  email: string;
+  email?: string | undefined;
   bookSlug: string;
   tradition: string;
   readerName?: string | undefined;
@@ -24,7 +24,8 @@ type SessionResult = { clientSecret: string } | { error: string };
  */
 export const createIntroCheckout = createServerFn({ method: "POST" })
   .inputValidator((data: SessionInput) => {
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email)) throw new Error("Enter a valid email");
+    if (data.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email))
+      throw new Error("Enter a valid email");
     return data;
   })
   .handler(async ({ data }): Promise<SessionResult> => {
