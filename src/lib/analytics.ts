@@ -13,7 +13,7 @@ declare global {
 }
 
 const MEASUREMENT_ID =
-  (import.meta.env["VITE_GA_MEASUREMENT_ID"] as string | undefined) || "G-N9C5ENM381";
+  (import.meta.env["VITE_GA_MEASUREMENT_ID"] as string | undefined) || "G-KS3BLY2V4G";
 
 let started = false;
 
