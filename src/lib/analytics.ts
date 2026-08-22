@@ -9,6 +9,7 @@
 declare global {
   interface Window {
     dataLayer?: unknown[];
+    gtag?: (...args: unknown[]) => void;
   }
 }
 
@@ -32,7 +33,7 @@ const isPreview = () => environment() === "preview";
 function push(...args: unknown[]) {
   if (typeof window === "undefined") return;
   window.dataLayer = window.dataLayer ?? [];
-  window.dataLayer.push(args);
+    (window.gtag || (window.gtag = function (...a: unknown[]) { window.dataLayer!.push(arguments); }))(...args);
 }
 
 export function initAnalytics() {
