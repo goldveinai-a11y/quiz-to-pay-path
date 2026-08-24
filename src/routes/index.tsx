@@ -35,7 +35,7 @@ export const Route = createFileRoute("/")({
 function Index() {
   useReturningReader();
   return (
-    <main className="min-h-screen bg-background">
+    <main className="min-h-screen bg-background pb-24">
       <header className="border-b border-border">
         <div className="mx-auto flex h-14 w-full max-w-[560px] items-center justify-center px-5">
           <span className="font-serif text-[20px] tracking-tight text-ink">BibleRoutine</span>
