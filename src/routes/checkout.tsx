@@ -53,9 +53,11 @@ function CheckoutPage() {
     const answers = loadAnswers();
     const theme = typeof answers["theme"] === "string" ? (answers["theme"] as string) : "";
     const email = typeof answers["email"] === "string" ? (answers["email"] as string).trim() : "";
+    setError(null);
+    setClientSecret(null);
     track("checkout_email_submit", {
       plan: plan ?? "1-month",
-      value: selected.price,
+      value: price,
       currency: "USD",
     });
     startCheckout({
