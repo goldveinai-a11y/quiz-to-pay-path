@@ -63,10 +63,16 @@ function ResultPage() {
   const [plan, setPlan] = useState<PlanResult | null>(null);
   const [selected, setSelected] = useState("1-month");
 
+  const answers = useMemo(() => loadAnswers(), []);
+  const firstName = useMemo(() => {
+    const n = (answers["name"] as string | undefined)?.trim();
+    return n && n.length > 0 ? n : null;
+  }, [answers]);
+
   useEffect(() => {
-    setPlan(buildPlan(loadAnswers()));
+    setPlan(buildPlan(answers));
     track("paywall_view");
-  }, []);
+  }, [answers]);
 
   const selectedPlan = useMemo(() => PLANS.find((p) => p.id === selected)!, [selected]);
   const renewalDate = useMemo(() => {
