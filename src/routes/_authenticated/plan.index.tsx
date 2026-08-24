@@ -15,7 +15,7 @@ export const Route = createFileRoute("/_authenticated/plan/")({
       { name: "description", content: "Your session for today. One passage, one insight, one question." },
       { name: "robots", content: "noindex" },
       { property: "og:title", content: "Today — BibleRoutine" },
-      { property: "og:description", content: "Your session for today, in about seven minutes." },
+      { property: "og:description", content: "Your session for today. One passage, one insight, one question." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],
@@ -133,7 +133,7 @@ function TodayPage() {
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
             </Link>
-            <p className="eyebrow mt-3 text-center text-muted-foreground">About 7 minutes</p>
+            <p className="eyebrow mt-3 text-center text-muted-foreground">About {hero.minutes} minutes</p>
           </div>
         </section>
       ) : null}

@@ -89,8 +89,11 @@ export async function sendWelcome(
   if (!prefs) return { delivered: false, reason: "no_preferences" };
   if (await alreadySent(userId, "welcome", null)) return { delivered: false, reason: "duplicate" };
 
-  // The caller mints exactly one link for the purchase; we reuse it here.
-  const link = signInUrl || planLink(base, 1);
+  // Point at the sign-in screen rather than a one-shot magic link: the buyer is
+  // usually already signed in on the device that paid, and a second token minted
+  // there would silently invalidate an emailed one.
+  const link = `${base}/auth`;
+  void signInUrl;
   const result = await deliver(
     "welcome",
     email,

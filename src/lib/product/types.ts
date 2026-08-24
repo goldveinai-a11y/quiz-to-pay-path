@@ -63,6 +63,7 @@ export type MyPlan = {
     setup: string;
     reference: string;
     tone: string;
+    minutes: number;
     complete: boolean;
   } | null;
   otherBooks: { slug: string; title: string; finished: number }[];

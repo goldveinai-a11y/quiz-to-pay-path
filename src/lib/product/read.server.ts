@@ -114,13 +114,21 @@ async function readerState(userId: string, scoped?: Admin) {
   );
 }
 
+// ~130 words a minute for close reading, plus a minute for the question.
+function estimateMinutes(parts: (string | null | undefined)[]): number {
+  const words = parts.filter(Boolean).join(" ").trim().split(/\s+/).filter(Boolean).length;
+  return Math.max(3, Math.round(words / 130) + 1);
+}
+
 export async function buildMyPlan(userId: string, scoped?: Admin): Promise<MyPlan> {
   const supabase = await db(scoped);
   const plan = await activePlan(userId, scoped);
   const [{ data: sessions }, { data: progress }] = await Promise.all([
     supabase
       .from("study_sessions")
-      .select("day_number, title, reference, setup, art_tone")
+      .select(
+        "day_number, title, reference, setup, art_tone, insight_body, context_body, application, cross_reference, voices",
+      )
       .eq("book_slug", plan.book_slug)
       .order("day_number"),
     supabase
@@ -202,6 +210,16 @@ export async function buildMyPlan(userId: string, scoped?: Admin): Promise<MyPla
           setup: heroSource.setup,
           reference: heroSource.reference,
           tone: heroSource.art_tone ?? "teal",
+          // The real length of today's session, not a marketing number.
+          minutes: estimateMinutes([
+            heroSource.insight_body,
+            heroSource.context_body,
+            ((heroSource.application ?? null) as { body?: string } | null)?.body ?? "",
+            ((heroSource.cross_reference ?? null) as { note?: string } | null)?.note ?? "",
+            ((heroSource.voices ?? []) as { reading?: string }[])
+              .map((v) => v?.reading ?? "")
+              .join(" "),
+          ]),
           complete: Boolean(current?.done),
         }
       : null,
