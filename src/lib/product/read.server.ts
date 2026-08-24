@@ -137,7 +137,7 @@ export async function buildMyPlan(userId: string, scoped?: Admin): Promise<MyPla
     supabase
       .from("study_sessions")
       .select(
-        "day_number, title, reference, setup, art_tone, insight_body, context_body, application, cross_reference, voices",
+        "day_number, title, reference, setup, art_tone, insight_body, context_body, application, cross_reference, voices, word_study, verse_start, verse_end",
       )
       .eq("book_slug", plan.book_slug)
       .order("day_number"),
