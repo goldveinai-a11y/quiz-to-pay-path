@@ -481,6 +481,15 @@ function ResultPage() {
 
       <div className="fixed inset-x-0 bottom-0 z-30 border-t border-border/70 bg-background/95 px-4 pb-6 pt-3 backdrop-blur">
         <div className="mx-auto max-w-md">
+          <div className="mb-2 flex items-baseline justify-between text-[12px] text-muted-foreground">
+            <span className="font-medium text-ink">{selectedPlan.label}</span>
+            <span>
+              <span className="line-through">${selectedPlan.old.toFixed(2)}</span>{" "}
+              <span className="font-semibold text-terra">
+                ${selectedPlan.price.toFixed(2)} today
+              </span>
+            </span>
+          </div>
           <button
             type="button"
             onClick={go}
@@ -488,6 +497,9 @@ function ResultPage() {
           >
             Start my plan · ${selectedPlan.price.toFixed(2)}
           </button>
+          <p className="mt-1.5 text-center text-[11px] text-faint">
+            Cancel in one click before {renewalDate}
+          </p>
         </div>
       </div>
     </main>
