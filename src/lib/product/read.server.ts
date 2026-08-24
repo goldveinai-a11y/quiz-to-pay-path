@@ -190,6 +190,14 @@ export async function buildMyPlan(userId: string, scoped?: Admin): Promise<MyPla
   // Today's session: the first unlocked day that isn't done, else the newest unlocked.
   const current = unlocked.find((d) => !d.done) ?? unlocked[unlocked.length - 1] ?? days[0];
   const heroSource = (sessions ?? []).find((s) => s.day_number === current?.day);
+  const { count: heroQuizCount } = heroSource
+    ? await supabase
+        .from("session_quiz")
+        .select("id", { count: "exact", head: true })
+        .eq("book_slug", plan.book_slug)
+        .eq("day_number", heroSource.day_number)
+    : { count: 0 };
+
 
   return {
     planId: plan.id,
