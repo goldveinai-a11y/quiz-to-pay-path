@@ -229,15 +229,26 @@ export async function buildMyPlan(userId: string, scoped?: Admin): Promise<MyPla
           reference: heroSource.reference,
           tone: heroSource.art_tone ?? "teal",
           // The real length of today's session, not a marketing number.
-          minutes: estimateMinutes([
-            heroSource.insight_body,
-            heroSource.context_body,
-            ((heroSource.application ?? null) as { body?: string } | null)?.body ?? "",
-            ((heroSource.cross_reference ?? null) as { note?: string } | null)?.note ?? "",
-            ((heroSource.voices ?? []) as { reading?: string }[])
-              .map((v) => v?.reading ?? "")
-              .join(" "),
-          ]),
+          minutes: estimateMinutes(
+            [
+              heroSource.insight_body,
+              heroSource.context_body,
+              ((heroSource.application ?? null) as { body?: string } | null)?.body ?? "",
+              ((heroSource.cross_reference ?? null) as { note?: string } | null)?.note ?? "",
+              ((heroSource.word_study ?? null) as { body?: string } | null)?.body ?? "",
+              ((heroSource.voices ?? []) as { reading?: string }[])
+                .map((v) => v?.reading ?? "")
+                .join(" "),
+            ],
+            {
+              verses: Math.max(
+                0,
+                (heroSource.verse_end ?? 0) - (heroSource.verse_start ?? 0) + 1,
+              ),
+              hasQuiz: (heroQuizCount ?? 0) > 0,
+              hasWordStudy: Boolean(heroSource.word_study),
+            },
+          ),
           complete: Boolean(current?.done),
         }
       : null,
