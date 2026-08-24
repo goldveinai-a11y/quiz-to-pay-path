@@ -93,7 +93,7 @@ function CheckoutPage() {
       <div className="mx-auto w-full max-w-md rounded-3xl border border-border bg-card p-6 shadow-2xl">
         <div className="flex items-center justify-between">
           <p className="text-sm text-muted-foreground">
-            {selected.label} · cancel any time
+            {selected.label} · ${price.toFixed(2)} today · cancel any time
           </p>
           <button
             type="button"
