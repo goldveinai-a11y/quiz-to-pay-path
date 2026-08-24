@@ -114,10 +114,20 @@ async function readerState(userId: string, scoped?: Admin) {
   );
 }
 
-// ~130 words a minute for close reading, plus a minute for the question.
-function estimateMinutes(parts: (string | null | undefined)[]): number {
+// Close reading runs ~120 words a minute. On top of the written blocks a
+// session costs time the word count can't see: scripture itself (~22 words a
+// verse, read slower), the word study tap, the quiz, and the reflection.
+function estimateMinutes(
+  parts: (string | null | undefined)[],
+  extras?: { verses?: number; hasQuiz?: boolean; hasWordStudy?: boolean },
+): number {
   const words = parts.filter(Boolean).join(" ").trim().split(/\s+/).filter(Boolean).length;
-  return Math.max(3, Math.round(words / 130) + 1);
+  let minutes = words / 120;
+  minutes += ((extras?.verses ?? 0) * 22) / 90; // scripture, read slowly
+  if (extras?.hasWordStudy) minutes += 0.6;
+  if (extras?.hasQuiz) minutes += 0.8;
+  minutes += 1; // the reflection question and the note
+  return Math.max(3, Math.round(minutes));
 }
 
 export async function buildMyPlan(userId: string, scoped?: Admin): Promise<MyPlan> {
