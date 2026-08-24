@@ -89,9 +89,7 @@ function ResultPage() {
 
   return (
     <main className="paper-grain min-h-screen bg-background pb-28">
-      <div className="sticky top-0 z-30 bg-ink px-4 py-2 text-center font-mono text-[10.5px] uppercase tracking-[0.14em] text-background">
-        Code <span className="text-amber">SUMMER_2026</span> applied
-      </div>
+      <OfferTimer />
 
       {/* Hero */}
       <section className="relative">
