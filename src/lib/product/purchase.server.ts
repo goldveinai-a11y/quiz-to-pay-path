@@ -39,7 +39,21 @@ export async function fulfillPurchase(input: PurchaseInput) {
       .select("id")
       .eq("provider_subscription_id", input.providerSubscriptionId)
       .maybeSingle();
-    if (already) return { tokenHash: null, planId: null, bookSlug: input.bookSlug ?? "john" };
+    if (already) {
+      // The webhook got here first. The buyer is still sitting on the return
+      // screen, so mint them a sign-in token instead of dropping them at /auth.
+      const origin = input.origin?.startsWith("http") ? input.origin : undefined;
+      const link = await admin.auth.admin.generateLink({
+        type: "magiclink",
+        email,
+        ...(origin ? { options: { redirectTo: `${origin}/auth` } } : {}),
+      });
+      return {
+        tokenHash: link.data?.properties?.hashed_token ?? null,
+        planId: null,
+        bookSlug: input.bookSlug ?? "john",
+      };
+    }
   }
   const bookSlug = BOOK_TITLES[input.bookSlug ?? ""] ? input.bookSlug! : "john";
   const plan = getAccessPlan(input.planCode);
