@@ -28,11 +28,24 @@ export const Route = createFileRoute("/api/public/emails/daily")({
           return new Response("Unauthorized", { status: 401 });
         }
         const { runDailyDispatch, siteUrl } = await import("@/lib/email/dispatch.server");
+        const { supabaseAdmin: admin } = await import("@/integrations/supabase/client.server");
         try {
           const summary = await runDailyDispatch(siteUrl(new URL(request.url).origin));
+          // Every run leaves a row, so a silent day is visible immediately.
+          await admin.from("email_job_runs").insert({
+            ok: true,
+            daily: summary.daily,
+            win_back: summary.winBack,
+            finish: summary.finish,
+            skipped: summary.skipped,
+            reasons: summary.reasons,
+          });
           return Response.json({ ok: true, ...summary });
         } catch (error) {
           console.error("Daily email dispatch failed:", error);
+          await admin
+            .from("email_job_runs")
+            .insert({ ok: false, error: error instanceof Error ? error.message : String(error) });
           return new Response("Dispatch failed", { status: 500 });
         }
       },

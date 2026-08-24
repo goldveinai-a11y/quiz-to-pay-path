@@ -9,14 +9,9 @@ import { getStripe } from "@/lib/stripe";
 import { PaymentTestModeBanner } from "@/components/PaymentTestModeBanner";
 import { THEME_TO_BOOK } from "@/lib/product/types";
 import { track } from "@/lib/analytics";
+import { getAccessPlan } from "@/lib/product/pricing";
 
 type Search = { plan?: string };
-
-const PRICES: Record<string, { label: string; price: number; renews: string }> = {
-  "1-week": { label: "1-week trial", price: 6.99, renews: "$29.99 every 3 months" },
-  "1-month": { label: "1-month access", price: 14.99, renews: "$29.99 every 3 months" },
-  "3-month": { label: "3-month access", price: 29.99, renews: "$69.99 every year" },
-};
 
 export const Route = createFileRoute("/checkout")({
   ssr: false,
@@ -46,8 +41,11 @@ function CheckoutPage() {
   const startCheckout = useServerFn(createIntroCheckout);
   const [error, setError] = useState<string | null>(null);
   const [clientSecret, setClientSecret] = useState<string | null>(null);
+  const [attempt, setAttempt] = useState(0);
 
-  const selected = PRICES[plan ?? "1-month"] ?? PRICES["1-month"]!;
+  // One source of truth for prices: the same table the payment catalog is built from.
+  const selected = getAccessPlan(plan);
+  const price = selected.amountCents / 100;
 
   // The payment form is opened straight away: no email step, no extra click.
   useEffect(() => {
@@ -55,9 +53,11 @@ function CheckoutPage() {
     const answers = loadAnswers();
     const theme = typeof answers["theme"] === "string" ? (answers["theme"] as string) : "";
     const email = typeof answers["email"] === "string" ? (answers["email"] as string).trim() : "";
+    setError(null);
+    setClientSecret(null);
     track("checkout_email_submit", {
       plan: plan ?? "1-month",
-      value: selected.price,
+      value: price,
       currency: "USD",
     });
     startCheckout({
@@ -78,13 +78,14 @@ function CheckoutPage() {
       })
       .catch((e: unknown) => {
         if (cancelled) return;
+        track("checkout_error", { plan: plan ?? "1-month" });
         setError(e instanceof Error ? e.message : "We couldn't open the payment form.");
       });
     return () => {
       cancelled = true;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [plan]);
+  }, [plan, attempt]);
 
   return (
     <main className="min-h-screen bg-ink/60 px-4 py-8 backdrop-blur-sm sm:grid sm:place-items-center">
@@ -92,7 +93,7 @@ function CheckoutPage() {
       <div className="mx-auto w-full max-w-md rounded-3xl border border-border bg-card p-6 shadow-2xl">
         <div className="flex items-center justify-between">
           <p className="text-sm text-muted-foreground">
-            {selected.label} · cancel any time
+            {selected.label} · ${price.toFixed(2)} today · cancel any time
           </p>
           <button
             type="button"
@@ -105,7 +106,26 @@ function CheckoutPage() {
         </div>
 
         {error ? (
-          <p className="mt-6 text-sm text-destructive">{error}</p>
+          <div className="mt-6">
+            <p className="text-sm text-destructive">{error}</p>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Your card was not charged. You can try again — your answers are saved.
+            </p>
+            <button
+              type="button"
+              onClick={() => setAttempt((n) => n + 1)}
+              className="mt-5 w-full rounded-full bg-primary px-6 py-3 text-sm font-medium text-primary-foreground"
+            >
+              Try again
+            </button>
+            <button
+              type="button"
+              onClick={() => navigate({ to: "/result" })}
+              className="mt-3 w-full rounded-full border border-border px-6 py-3 text-sm"
+            >
+              Choose a different plan
+            </button>
+          </div>
         ) : clientSecret ? (
           <div className="mt-6">
             <EmbeddedCheckoutProvider stripe={getStripe()} options={{ clientSecret }}>

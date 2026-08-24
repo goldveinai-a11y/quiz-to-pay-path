@@ -63,14 +63,35 @@ function CheckoutReturn() {
 
   return (
     <main className="grid min-h-screen place-items-center px-6 text-center">
-      <div>
+      <div className="w-full max-w-sm">
         <p className="eyebrow text-muted-foreground">BibleRoutine</p>
         <h1 className="mt-3 font-serif text-3xl">
-          {error ? "Something went wrong" : "Setting up your 30 days"}
+          {error ? "We couldn't open your plan" : "Setting up your 30 days"}
         </h1>
         <p className="mt-2 text-sm text-muted-foreground">
           {error ?? "One moment — Day 1 opens next."}
         </p>
+        {error ? (
+          <div className="mt-6 space-y-3">
+            <p className="text-sm text-muted-foreground">
+              If your payment went through, your plan is safe — sign in with your email and it will
+              be waiting.
+            </p>
+            <button
+              type="button"
+              onClick={() => navigate({ to: "/auth" })}
+              className="w-full rounded-full bg-primary px-6 py-3 text-sm font-medium text-primary-foreground"
+            >
+              Sign in to my plan
+            </button>
+            <a
+              href="mailto:hello@bibleroutine.app"
+              className="block text-sm underline underline-offset-4 text-muted-foreground"
+            >
+              Email us and we'll fix it
+            </a>
+          </div>
+        ) : null}
       </div>
     </main>
   );

@@ -71,6 +71,42 @@ export type Database = {
         }
         Relationships: []
       }
+      email_job_runs: {
+        Row: {
+          daily: number
+          error: string | null
+          finish: number
+          id: string
+          ok: boolean
+          ran_at: string
+          reasons: Json | null
+          skipped: number
+          win_back: number
+        }
+        Insert: {
+          daily?: number
+          error?: string | null
+          finish?: number
+          id?: string
+          ok?: boolean
+          ran_at?: string
+          reasons?: Json | null
+          skipped?: number
+          win_back?: number
+        }
+        Update: {
+          daily?: number
+          error?: string | null
+          finish?: number
+          id?: string
+          ok?: boolean
+          ran_at?: string
+          reasons?: Json | null
+          skipped?: number
+          win_back?: number
+        }
+        Relationships: []
+      }
       email_preferences: {
         Row: {
           created_at: string
@@ -314,6 +350,7 @@ export type Database = {
           currency: string
           current_period_end: string | null
           id: string
+          is_test: boolean
           paid_at: string
           plan_code: string
           plan_label: string
@@ -331,6 +368,7 @@ export type Database = {
           currency?: string
           current_period_end?: string | null
           id?: string
+          is_test?: boolean
           paid_at?: string
           plan_code?: string
           plan_label?: string
@@ -348,6 +386,7 @@ export type Database = {
           currency?: string
           current_period_end?: string | null
           id?: string
+          is_test?: boolean
           paid_at?: string
           plan_code?: string
           plan_label?: string
