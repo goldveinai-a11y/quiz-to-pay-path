@@ -424,13 +424,12 @@ export function StepRenderer({ step, answers, onAnswer, onNext }: Props) {
         />
         <StickyBar>
           <CtaButton
-            disabled={name.trim().length < 1}
             onClick={() => {
               onAnswer("name", name.trim());
               onNext();
             }}
           >
-            {step.cta ?? "Continue"}
+            {name.trim().length < 1 ? "Skip" : (step.cta ?? "Continue")}
           </CtaButton>
         </StickyBar>
       </div>
