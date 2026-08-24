@@ -125,6 +125,7 @@ function Index() {
       </section>
 
       <SiteFooter />
+      <StickyCta />
     </main>
   );
 }
