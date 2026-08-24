@@ -9,14 +9,9 @@ import { getStripe } from "@/lib/stripe";
 import { PaymentTestModeBanner } from "@/components/PaymentTestModeBanner";
 import { THEME_TO_BOOK } from "@/lib/product/types";
 import { track } from "@/lib/analytics";
+import { getAccessPlan } from "@/lib/product/pricing";
 
 type Search = { plan?: string };
-
-const PRICES: Record<string, { label: string; price: number; renews: string }> = {
-  "1-week": { label: "1-week trial", price: 6.99, renews: "$29.99 every 3 months" },
-  "1-month": { label: "1-month access", price: 14.99, renews: "$29.99 every 3 months" },
-  "3-month": { label: "3-month access", price: 29.99, renews: "$69.99 every year" },
-};
 
 export const Route = createFileRoute("/checkout")({
   ssr: false,
