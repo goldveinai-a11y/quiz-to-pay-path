@@ -91,7 +91,7 @@ function AllDaysPage() {
               {d.unlocked ? null : (
                 <span className="flex shrink-0 items-center gap-1.5 text-muted-foreground">
                   <Lock className="h-3.5 w-3.5" />
-                  <span className="eyebrow">Day {d.day - 1} first</span>
+                  <span className="eyebrow">Finish day {d.day - 1} first</span>
                 </span>
               )}
             </div>
