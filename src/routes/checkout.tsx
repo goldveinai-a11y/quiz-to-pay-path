@@ -78,13 +78,14 @@ function CheckoutPage() {
       })
       .catch((e: unknown) => {
         if (cancelled) return;
+        track("checkout_error", { plan: plan ?? "1-month" });
         setError(e instanceof Error ? e.message : "We couldn't open the payment form.");
       });
     return () => {
       cancelled = true;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [plan]);
+  }, [plan, attempt]);
 
   return (
     <main className="min-h-screen bg-ink/60 px-4 py-8 backdrop-blur-sm sm:grid sm:place-items-center">
