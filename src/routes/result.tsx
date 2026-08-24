@@ -10,6 +10,7 @@ import {
 import { BeforeAfter } from "@/components/paywall/BeforeAfter";
 import { GrowthChart } from "@/components/paywall/GrowthChart";
 import { PhoneMock } from "@/components/paywall/PhoneMock";
+import { OfferTimer } from "@/components/paywall/OfferTimer";
 import { Reveal } from "@/components/product/Reveal";
 import { LiveSessionLoop } from "@/components/product/LiveSessionLoop";
 import { PAYWALL_REVIEWS } from "@/lib/reviews";
