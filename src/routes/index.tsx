@@ -6,6 +6,7 @@ import { Reviews } from "@/components/landing/Reviews";
 import { Faq } from "@/components/landing/Faq";
 import { SiteFooter } from "@/components/landing/SiteFooter";
 import { StartButton } from "@/components/landing/StartButton";
+import { StickyCta } from "@/components/landing/StickyCta";
 import { ArtBlock } from "@/components/art/ArtBlock";
 import { LiveSessionLoop } from "@/components/product/LiveSessionLoop";
 import { useReturningReader } from "@/lib/auth/useReturningReader";
@@ -34,7 +35,7 @@ export const Route = createFileRoute("/")({
 function Index() {
   useReturningReader();
   return (
-    <main className="min-h-screen bg-background">
+    <main className="min-h-screen bg-background pb-24">
       <header className="border-b border-border">
         <div className="mx-auto flex h-14 w-full max-w-[560px] items-center justify-center px-5">
           <span className="font-serif text-[20px] tracking-tight text-ink">BibleRoutine</span>
@@ -124,6 +125,7 @@ function Index() {
       </section>
 
       <SiteFooter />
+      <StickyCta />
     </main>
   );
 }

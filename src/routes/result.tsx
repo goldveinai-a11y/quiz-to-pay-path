@@ -10,6 +10,7 @@ import {
 import { BeforeAfter } from "@/components/paywall/BeforeAfter";
 import { GrowthChart } from "@/components/paywall/GrowthChart";
 import { PhoneMock } from "@/components/paywall/PhoneMock";
+import { OfferTimer } from "@/components/paywall/OfferTimer";
 import { Reveal } from "@/components/product/Reveal";
 import { LiveSessionLoop } from "@/components/product/LiveSessionLoop";
 import { PAYWALL_REVIEWS } from "@/lib/reviews";
@@ -89,9 +90,7 @@ function ResultPage() {
 
   return (
     <main className="paper-grain min-h-screen bg-background pb-28">
-      <div className="sticky top-0 z-30 bg-ink px-4 py-2 text-center font-mono text-[10.5px] uppercase tracking-[0.14em] text-background">
-        Code <span className="text-amber">SUMMER_2026</span> applied
-      </div>
+      <OfferTimer />
 
       {/* Hero */}
       <section className="relative">
@@ -482,6 +481,15 @@ function ResultPage() {
 
       <div className="fixed inset-x-0 bottom-0 z-30 border-t border-border/70 bg-background/95 px-4 pb-6 pt-3 backdrop-blur">
         <div className="mx-auto max-w-md">
+          <div className="mb-2 flex items-baseline justify-between text-[12px] text-muted-foreground">
+            <span className="font-medium text-ink">{selectedPlan.label}</span>
+            <span>
+              <span className="line-through">${selectedPlan.old.toFixed(2)}</span>{" "}
+              <span className="font-semibold text-terra">
+                ${selectedPlan.price.toFixed(2)} today
+              </span>
+            </span>
+          </div>
           <button
             type="button"
             onClick={go}
@@ -489,6 +497,9 @@ function ResultPage() {
           >
             Start my plan · ${selectedPlan.price.toFixed(2)}
           </button>
+          <p className="mt-1.5 text-center text-[11px] text-faint">
+            Cancel in one click before {renewalDate}
+          </p>
         </div>
       </div>
     </main>

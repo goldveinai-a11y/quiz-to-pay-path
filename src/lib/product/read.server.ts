@@ -114,10 +114,20 @@ async function readerState(userId: string, scoped?: Admin) {
   );
 }
 
-// ~130 words a minute for close reading, plus a minute for the question.
-function estimateMinutes(parts: (string | null | undefined)[]): number {
+// Close reading runs ~120 words a minute. On top of the written blocks a
+// session costs time the word count can't see: scripture itself (~22 words a
+// verse, read slower), the word study tap, the quiz, and the reflection.
+function estimateMinutes(
+  parts: (string | null | undefined)[],
+  extras?: { verses?: number; hasQuiz?: boolean; hasWordStudy?: boolean },
+): number {
   const words = parts.filter(Boolean).join(" ").trim().split(/\s+/).filter(Boolean).length;
-  return Math.max(3, Math.round(words / 130) + 1);
+  let minutes = words / 120;
+  minutes += ((extras?.verses ?? 0) * 22) / 90; // scripture, read slowly
+  if (extras?.hasWordStudy) minutes += 0.6;
+  if (extras?.hasQuiz) minutes += 0.8;
+  minutes += 1; // the reflection question and the note
+  return Math.max(3, Math.round(minutes));
 }
 
 export async function buildMyPlan(userId: string, scoped?: Admin): Promise<MyPlan> {
@@ -127,7 +137,7 @@ export async function buildMyPlan(userId: string, scoped?: Admin): Promise<MyPla
     supabase
       .from("study_sessions")
       .select(
-        "day_number, title, reference, setup, art_tone, insight_body, context_body, application, cross_reference, voices",
+        "day_number, title, reference, setup, art_tone, insight_body, context_body, application, cross_reference, voices, word_study, verse_start, verse_end",
       )
       .eq("book_slug", plan.book_slug)
       .order("day_number"),
@@ -180,6 +190,14 @@ export async function buildMyPlan(userId: string, scoped?: Admin): Promise<MyPla
   // Today's session: the first unlocked day that isn't done, else the newest unlocked.
   const current = unlocked.find((d) => !d.done) ?? unlocked[unlocked.length - 1] ?? days[0];
   const heroSource = (sessions ?? []).find((s) => s.day_number === current?.day);
+  const { count: heroQuizCount } = heroSource
+    ? await supabase
+        .from("session_quiz")
+        .select("id", { count: "exact", head: true })
+        .eq("book_slug", plan.book_slug)
+        .eq("day_number", heroSource.day_number)
+    : { count: 0 };
+
 
   return {
     planId: plan.id,
@@ -211,15 +229,26 @@ export async function buildMyPlan(userId: string, scoped?: Admin): Promise<MyPla
           reference: heroSource.reference,
           tone: heroSource.art_tone ?? "teal",
           // The real length of today's session, not a marketing number.
-          minutes: estimateMinutes([
-            heroSource.insight_body,
-            heroSource.context_body,
-            ((heroSource.application ?? null) as { body?: string } | null)?.body ?? "",
-            ((heroSource.cross_reference ?? null) as { note?: string } | null)?.note ?? "",
-            ((heroSource.voices ?? []) as { reading?: string }[])
-              .map((v) => v?.reading ?? "")
-              .join(" "),
-          ]),
+          minutes: estimateMinutes(
+            [
+              heroSource.insight_body,
+              heroSource.context_body,
+              ((heroSource.application ?? null) as { body?: string } | null)?.body ?? "",
+              ((heroSource.cross_reference ?? null) as { note?: string } | null)?.note ?? "",
+              ((heroSource.word_study ?? null) as { body?: string } | null)?.body ?? "",
+              ((heroSource.voices ?? []) as { reading?: string }[])
+                .map((v) => v?.reading ?? "")
+                .join(" "),
+            ],
+            {
+              verses: Math.max(
+                0,
+                (heroSource.verse_end ?? 0) - (heroSource.verse_start ?? 0) + 1,
+              ),
+              hasQuiz: (heroQuizCount ?? 0) > 0,
+              hasWordStudy: Boolean(heroSource.word_study),
+            },
+          ),
           complete: Boolean(current?.done),
         }
       : null,
