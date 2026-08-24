@@ -63,10 +63,16 @@ function ResultPage() {
   const [plan, setPlan] = useState<PlanResult | null>(null);
   const [selected, setSelected] = useState("1-month");
 
+  const answers = useMemo(() => loadAnswers(), []);
+  const firstName = useMemo(() => {
+    const n = (answers["name"] as string | undefined)?.trim();
+    return n && n.length > 0 ? n : null;
+  }, [answers]);
+
   useEffect(() => {
-    setPlan(buildPlan(loadAnswers()));
+    setPlan(buildPlan(answers));
     track("paywall_view");
-  }, []);
+  }, [answers]);
 
   const selectedPlan = useMemo(() => PLANS.find((p) => p.id === selected)!, [selected]);
   const renewalDate = useMemo(() => {
@@ -108,9 +114,9 @@ function ResultPage() {
             }}
           />
           <div className="absolute inset-x-0 bottom-6 mx-auto max-w-md px-5 text-center">
-            <p className="eyebrow text-white/75">Your plan</p>
+            <p className="eyebrow text-white/75">{firstName ? `${firstName}'s plan` : "Your plan"}</p>
             <h1 className="mt-2 font-serif text-[32px] font-semibold leading-[1.12] tracking-tight text-white">
-              Your 30-day plan is ready
+              {firstName ? `${firstName}'s 30-day plan is ready` : "Your 30-day plan is ready"}
             </h1>
           </div>
         </div>
