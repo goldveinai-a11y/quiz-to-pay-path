@@ -83,6 +83,7 @@ type FinalizeResult =
   | {
       ok: true;
       tokenHash: string | null;
+      email: string;
       // Non-identifying purchase facts, used only for analytics on the return screen.
       planCode: string;
       amount: number;
@@ -129,6 +130,7 @@ export const finalizePurchase = createServerFn({ method: "POST" })
       return {
         ok: true,
         tokenHash: result.tokenHash,
+        email,
         planCode: meta["planCode"] ?? "1-month",
         amount: (session.amount_total ?? 0) / 100,
         currency: (session.currency ?? "usd").toUpperCase(),

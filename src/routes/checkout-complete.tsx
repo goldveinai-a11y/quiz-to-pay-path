@@ -49,6 +49,8 @@ function CheckoutReturn() {
         value: result.amount,
         currency: result.currency,
       });
+      // Remembering the address makes the sign-in screen one tap if anything fails.
+      if (result.email) window.localStorage.setItem("br:email", result.email);
       if (result.tokenHash) {
         await supabase.auth.verifyOtp({ type: "email", token_hash: result.tokenHash });
         navigate({ to: "/plan", replace: true });
