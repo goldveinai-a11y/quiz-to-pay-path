@@ -18,6 +18,10 @@ export function Hero() {
             alt="Engraved illustration of light breaking over open pages"
             className="h-[300px] w-full object-cover sm:h-[360px]"
             loading="eager"
+            fetchPriority="high"
+            decoding="async"
+            width={560}
+            height={360}
           />
         </div>
 
