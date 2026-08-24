@@ -6,6 +6,7 @@ import { Reviews } from "@/components/landing/Reviews";
 import { Faq } from "@/components/landing/Faq";
 import { SiteFooter } from "@/components/landing/SiteFooter";
 import { StartButton } from "@/components/landing/StartButton";
+import { StickyCta } from "@/components/landing/StickyCta";
 import { ArtBlock } from "@/components/art/ArtBlock";
 import { LiveSessionLoop } from "@/components/product/LiveSessionLoop";
 import { useReturningReader } from "@/lib/auth/useReturningReader";
