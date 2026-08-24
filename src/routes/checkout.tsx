@@ -41,8 +41,11 @@ function CheckoutPage() {
   const startCheckout = useServerFn(createIntroCheckout);
   const [error, setError] = useState<string | null>(null);
   const [clientSecret, setClientSecret] = useState<string | null>(null);
+  const [attempt, setAttempt] = useState(0);
 
-  const selected = PRICES[plan ?? "1-month"] ?? PRICES["1-month"]!;
+  // One source of truth for prices: the same table the payment catalog is built from.
+  const selected = getAccessPlan(plan);
+  const price = selected.amountCents / 100;
 
   // The payment form is opened straight away: no email step, no extra click.
   useEffect(() => {
