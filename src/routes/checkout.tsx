@@ -106,7 +106,26 @@ function CheckoutPage() {
         </div>
 
         {error ? (
-          <p className="mt-6 text-sm text-destructive">{error}</p>
+          <div className="mt-6">
+            <p className="text-sm text-destructive">{error}</p>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Your card was not charged. You can try again — your answers are saved.
+            </p>
+            <button
+              type="button"
+              onClick={() => setAttempt((n) => n + 1)}
+              className="mt-5 w-full rounded-full bg-primary px-6 py-3 text-sm font-medium text-primary-foreground"
+            >
+              Try again
+            </button>
+            <button
+              type="button"
+              onClick={() => navigate({ to: "/result" })}
+              className="mt-3 w-full rounded-full border border-border px-6 py-3 text-sm"
+            >
+              Choose a different plan
+            </button>
+          </div>
         ) : clientSecret ? (
           <div className="mt-6">
             <EmbeddedCheckoutProvider stripe={getStripe()} options={{ clientSecret }}>
