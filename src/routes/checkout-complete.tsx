@@ -2,7 +2,6 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { finalizePurchase } from "@/lib/payments/payments.functions";
-import { supabase } from "@/integrations/supabase/client";
 import { trackOnce } from "@/lib/analytics";
 
 export const Route = createFileRoute("/checkout-complete")({
@@ -52,6 +51,7 @@ function CheckoutReturn() {
       // Remembering the address makes the sign-in screen one tap if anything fails.
       if (result.email) window.localStorage.setItem("br:email", result.email);
       if (result.tokenHash) {
+        const { supabase } = await import("@/integrations/supabase/client");
         await supabase.auth.verifyOtp({ type: "email", token_hash: result.tokenHash });
         navigate({ to: "/plan", replace: true });
         return;
@@ -84,7 +84,7 @@ function CheckoutReturn() {
             >
               Sign in to my plan
             </button>
-            <a
+            
               href="mailto:hello@bibleroutine.app"
               className="block text-sm underline underline-offset-4 text-muted-foreground"
             >
