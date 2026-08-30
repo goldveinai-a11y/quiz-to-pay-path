@@ -84,7 +84,7 @@ function CheckoutReturn() {
             >
               Sign in to my plan
             </button>
-            
+            <a
               href="mailto:hello@bibleroutine.app"
               className="block text-sm underline underline-offset-4 text-muted-foreground"
             >
