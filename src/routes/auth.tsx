@@ -1,7 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Mail, Check } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { track } from "@/lib/analytics";
@@ -42,6 +41,7 @@ function AuthPage() {
   useEffect(() => {
     let cancelled = false;
     const run = async () => {
+      const { supabase } = await import("@/integrations/supabase/client");
       // The address is remembered so coming back is one tap, not a retype.
       const remembered = window.localStorage.getItem("br:email");
       if (remembered) setEmail(remembered);
@@ -77,6 +77,7 @@ function AuthPage() {
   const send = async () => {
     setPending(true);
     setError(null);
+    const { supabase } = await import("@/integrations/supabase/client");
     const address = email.trim().toLowerCase();
     const { error: err } = await supabase.auth.signInWithOtp({
       email: address,
@@ -106,6 +107,7 @@ function AuthPage() {
   const verify = async (value = code) => {
     setPending(true);
     setError(null);
+    const { supabase } = await import("@/integrations/supabase/client");
     const { error: err } = await supabase.auth.verifyOtp({
       email: email.trim().toLowerCase(),
       token: value.trim(),
