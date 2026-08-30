@@ -81,6 +81,22 @@ export const steps: Step[] = [
     ],
   },
   {
+    id: "blockers-pivot",
+    kind: "interstitial",
+    section: SECTIONS[1],
+    title: "That's not a willpower problem.",
+    subtitle:
+      "Almost everyone stalls for the same handful of reasons — dense wording, no context, no natural stopping point. BibleRoutine is built to remove each one, before you read a single verse.",
+    eyebrow: "Why this feels hard",
+    tone: "indigo",
+    bullets: [
+      "Confusing wording → explained in plain English",
+      "Losing the thread → who wrote it and why, before every passage",
+      "No stopping point → one short passage, about 7 minutes, done",
+    ],
+    cta: "Continue",
+  },
+  {
     id: "plan-history",
     kind: "single",
     section: SECTIONS[1],
@@ -110,6 +126,9 @@ export const steps: Step[] = [
     subtitle:
       "4 out of 5 people who take this say they want to read more — and 2 out of 3 say they don't understand what they read.",
     source: "ABS, State of the Bible 2026",
+    eyebrow: "You're not alone",
+    tone: "terra",
+    bullets: ["4 in 5 want to read more", "2 in 3 don't understand it", "Almost nobody says it out loud"],
     cta: "Got it",
   },
 
@@ -164,6 +183,9 @@ export const steps: Step[] = [
     subtitle:
       "People who follow a guide read most or all of the Bible — 74% of them. Without one, it's 33%.",
     source: "Lifeway Research",
+    eyebrow: "The odds",
+    tone: "teal",
+    bullets: ["74% finish with a guide", "33% finish without one", "Seven minutes is enough"],
     cta: "Continue",
   },
   {
