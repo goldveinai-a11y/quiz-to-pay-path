@@ -251,15 +251,20 @@ export function StepRenderer({ step, answers, onAnswer, onNext }: Props) {
   }
 
   if (step.kind === "interstitial") {
+    // Legacy fallback for break-1/break-2 in case a step config omits the newer
+    // eyebrow/bullets/tone fields — keeps their exact original look unchanged.
     const isFirst = step.id === "break-1";
-    const tone: ArtTone = isFirst ? "terra" : "teal";
-    const bullets = isFirst
-      ? ["4 in 5 want to read more", "2 in 3 don't understand it", "Almost nobody says it out loud"]
-      : ["74% finish with a guide", "33% finish without one", "Seven minutes is enough"];
+    const tone: ArtTone = step.tone ?? (isFirst ? "terra" : "teal");
+    const eyebrow = step.eyebrow ?? (isFirst ? "You're not alone" : "The odds");
+    const bullets =
+      step.bullets ??
+      (isFirst
+        ? ["4 in 5 want to read more", "2 in 3 don't understand it", "Almost nobody says it out loud"]
+        : ["74% finish with a guide", "33% finish without one", "Seven minutes is enough"]);
     return (
       <div className="animate-quiz-in pb-28">
         <div className="overflow-hidden rounded-3xl bg-card shadow-s2">
-          <ArtBlock tone={tone} height={168} eyebrow={isFirst ? "You're not alone" : "The odds"}>
+          <ArtBlock tone={tone} height={168} eyebrow={eyebrow}>
             <p className="absolute bottom-4 left-5 right-5 font-serif text-[22px] font-semibold leading-tight text-white">
               {step.title}
             </p>
