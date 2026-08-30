@@ -61,10 +61,6 @@ function QuizPage() {
     setIndex((i) => i + 1);
   };
 
-  if (!hydrated) {
-    return <div className="min-h-screen bg-background" />;
-  }
-
   return (
     <main className="min-h-screen bg-background">
       {step.kind !== "analysis" ? (
@@ -75,8 +71,20 @@ function QuizPage() {
           onBack={() => setIndex((i) => Math.max(0, i - 1))}
         />
       ) : null}
-      <div className="mx-auto max-w-md px-4 pb-10 pt-6">
+      <div
+        className={cn(
+          "relative mx-auto max-w-md px-4 pb-10 pt-6 transition-opacity duration-200",
+          !hydrated && "pointer-events-none opacity-60"
+        )}
+        aria-busy={!hydrated}
+      >
         <StepRenderer key={step.id} step={step} answers={answers} onAnswer={setAnswer} onNext={next} />
+        {!hydrated ? (
+          <div className="absolute inset-0 z-10 flex items-start justify-center pt-32">
+            <span className="sr-only">Loading quiz…</span>
+            <span className="h-8 w-8 animate-spin rounded-full border-2 border-ink/20 border-t-ink" />
+          </div>
+        ) : null}
       </div>
       <p className="sr-only">{SECTIONS.join(", ")}</p>
     </main>
