@@ -13,7 +13,6 @@ import {
 } from "@/lib/product/product.functions";
 import { getEmailPrefs, setEmailPrefs } from "@/lib/email/email.functions";
 import { Switch } from "@/components/ui/switch";
-import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/_authenticated/settings")({
   head: () => ({
@@ -54,6 +53,7 @@ function SettingsPage() {
   const signOut = async () => {
     await queryClient.cancelQueries();
     queryClient.clear();
+    const { supabase } = await import("@/integrations/supabase/client");
     await supabase.auth.signOut();
     navigate({ to: "/auth", replace: true });
   };
