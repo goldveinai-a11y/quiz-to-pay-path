@@ -6,6 +6,7 @@ import { steps, SECTIONS } from "@/lib/quiz/steps";
 import { captureUtm, useAnswers } from "@/lib/quiz/store";
 import { useReturningReader } from "@/lib/auth/useReturningReader";
 import { track } from "@/lib/analytics";
+import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/quiz")({
   head: () => ({
