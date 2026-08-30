@@ -30,6 +30,10 @@ export type Step = {
   cta?: string;
   source?: string;
   placeholder?: string;
+  /** interstitial only — overrides the built-in look. See StepRenderer's INTERSTITIAL_DEFAULTS fallback. */
+  eyebrow?: string;
+  bullets?: string[];
+  tone?: "teal" | "terra" | "indigo" | "olive";
 };
 
 export type Answers = Record<string, string | string[] | number>;
