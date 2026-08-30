@@ -1,4 +1,5 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useRouter } from "@tanstack/react-router";
+import { useEffect } from "react";
 import { Hero } from "@/components/landing/Hero";
 import { SocialProof } from "@/components/landing/SocialProof";
 import { FeatureRow } from "@/components/landing/FeatureRow";
@@ -34,6 +35,10 @@ export const Route = createFileRoute("/")({
 
 function Index() {
   useReturningReader();
+  const router = useRouter();
+  useEffect(() => {
+    router.preloadRoute({ to: "/quiz" }).catch(() => {});
+  }, [router]);
   return (
     <main className="min-h-screen bg-background pb-24">
       <header className="border-b border-border">
