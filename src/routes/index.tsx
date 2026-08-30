@@ -35,6 +35,10 @@ export const Route = createFileRoute("/")({
 
 function Index() {
   useReturningReader();
+  const router = useRouter();
+  useEffect(() => {
+    router.preloadRoute({ to: "/quiz" }).catch(() => {});
+  }, [router]);
   return (
     <main className="min-h-screen bg-background pb-24">
       <header className="border-b border-border">
