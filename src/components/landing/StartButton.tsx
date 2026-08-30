@@ -14,6 +14,7 @@ export function StartButton({
     <Link
       to="/quiz"
       search={(prev: Record<string, unknown>) => prev}
+      preload="intent"
       onClick={() => track("landing_cta_click", { placement, label })}
       className={`flex h-14 w-full items-center justify-center rounded-2xl bg-ink text-base font-semibold text-background shadow-s2 transition-transform active:scale-[0.99] ${className}`}
     >
