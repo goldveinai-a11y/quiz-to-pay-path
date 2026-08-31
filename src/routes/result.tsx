@@ -18,6 +18,7 @@ import { ART } from "@/lib/quiz/art";
 import { loadAnswers } from "@/lib/quiz/store";
 import { buildPlan, THEME_LABELS, type PlanResult } from "@/lib/quiz/plan";
 import { track } from "@/lib/analytics";
+import { trackMetaViewContent, trackMetaInitiateCheckout } from "@/lib/meta-pixel";
 
 export const Route = createFileRoute("/result")({
   head: () => ({
@@ -72,6 +73,7 @@ function ResultPage() {
   useEffect(() => {
     setPlan(buildPlan(answers));
     track("paywall_view");
+    trackMetaViewContent({ content_name: "paywall" });
   }, [answers]);
 
   const selectedPlan = useMemo(() => PLANS.find((p) => p.id === selected)!, [selected]);
@@ -88,6 +90,11 @@ function ResultPage() {
   const go = () => {
     track("begin_checkout", {
       plan: selected,
+      value: selectedPlan.price,
+      currency: "USD",
+    });
+    trackMetaInitiateCheckout({
+      content_name: selected,
       value: selectedPlan.price,
       currency: "USD",
     });

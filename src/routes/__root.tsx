@@ -13,6 +13,7 @@ import { useEffect, type ReactNode } from "react";
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { initAnalytics, trackPageView } from "../lib/analytics";
+import { initMetaPixel } from "../lib/meta-pixel";
 
 function NotFoundComponent() {
   return (
@@ -89,6 +90,9 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
       { name: "twitter:site", content: "@Lovable" },
+      // Proves BibleRoutine's ownership of bibleroutine.app to Meta Business
+      // Manager (Astrelo). Needed for the Meta Pixel/CAPI setup — see meta-pixel.ts.
+      { name: "facebook-domain-verification", content: "p289f4drjv3scwcch3uxzpjpgpc534" },
     ],
     links: [
       {
@@ -130,6 +134,7 @@ function RootComponent() {
 
   useEffect(() => {
     initAnalytics();
+    initMetaPixel();
   }, []);
 
   useEffect(() => {

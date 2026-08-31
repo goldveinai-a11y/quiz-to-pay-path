@@ -8,6 +8,7 @@ import { ArtBlock, type ArtTone } from "@/components/art/ArtBlock";
 import { ART } from "@/lib/quiz/art";
 import type { Answers, Step } from "@/lib/quiz/types";
 import { track } from "@/lib/analytics";
+import { trackMetaLead } from "@/lib/meta-pixel";
 import { AnalysisStep } from "./AnalysisStep";
 
 type Props = {
@@ -469,6 +470,7 @@ export function StepRenderer({ step, answers, onAnswer, onNext }: Props) {
               onAnswer("email", email.trim());
               onAnswer("newsletter", optIn ? "yes" : "no");
               track("quiz_email_submit", { newsletter: optIn });
+              trackMetaLead({ newsletter: optIn });
               onNext();
             }}
           >

@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { finalizePurchase } from "@/lib/payments/payments.functions";
 import { trackOnce } from "@/lib/analytics";
+import { trackMetaPurchase } from "@/lib/meta-pixel";
 
 export const Route = createFileRoute("/checkout-complete")({
   ssr: false,
@@ -48,6 +49,12 @@ function CheckoutReturn() {
         value: result.amount,
         currency: result.currency,
       });
+      // Not gated by trackOnce: a refresh of this URL would fire it again, but
+      // metaEventId is deterministic per subscription (see purchase.server.ts)
+      // and matches the server-side Conversions API call for the same
+      // purchase, so Meta dedupes repeats by event id instead of double
+      // counting revenue.
+      trackMetaPurchase(result.metaEventId, result.amount, result.currency);
       // Remembering the address makes the sign-in screen one tap if anything fails.
       if (result.email) window.localStorage.setItem("br:email", result.email);
       if (result.tokenHash) {

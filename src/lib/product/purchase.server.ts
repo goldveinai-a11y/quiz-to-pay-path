@@ -21,6 +21,9 @@ export type PurchaseInput = {
   origin?: string | undefined;
   providerCustomerId?: string | null | undefined;
   providerSubscriptionId?: string | null | undefined;
+  /** Stripe checkout session amount/currency — used only for the Meta CAPI Purchase event. */
+  amountCents?: number | undefined;
+  currency?: string | undefined;
 };
 
 /**
@@ -31,6 +34,12 @@ export type PurchaseInput = {
 export async function fulfillPurchase(input: PurchaseInput) {
   const admin = await adminClient();
   const email = input.email.trim().toLowerCase();
+  // Deterministic and shared by both fulfilment paths (return screen + webhook),
+  // so the browser Pixel and server-side Conversions API always agree on the id
+  // for a given subscription and Meta dedupes the two Purchase deliveries.
+  const eventId = input.providerSubscriptionId
+    ? `purchase-${input.providerSubscriptionId}`
+    : `purchase-${email}`;
 
   // The return screen and the webhook both fulfil; whichever lands first wins.
   if (input.providerSubscriptionId) {
@@ -40,8 +49,9 @@ export async function fulfillPurchase(input: PurchaseInput) {
       .eq("provider_subscription_id", input.providerSubscriptionId)
       .maybeSingle();
     if (already) {
-      // The webhook got here first. The buyer is still sitting on the return
-      // screen, so mint them a sign-in token instead of dropping them at /auth.
+      // The webhook got here first (and already sent the Meta CAPI Purchase
+      // event below). The buyer is still sitting on the return screen, so
+      // mint them a sign-in token instead of dropping them at /auth.
       const origin = input.origin?.startsWith("http") ? input.origin : undefined;
       const link = await admin.auth.admin.generateLink({
         type: "magiclink",
@@ -52,6 +62,7 @@ export async function fulfillPurchase(input: PurchaseInput) {
         tokenHash: link.data?.properties?.hashed_token ?? null,
         planId: null,
         bookSlug: input.bookSlug ?? "john",
+        eventId,
       };
     }
   }
@@ -105,6 +116,20 @@ export async function fulfillPurchase(input: PurchaseInput) {
     provider_subscription_id: input.providerSubscriptionId ?? null,
   });
 
+  // Fires exactly once — this branch only runs on the first fulfilment of a
+  // given subscription (see the "already" short-circuit above). Never throws,
+  // so a Meta-side hiccup can't block account creation.
+  if (input.amountCents !== undefined) {
+    const { sendMetaPurchaseEvent } = await import("@/lib/meta-capi.server");
+    await sendMetaPurchaseEvent({
+      eventId,
+      eventSourceUrl: `${input.origin?.startsWith("http") ? input.origin : "https://bibleroutine.app"}/checkout-complete`,
+      value: input.amountCents / 100,
+      currency: (input.currency ?? "usd").toUpperCase(),
+      email,
+    });
+  }
+
   // Exactly ONE sign-in token per purchase: minting a second one invalidates
   // the first, which is what used to break the emailed link and code.
   const origin = input.origin?.startsWith("http") ? input.origin : undefined;
@@ -121,5 +146,5 @@ export async function fulfillPurchase(input: PurchaseInput) {
   await ensurePreferences(userId, email);
   await sendWelcome(userId, email, bookSlug, origin, actionLink);
 
-  return { tokenHash, planId: planRow.id, bookSlug };
+  return { tokenHash, planId: planRow.id, bookSlug, eventId };
 }

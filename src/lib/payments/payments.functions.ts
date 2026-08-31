@@ -88,6 +88,9 @@ type FinalizeResult =
       planCode: string;
       amount: number;
       currency: string;
+      // Shared with the server-side Meta Conversions API Purchase call so the
+      // browser Pixel fire below dedupes against it instead of double counting.
+      metaEventId: string;
     }
   | { ok: false; error: string };
 
@@ -126,6 +129,8 @@ export const finalizePurchase = createServerFn({ method: "POST" })
           typeof session.subscription === "string"
             ? session.subscription
             : (session.subscription?.id ?? null),
+        amountCents: session.amount_total ?? 0,
+        currency: session.currency ?? "usd",
       });
       return {
         ok: true,
@@ -134,6 +139,7 @@ export const finalizePurchase = createServerFn({ method: "POST" })
         planCode: meta["planCode"] ?? "1-month",
         amount: (session.amount_total ?? 0) / 100,
         currency: (session.currency ?? "usd").toUpperCase(),
+        metaEventId: result.eventId,
       };
     } catch (error) {
       return { ok: false, error: getStripeErrorMessage(error) };
