@@ -51,6 +51,10 @@ async function fulfillFromSession(session: any) {
     readerName: meta["readerName"] || undefined,
     providerCustomerId: typeof session.customer === "string" ? session.customer : null,
     providerSubscriptionId: typeof session.subscription === "string" ? session.subscription : null,
+    // Lets this safety-net path (buyer closed the tab before the return
+    // screen ran) still send the Meta CAPI Purchase event — see purchase.server.ts.
+    amountCents: session.amount_total ?? 0,
+    currency: session.currency ?? "usd",
   });
 }
 
