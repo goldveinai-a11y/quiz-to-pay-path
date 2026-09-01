@@ -73,6 +73,8 @@ export const steps: Step[] = [
     title: "When you try to read it, what happens?",
     subtitle: "Pick everything that sounds familiar.",
     options: [
+      { value: "no-time", label: "I run out of time" },
+      { value: "routine", label: "I forget — the routine falls apart" },
       { value: "dont-understand", label: "I don't understand what I'm reading" },
       { value: "lose-thread", label: "I lose the thread of the story" },
       { value: "bored", label: "I get bored" },
