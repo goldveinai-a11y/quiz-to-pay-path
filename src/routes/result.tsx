@@ -74,9 +74,9 @@ function ResultPage() {
 
   useEffect(() => {
     setPlan(buildPlan(answers));
-    track("paywall_view");
+    track("paywall_view", { segment: segmentCopy.id });
     trackMetaViewContent({ content_name: "paywall" });
-  }, [answers]);
+  }, [answers, segmentCopy.id]);
 
   const selectedPlan = useMemo(() => PLANS.find((p) => p.id === selected)!, [selected]);
   const renewalDate = useMemo(() => {
@@ -94,6 +94,7 @@ function ResultPage() {
       plan: selected,
       value: selectedPlan.price,
       currency: "USD",
+      segment: segmentCopy.id,
     });
     trackMetaInitiateCheckout({
       content_name: selected,
