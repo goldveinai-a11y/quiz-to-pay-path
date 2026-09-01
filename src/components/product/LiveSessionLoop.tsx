@@ -12,7 +12,7 @@ function Lines({ widths }: { widths: number[] }) {
         <span
           key={i}
           className="block h-[5px] rounded-full"
-          style={{ width: `${w}%`, backgroundColor: "rgb(25 23 18 / 0.14)" }}
+          style={{ width: `${w}%`, backgroundColor: "rgb(25 23 18 / 0.28)" }}
         />
 
       ))}
