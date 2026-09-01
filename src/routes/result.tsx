@@ -17,6 +17,7 @@ import { PAYWALL_REVIEWS } from "@/lib/reviews";
 import { ART } from "@/lib/quiz/art";
 import { loadAnswers } from "@/lib/quiz/store";
 import { buildPlan, THEME_LABELS, type PlanResult } from "@/lib/quiz/plan";
+import { getSegment } from "@/lib/quiz/segments";
 import { track } from "@/lib/analytics";
 import { trackMetaViewContent, trackMetaInitiateCheckout } from "@/lib/meta-pixel";
 
