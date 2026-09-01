@@ -143,6 +143,9 @@ function ResultPage() {
           <p className="mt-3.5 border-t border-border pt-3.5 text-[13.5px] leading-relaxed text-ink2">
             <span className="font-semibold text-ink">Your obstacle is {plan.obstacleName}</span> — {plan.obstacleLine}
           </p>
+          {segmentCopy.resultBullet ? (
+            <p className="mt-3 text-[13.5px] leading-relaxed text-teal">{segmentCopy.resultBullet}</p>
+          ) : null}
         </section>
 
         {/* Plan card */}
