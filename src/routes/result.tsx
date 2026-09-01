@@ -293,6 +293,9 @@ function ResultPage() {
               </li>
             ))}
           </ul>
+          <p className="mt-3 px-1 text-center text-[12.5px] leading-relaxed text-muted-foreground">
+            Not a replacement for your Bible — a guide to the one already on your nightstand.
+          </p>
         </section>
 
         {/* Before / after */}
