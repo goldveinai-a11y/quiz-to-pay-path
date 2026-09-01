@@ -175,6 +175,7 @@ export const steps: Step[] = [
       { value: "read-most-days", label: "I'd read most days" },
       { value: "understand", label: "I'd understand what I read" },
       { value: "say-in-group", label: "I'd have something to say in group" },
+      { value: "dread-group", label: "I'd stop dreading the question in group" },
       { value: "closer", label: "I'd feel less far away" },
     ],
   },
