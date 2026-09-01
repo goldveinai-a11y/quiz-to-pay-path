@@ -32,6 +32,16 @@ const READER_TYPE: Record<string, string> = {
 type Obstacle = { name: string; line: string; bullet: string };
 
 const OBSTACLES: Record<string, Obstacle> = {
+  "no-time": {
+    name: "a day with no gap in it",
+    line: "there is never a clear half hour, so it never happens.",
+    bullet: "One passage sized to seven minutes — never a chapter you have to find time for",
+  },
+  routine: {
+    name: "a routine that quietly stops",
+    line: "it works for two weeks and then one day is missed and that is that.",
+    bullet: "Come back after a week away and the plan picks up where you left off — nothing resets",
+  },
   "dont-understand": {
     name: "missing context",
     line: "you read the words, but not who they were written to.",
