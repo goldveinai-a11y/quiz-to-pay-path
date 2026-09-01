@@ -53,7 +53,7 @@ function Index() {
         </div>
       </header>
 
-      <Hero />
+      <Hero segment={segment} />
       <SocialProof />
 
       <section className="bg-parchment py-14">
