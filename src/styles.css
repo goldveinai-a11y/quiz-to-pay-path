@@ -235,23 +235,27 @@
 @keyframes scene-cycle {
   0% {
     opacity: 0;
-    transform: translateY(8px);
+    z-index: 3;
   }
-  4% {
+  4.4% {
     opacity: 1;
-    transform: translateY(0);
+    z-index: 3;
   }
-  30% {
+  33.29% {
     opacity: 1;
-    transform: translateY(0);
+    z-index: 3;
   }
-  35% {
+  33.3% {
+    opacity: 1;
+    z-index: 1;
+  }
+  37.7% {
     opacity: 0;
-    transform: translateY(-6px);
+    z-index: 1;
   }
   100% {
     opacity: 0;
-    transform: translateY(-6px);
+    z-index: 1;
   }
 }
 
@@ -291,13 +295,13 @@
 }
 
 @utility scene-1 {
-  animation: scene-cycle 9s ease-in-out infinite both;
+  animation: scene-cycle 9s linear infinite both;
 }
 @utility scene-2 {
-  animation: scene-cycle 9s ease-in-out 3s infinite both;
+  animation: scene-cycle 9s linear 3s infinite both;
 }
 @utility scene-3 {
-  animation: scene-cycle 9s ease-in-out 6s infinite both;
+  animation: scene-cycle 9s linear 6s infinite both;
 }
 @utility anim-sheet-up {
   animation: sheet-up 9s ease-out 3s infinite both;
