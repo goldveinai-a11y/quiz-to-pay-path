@@ -65,6 +65,7 @@ function ResultPage() {
   const [selected, setSelected] = useState("1-month");
 
   const answers = useMemo(() => loadAnswers(), []);
+  const segmentCopy = useMemo(() => getSegment(answers["segment"] as string | undefined), [answers]);
   const firstName = useMemo(() => {
     const n = (answers["name"] as string | undefined)?.trim();
     return n && n.length > 0 ? n : null;
