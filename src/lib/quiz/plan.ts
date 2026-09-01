@@ -135,7 +135,7 @@ export function buildPlan(answers: Answers): PlanResult {
     answers["disagreements"] === "both"
       ? "See how Catholic, Orthodox and Protestant readings differ, side by side"
       : "Commentary from your own tradition only",
-    "Notes, highlights and a streak that survives a missed day",
+    "Notes and highlights that stay. Miss a day and nothing resets — that is the point",
   ];
   if (trigger === "group") {
     bullets.splice(6, 0, "Prep your group's discussion — questions and a handout, ready to send");
