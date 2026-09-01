@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { QuizChrome } from "@/components/quiz/QuizChrome";
 import { StepRenderer } from "@/components/quiz/StepRenderer";
 import { steps, SECTIONS } from "@/lib/quiz/steps";
