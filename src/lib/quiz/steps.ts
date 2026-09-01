@@ -215,6 +215,7 @@ export const steps: Step[] = [
       { value: "lunch", label: "Lunch" },
       { value: "evening", label: "Evening" },
       { value: "bed", label: "Right before bed" },
+      { value: "unsure", label: "Honestly, I don't know when" },
     ],
   },
   {
