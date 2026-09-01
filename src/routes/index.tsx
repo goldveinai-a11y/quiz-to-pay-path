@@ -1,5 +1,6 @@
 import { createFileRoute, useRouter } from "@tanstack/react-router";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { segmentFromSearch } from "@/lib/quiz/segments";
 import { Hero } from "@/components/landing/Hero";
 import { SocialProof } from "@/components/landing/SocialProof";
 import { FeatureRow } from "@/components/landing/FeatureRow";
@@ -36,7 +37,12 @@ export const Route = createFileRoute("/")({
 function Index() {
   useReturningReader();
   const router = useRouter();
+  // The segment lives in the query string, which SSR/prerender does not know.
+  // Rendering the neutral copy first and swapping after hydration keeps the
+  // markup stable; the swap is a single paint on tagged traffic.
+  const [segment, setSegment] = useState<string | null>(null);
   useEffect(() => {
+    setSegment(segmentFromSearch(window.location.search));
     router.preloadRoute({ to: "/quiz" }).catch(() => {});
   }, [router]);
   return (
@@ -47,7 +53,7 @@ function Index() {
         </div>
       </header>
 
-      <Hero />
+      <Hero segment={segment} />
       <SocialProof />
 
       <section className="bg-parchment py-14">

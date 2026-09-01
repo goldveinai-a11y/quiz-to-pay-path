@@ -42,6 +42,11 @@ const OBSTACLES: Record<string, Obstacle> = {
     line: "it works for two weeks and then one day is missed and that is that.",
     bullet: "Come back after a week away and the plan picks up where you left off — nothing resets",
   },
+  emergency: {
+    name: "a hard week",
+    line: "you need something that speaks to today, not a chapter about someone else.",
+    bullet: "Your first week is chosen for what you're going through — day 1 is not page 1",
+  },
   "dont-understand": {
     name: "missing context",
     line: "you read the words, but not who they were written to.",
@@ -115,7 +120,12 @@ export function buildPlan(answers: Answers): PlanResult {
   const trigger = (answers["trigger"] as string) ?? "understand";
   const readerType = READER_TYPE[trigger] ?? READER_TYPE["understand"]!;
   const blockers = asArray(answers["blockers"]);
-  const obs = OBSTACLES[blockers[0] ?? "dont-understand"] ?? OBSTACLES["dont-understand"]!;
+  const segment = (answers["segment"] as string) ?? "default";
+  // Segment runs replace the generic blockers question, so the obstacle comes
+  // from the segment itself in that case.
+  const obstacleKey =
+    blockers[0] ?? (segment === "no-time" ? "no-time" : segment === "emergency" ? "emergency" : "dont-understand");
+  const obs = OBSTACLES[obstacleKey] ?? OBSTACLES["dont-understand"]!;
   const mins = depth === "deeper" ? 12 : 7;
   const tod = TIME_LABEL[(answers["time-of-day"] as string) ?? "morning"] ?? "morning";
   const style = (answers["style"] as string) ?? "explain-first";

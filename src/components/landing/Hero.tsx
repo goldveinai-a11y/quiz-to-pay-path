@@ -1,15 +1,17 @@
 import { ART } from "@/lib/quiz/art";
 import { StartButton } from "./StartButton";
+import { getSegment } from "@/lib/quiz/segments";
 
-export function Hero() {
+export function Hero({ segment }: { segment?: string | null }) {
+  const copy = getSegment(segment);
+
   return (
     <section className="mx-auto w-full max-w-[560px] px-5 pb-10 pt-8 text-center">
       <h1 className="text-balance text-[34px] leading-[1.08] tracking-tight text-ink sm:text-[42px]">
-        Never know where to start with the Bible?
+        {copy.headline}
       </h1>
       <p className="mx-auto mt-3 max-w-[430px] text-[15px] leading-relaxed text-muted-foreground">
-        Answer a 2-minute quiz and get a simple day-by-day plan made for beginners — no theology
-        degree needed.
+        {copy.sub}
       </p>
 
       <div className="relative mt-7">
@@ -31,16 +33,14 @@ export function Hero() {
           <p className="mt-2 font-serif text-[19px] leading-snug text-ink">
             “For God so <span className="bg-gold/30 px-1">loved</span> the world…”
           </p>
-          <p className="mt-3 text-[13px] leading-relaxed text-muted-foreground">
-            Explained in plain English — no confusing Bible-speak.
-          </p>
+          <p className="mt-3 text-[13px] leading-relaxed text-muted-foreground">{copy.heroNote}</p>
         </div>
       </div>
 
       <div className="mt-7">
-        <StartButton />
+        <StartButton label={copy.cta} placement={`landing-${copy.id}`} />
       </div>
-      <p className="mt-3 text-[12px] text-faint">2-minute quiz · no card required</p>
+      <p className="mt-3 text-[12px] text-faint">{copy.promises.join(" · ")}</p>
     </section>
   );
 }

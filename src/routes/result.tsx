@@ -17,6 +17,7 @@ import { PAYWALL_REVIEWS } from "@/lib/reviews";
 import { ART } from "@/lib/quiz/art";
 import { loadAnswers } from "@/lib/quiz/store";
 import { buildPlan, THEME_LABELS, type PlanResult } from "@/lib/quiz/plan";
+import { getSegment } from "@/lib/quiz/segments";
 import { track } from "@/lib/analytics";
 import { trackMetaViewContent, trackMetaInitiateCheckout } from "@/lib/meta-pixel";
 
@@ -65,6 +66,7 @@ function ResultPage() {
   const [selected, setSelected] = useState("1-month");
 
   const answers = useMemo(() => loadAnswers(), []);
+  const segmentCopy = useMemo(() => getSegment(answers["segment"] as string | undefined), [answers]);
   const firstName = useMemo(() => {
     const n = (answers["name"] as string | undefined)?.trim();
     return n && n.length > 0 ? n : null;
@@ -72,9 +74,9 @@ function ResultPage() {
 
   useEffect(() => {
     setPlan(buildPlan(answers));
-    track("paywall_view");
+    track("paywall_view", { segment: segmentCopy.id });
     trackMetaViewContent({ content_name: "paywall" });
-  }, [answers]);
+  }, [answers, segmentCopy.id]);
 
   const selectedPlan = useMemo(() => PLANS.find((p) => p.id === selected)!, [selected]);
   const renewalDate = useMemo(() => {
@@ -92,6 +94,7 @@ function ResultPage() {
       plan: selected,
       value: selectedPlan.price,
       currency: "USD",
+      segment: segmentCopy.id,
     });
     trackMetaInitiateCheckout({
       content_name: selected,
@@ -143,6 +146,9 @@ function ResultPage() {
           <p className="mt-3.5 border-t border-border pt-3.5 text-[13.5px] leading-relaxed text-ink2">
             <span className="font-semibold text-ink">Your obstacle is {plan.obstacleName}</span> — {plan.obstacleLine}
           </p>
+          {segmentCopy.resultBullet ? (
+            <p className="mt-3 text-[13.5px] leading-relaxed text-teal">{segmentCopy.resultBullet}</p>
+          ) : null}
         </section>
 
         {/* Plan card */}

@@ -1,8 +1,9 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { QuizChrome } from "@/components/quiz/QuizChrome";
 import { StepRenderer } from "@/components/quiz/StepRenderer";
 import { steps, SECTIONS } from "@/lib/quiz/steps";
+import { segmentFromSearch, stepsForSegment } from "@/lib/quiz/segments";
 import { captureUtm, useAnswers } from "@/lib/quiz/store";
 import { useReturningReader } from "@/lib/auth/useReturningReader";
 import { track } from "@/lib/analytics";
@@ -34,26 +35,48 @@ function QuizPage() {
   useReturningReader();
   const { answers, setAnswer, hydrated } = useAnswers();
   const [index, setIndex] = useState(0);
+  const [urlSegment, setUrlSegment] = useState<string | null>(null);
 
   useEffect(() => {
     captureUtm();
-    track("quiz_start", { total_steps: steps.length });
-  }, []);
+    const fromUrl = segmentFromSearch(window.location.search);
+    if (fromUrl) {
+      setUrlSegment(fromUrl);
+      setAnswer("segment", fromUrl);
+    }
+    track("quiz_start", { total_steps: steps.length, segment: fromUrl ?? "self-select" });
+  }, [setAnswer]);
 
   useEffect(() => {
     window.scrollTo(0, 0);
   }, [index]);
 
-  const step = steps[index]!;
+  const segment = urlSegment ?? ((answers["segment"] as string) || null);
+  const activeSteps = useMemo(
+    () => stepsForSegment(segment, Boolean(urlSegment)),
+    [segment, urlSegment],
+  );
+
+  const step = activeSteps[Math.min(index, activeSteps.length - 1)]!;
 
   useEffect(() => {
-    track("quiz_step_view", { step_index: index + 1, step_id: step.id, step_kind: step.kind });
-  }, [index, step.id, step.kind]);
+    track("quiz_step_view", {
+      step_index: index + 1,
+      step_id: step.id,
+      step_kind: step.kind,
+      segment: segment ?? "unset",
+    });
+  }, [index, step.id, step.kind, segment]);
 
   const next = () => {
-    track("quiz_step_complete", { step_index: index + 1, step_id: step.id, step_kind: step.kind });
-    if (index >= steps.length - 1) {
-      track("quiz_complete", { total_steps: steps.length });
+    track("quiz_step_complete", {
+      step_index: index + 1,
+      step_id: step.id,
+      step_kind: step.kind,
+      segment: segment ?? "unset",
+    });
+    if (index >= activeSteps.length - 1) {
+      track("quiz_complete", { total_steps: activeSteps.length, segment: segment ?? "default" });
       navigate({ to: "/result" });
       return;
     }
@@ -65,7 +88,7 @@ function QuizPage() {
       {step.kind !== "analysis" ? (
         <QuizChrome
           index={index}
-          total={steps.length}
+          total={activeSteps.length}
           canBack={index > 0}
           onBack={() => setIndex((i) => Math.max(0, i - 1))}
         />
