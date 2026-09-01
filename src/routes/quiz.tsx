@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { QuizChrome } from "@/components/quiz/QuizChrome";
 import { StepRenderer } from "@/components/quiz/StepRenderer";
 import { steps, SECTIONS } from "@/lib/quiz/steps";
+import { segmentFromSearch, stepsForSegment } from "@/lib/quiz/segments";
 import { captureUtm, useAnswers } from "@/lib/quiz/store";
 import { useReturningReader } from "@/lib/auth/useReturningReader";
 import { track } from "@/lib/analytics";
