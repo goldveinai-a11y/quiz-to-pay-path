@@ -115,7 +115,12 @@ export function buildPlan(answers: Answers): PlanResult {
   const trigger = (answers["trigger"] as string) ?? "understand";
   const readerType = READER_TYPE[trigger] ?? READER_TYPE["understand"]!;
   const blockers = asArray(answers["blockers"]);
-  const obs = OBSTACLES[blockers[0] ?? "dont-understand"] ?? OBSTACLES["dont-understand"]!;
+  const segment = (answers["segment"] as string) ?? "default";
+  // Segment runs replace the generic blockers question, so the obstacle comes
+  // from the segment itself in that case.
+  const obstacleKey =
+    blockers[0] ?? (segment === "no-time" ? "no-time" : segment === "emergency" ? "emergency" : "dont-understand");
+  const obs = OBSTACLES[obstacleKey] ?? OBSTACLES["dont-understand"]!;
   const mins = depth === "deeper" ? 12 : 7;
   const tod = TIME_LABEL[(answers["time-of-day"] as string) ?? "morning"] ?? "morning";
   const style = (answers["style"] as string) ?? "explain-first";
