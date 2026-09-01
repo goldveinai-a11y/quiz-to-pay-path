@@ -59,7 +59,7 @@ function Index() {
 
           <FeatureRow
             title="Seven minutes, every morning"
-            text="One passage a day, sized to the time you actually have. The streak does the rest."
+            text="One passage a day, sized to the time you actually have. Missing a day resets nothing — that is the point."
           >
             <div className="flex h-full flex-col bg-card">
               <ArtBlock tone="teal" height={168} eyebrow="Day 4" />

@@ -32,6 +32,16 @@ const READER_TYPE: Record<string, string> = {
 type Obstacle = { name: string; line: string; bullet: string };
 
 const OBSTACLES: Record<string, Obstacle> = {
+  "no-time": {
+    name: "a day with no gap in it",
+    line: "there is never a clear half hour, so it never happens.",
+    bullet: "One passage sized to seven minutes — never a chapter you have to find time for",
+  },
+  routine: {
+    name: "a routine that quietly stops",
+    line: "it works for two weeks and then one day is missed and that is that.",
+    bullet: "Come back after a week away and the plan picks up where you left off — nothing resets",
+  },
   "dont-understand": {
     name: "missing context",
     line: "you read the words, but not who they were written to.",
@@ -85,6 +95,7 @@ const TIME_LABEL: Record<string, string> = {
   lunch: "lunch break",
   evening: "evening",
   bed: "just before bed",
+  unsure: "gap you find",
 };
 
 function asArray(v: unknown): string[] {
@@ -124,7 +135,7 @@ export function buildPlan(answers: Answers): PlanResult {
     answers["disagreements"] === "both"
       ? "See how Catholic, Orthodox and Protestant readings differ, side by side"
       : "Commentary from your own tradition only",
-    "Notes, highlights and a streak that survives a missed day",
+    "Notes and highlights that stay. Miss a day and nothing resets — that is the point",
   ];
   if (trigger === "group") {
     bullets.splice(6, 0, "Prep your group's discussion — questions and a handout, ready to send");

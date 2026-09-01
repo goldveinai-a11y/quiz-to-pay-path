@@ -73,6 +73,8 @@ export const steps: Step[] = [
     title: "When you try to read it, what happens?",
     subtitle: "Pick everything that sounds familiar.",
     options: [
+      { value: "no-time", label: "I run out of time" },
+      { value: "routine", label: "I forget — the routine falls apart" },
       { value: "dont-understand", label: "I don't understand what I'm reading" },
       { value: "lose-thread", label: "I lose the thread of the story" },
       { value: "bored", label: "I get bored" },
@@ -86,13 +88,14 @@ export const steps: Step[] = [
     section: SECTIONS[1],
     title: "That's not a willpower problem.",
     subtitle:
-      "Almost everyone stalls for the same handful of reasons — dense wording, no context, no natural stopping point. BibleRoutine is built to remove each one, before you read a single verse.",
+      "Almost everyone stalls for the same handful of reasons — no time, a routine that quietly stops, dense wording, no natural stopping point. BibleRoutine is built to remove each one, before you read a single verse.",
     eyebrow: "Why this feels hard",
     tone: "indigo",
     bullets: [
+      "No time → one passage sized to seven minutes, not a chapter",
+      "Routine falls apart → the plan picks up where you left off, nothing resets",
       "Confusing wording → explained in plain English",
       "Losing the thread → who wrote it and why, before every passage",
-      "No stopping point → one short passage, about 7 minutes, done",
     ],
     cta: "Continue",
   },
@@ -172,6 +175,7 @@ export const steps: Step[] = [
       { value: "read-most-days", label: "I'd read most days" },
       { value: "understand", label: "I'd understand what I read" },
       { value: "say-in-group", label: "I'd have something to say in group" },
+      { value: "dread-group", label: "I'd stop dreading the question in group" },
       { value: "closer", label: "I'd feel less far away" },
     ],
   },
@@ -211,6 +215,7 @@ export const steps: Step[] = [
       { value: "lunch", label: "Lunch" },
       { value: "evening", label: "Evening" },
       { value: "bed", label: "Right before bed" },
+      { value: "unsure", label: "Honestly, I don't know when" },
     ],
   },
   {
