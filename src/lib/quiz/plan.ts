@@ -42,6 +42,11 @@ const OBSTACLES: Record<string, Obstacle> = {
     line: "it works for two weeks and then one day is missed and that is that.",
     bullet: "Come back after a week away and the plan picks up where you left off — nothing resets",
   },
+  emergency: {
+    name: "a hard week",
+    line: "you need something that speaks to today, not a chapter about someone else.",
+    bullet: "Your first week is chosen for what you're going through — day 1 is not page 1",
+  },
   "dont-understand": {
     name: "missing context",
     line: "you read the words, but not who they were written to.",
