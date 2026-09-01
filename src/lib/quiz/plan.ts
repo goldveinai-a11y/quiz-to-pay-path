@@ -95,6 +95,7 @@ const TIME_LABEL: Record<string, string> = {
   lunch: "lunch break",
   evening: "evening",
   bed: "just before bed",
+  unsure: "gap you find",
 };
 
 function asArray(v: unknown): string[] {
