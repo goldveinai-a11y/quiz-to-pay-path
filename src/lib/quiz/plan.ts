@@ -72,6 +72,26 @@ const OBSTACLES: Record<string, Obstacle> = {
     line: "opening it means deciding where to begin, every single time.",
     bullet: "Tomorrow's passage is already chosen. You open it and read",
   },
+  curious: {
+    name: "the identity gap",
+    line: "you're interested, but 'people like me don't read the Bible'.",
+    bullet: "No background assumed — every passage is explained before you read it",
+  },
+  social: {
+    name: "the group question",
+    line: "you nod along because the real question feels too basic to ask.",
+    bullet: "Learn privately first — ask anything, then decide if you ever say a word",
+  },
+  returning: {
+    name: "the gap",
+    line: "the longer you're away, the bigger the catch-up feels.",
+    bullet: "No lecture and no catch-up chapter — the plan opens to the right page when you come back",
+  },
+  male: {
+    name: "the fluff filter",
+    line: "most Bible content feels soft, emotional, or churchy.",
+    bullet: "Field-guide style — original languages, historical context, straight explanations",
+  },
 };
 
 export type PlanResult = {
@@ -123,8 +143,15 @@ export function buildPlan(answers: Answers): PlanResult {
   const segment = (answers["segment"] as string) ?? "default";
   // Segment runs replace the generic blockers question, so the obstacle comes
   // from the segment itself in that case.
-  const obstacleKey =
-    blockers[0] ?? (segment === "no-time" ? "no-time" : segment === "emergency" ? "emergency" : "dont-understand");
+  const SEGMENT_OBSTACLE: Record<string, string> = {
+    "no-time": "no-time",
+    emergency: "emergency",
+    curious: "curious",
+    social: "social",
+    returning: "returning",
+    male: "male",
+  };
+  const obstacleKey = blockers[0] ?? SEGMENT_OBSTACLE[segment] ?? "dont-understand";
   const obs = OBSTACLES[obstacleKey] ?? OBSTACLES["dont-understand"]!;
   const mins = depth === "deeper" ? 12 : 7;
   const tod = TIME_LABEL[(answers["time-of-day"] as string) ?? "morning"] ?? "morning";

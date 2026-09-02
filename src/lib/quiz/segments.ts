@@ -13,7 +13,7 @@
 import type { Step } from "./types";
 import { SECTIONS, steps as baseSteps } from "./steps";
 
-export type SegmentId = "no-time" | "emergency" | "default";
+export type SegmentId = "no-time" | "emergency" | "curious" | "social" | "returning" | "male" | "default";
 
 export type SegmentCopy = {
   id: SegmentId;
@@ -120,6 +120,183 @@ const emergencyQuestions: Step[] = [
   },
 ];
 
+const curiousQuestions: Step[] = [
+  {
+    id: "bible-distance",
+    kind: "single",
+    section: SECTIONS[1],
+    title: "How close do you feel to the Bible right now?",
+    subtitle: "No wrong answer. This decides where we start.",
+    options: [
+      { value: "never-opened", label: "I've never really opened it" },
+      { value: "intimidated", label: "Curious, but it feels intimidating" },
+      { value: "read-as-kid", label: "I read some as a kid, not since" },
+      { value: "read-sometimes", label: "I read it now and then" },
+    ],
+  },
+  {
+    id: "not-for-you",
+    kind: "single",
+    section: SECTIONS[1],
+    title: "What makes it feel 'not for you'?",
+    subtitle: "We can remove that first.",
+    options: [
+      { value: "language", label: "The language feels ancient" },
+      { value: "where-start", label: "I don't know where to start" },
+      { value: "rule-book", label: "It reads like a rule book" },
+      { value: "afraid-wrong", label: "I'm afraid of getting it wrong" },
+    ],
+  },
+  {
+    id: "curious-pivot",
+    kind: "interstitial",
+    section: SECTIONS[1],
+    title: "Curiosity is enough.",
+    subtitle:
+      "You don't have to become 'a Bible person' first. The plan starts where you are and explains before it assumes.",
+    eyebrow: "Why this works",
+    tone: "teal",
+    bullets: [
+      "No background assumed — every passage is explained first",
+      "No shame for not knowing the characters or the timeline",
+      "Seven minutes, so you can stop without guilt",
+    ],
+    cta: "Continue",
+  },
+];
+
+const socialQuestions: Step[] = [
+  {
+    id: "group-context",
+    kind: "single",
+    section: SECTIONS[1],
+    title: "Where does the Bible question usually come up?",
+    subtitle: "The room where you feel like you should know more.",
+    options: [
+      { value: "small-group", label: "A small group or Bible study" },
+      { value: "family", label: "Family conversations" },
+      { value: "church", label: "Church or service" },
+      { value: "work", label: "Work or with friends" },
+      { value: "online", label: "Online / social media" },
+    ],
+  },
+  {
+    id: "confident-change",
+    kind: "single",
+    section: SECTIONS[1],
+    title: "What would change if you could answer confidently?",
+    options: [
+      { value: "less-dread", label: "I'd dread it less" },
+      { value: "contribute", label: "I could actually contribute" },
+      { value: "not-fake", label: "I wouldn't feel like I'm faking it" },
+      { value: "help-someone", label: "I could help someone else who is stuck" },
+    ],
+  },
+  {
+    id: "social-pivot",
+    kind: "interstitial",
+    section: SECTIONS[1],
+    title: "Nobody here is watching.",
+    subtitle:
+      "Learn privately first. Ask the basic questions you would never ask out loud. Then decide if you ever say a word.",
+    eyebrow: "How this helps",
+    tone: "indigo",
+    bullets: [
+      "Every passage explained before you read it",
+      "Ask anything — nobody sees the question but you",
+      "A 30-day foundation, so the next group conversation feels different",
+    ],
+    cta: "Continue",
+  },
+];
+
+const returningQuestions: Step[] = [
+  {
+    id: "time-away",
+    kind: "single",
+    section: SECTIONS[1],
+    title: "How long has it been since you read regularly?",
+    subtitle: "Be honest — there is no right timeline.",
+    options: [
+      { value: "weeks", label: "A few weeks" },
+      { value: "months", label: "Months" },
+      { value: "years", label: "Years" },
+      { value: "since-childhood", label: "Since I was a kid" },
+    ],
+  },
+  {
+    id: "brought-back",
+    kind: "single",
+    section: SECTIONS[1],
+    title: "What brought you back today?",
+    options: [
+      { value: "miss-it", label: "I miss it" },
+      { value: "hard-season", label: "Something hard is happening" },
+      { value: "dont-give-up", label: "I don't want to give up" },
+      { value: "someone-mentioned", label: "Someone mentioned this" },
+    ],
+  },
+  {
+    id: "returning-pivot",
+    kind: "interstitial",
+    section: SECTIONS[1],
+    title: "No lecture, no check-in.",
+    subtitle:
+      "The plan just opens to the right page when you come back. No questions about where you've been.",
+    eyebrow: "What to expect",
+    tone: "terra",
+    bullets: [
+      "Pick up without explaining the gap",
+      "One short passage, not a chapter to catch up on",
+      "Miss a day and nothing resets — that's the design",
+    ],
+    cta: "Continue",
+  },
+];
+
+const maleQuestions: Step[] = [
+  {
+    id: "want-to-read",
+    kind: "single",
+    section: SECTIONS[1],
+    title: "What would make you actually want to read it?",
+    subtitle: "Not what you think you should want — what would pull you in.",
+    options: [
+      { value: "history", label: "Real historical context" },
+      { value: "languages", label: "The original Greek and Hebrew" },
+      { value: "arguments", label: "Honest arguments, not soft answers" },
+      { value: "structure", label: "A clear structure I can follow" },
+    ],
+  },
+  {
+    id: "facts-or-meaning",
+    kind: "single",
+    section: SECTIONS[1],
+    title: "Which sounds more useful?",
+    options: [
+      { value: "facts-first", label: "Facts first, then what they mean" },
+      { value: "meaning-first", label: "Meaning first, then the facts behind it" },
+      { value: "both", label: "Both, side by side" },
+    ],
+  },
+  {
+    id: "male-pivot",
+    kind: "interstitial",
+    section: SECTIONS[1],
+    title: "Built like a field guide.",
+    subtitle:
+      "Who wrote it, to whom, what the words meant then, and why it matters now. No fluff, no forced emotion.",
+    eyebrow: "How it's taught",
+    tone: "olive",
+    bullets: [
+      "Original language tools one tap away",
+      "Historical context before every passage",
+      "Straight explanations — no church voice",
+    ],
+    cta: "Continue",
+  },
+];
+
 export const SEGMENTS: Record<SegmentId, SegmentCopy> = {
   default: {
     id: "default",
@@ -151,6 +328,50 @@ export const SEGMENTS: Record<SegmentId, SegmentCopy> = {
       "Your first week is chosen for what you're going through — not a chapter about somebody else",
     firstQuestions: emergencyQuestions,
   },
+  curious: {
+    id: "curious",
+    headline: "You don't have to become 'a Bible person' first.",
+    sub: "Start curious. Seven minutes a day, explained before it assumes you already know the story.",
+    cta: "Start curious",
+    promises: ["No background needed", "Explained first, then read", "No card required"],
+    heroNote: "Every passage explained before you read a word of it.",
+    resultBullet:
+      "Built for curiosity, not credentials — every passage is explained before you read it",
+    firstQuestions: curiousQuestions,
+  },
+  social: {
+    id: "social",
+    headline: "Tired of nodding along when the Bible comes up?",
+    sub: "Learn privately first. Ask the questions you'd never ask out loud. Then decide if you ever say a word.",
+    cta: "Learn before the room",
+    promises: ["Private first", "Explained, not preached", "No card required"],
+    heroNote: "Nobody sees your questions but you.",
+    resultBullet:
+      "A 30-day foundation so the next conversation about the Bible feels different — learned in private first",
+    firstQuestions: socialQuestions,
+  },
+  returning: {
+    id: "returning",
+    headline: "Coming back doesn't need an explanation.",
+    sub: "No lecture, no catch-up chapter. One passage a day, and the plan picks up exactly where you left off.",
+    cta: "Pick up where I left off",
+    promises: ["No guilt for the gap", "One passage a day", "No card required"],
+    heroNote: "The plan opens to the right page. No questions asked.",
+    resultBullet:
+      "No catch-up required — one short passage a day and a missed day costs you nothing",
+    firstQuestions: returningQuestions,
+  },
+  male: {
+    id: "male",
+    headline: "Read it like a field guide, not a devotional.",
+    sub: "Historical context, original languages, straight explanations. No fluff, no forced emotion.",
+    cta: "Show me the field guide",
+    promises: ["Original languages, one tap", "Historical context", "No card required"],
+    heroNote: "Who wrote it, to whom, and why it mattered then.",
+    resultBullet:
+      "Built for the intellectual track — original language tools and historical context first",
+    firstQuestions: maleQuestions,
+  },
 };
 
 const ALIASES: Record<string, SegmentId> = {
@@ -161,6 +382,22 @@ const ALIASES: Record<string, SegmentId> = {
   emergency: "emergency",
   hard: "emergency",
   "hard-season": "emergency",
+  curious: "curious",
+  "bible-curious": "curious",
+  "just-curious": "curious",
+  new: "curious",
+  social: "social",
+  group: "social",
+  "dread-group": "social",
+  shame: "social",
+  returning: "returning",
+  return: "returning",
+  back: "returning",
+  "church-hurt": "returning",
+  male: "male",
+  men: "male",
+  guy: "male",
+  intellectual: "male",
 };
 
 /** Reads a segment from a query string (`?v=` or `utm_content=`). */
@@ -187,6 +424,10 @@ export const SEGMENT_STEP: Step = {
   options: [
     { value: "no-time", label: "I never find the time — it keeps falling apart" },
     { value: "emergency", label: "Something hard is happening right now" },
+    { value: "curious", label: "I'm curious but it feels like it's not for me" },
+    { value: "social", label: "I dread the Bible question in a group" },
+    { value: "returning", label: "I'm coming back after time away" },
+    { value: "male", label: "I want the facts, not the fluff" },
     { value: "default", label: "I want to finally understand what I'm reading" },
   ],
 };
