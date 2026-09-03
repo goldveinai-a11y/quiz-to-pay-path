@@ -178,6 +178,60 @@ function ResultPage() {
           ) : null}
         </section>
 
+        {/* Email capture — value first, then the ask */}
+        <section className="mt-4 rounded-3xl bg-card p-5 shadow-s1">
+          {emailSaved ? (
+            <div className="flex items-center gap-3">
+              <span className="grid h-9 w-9 flex-none place-items-center rounded-full bg-teal text-background">
+                <Check className="h-4 w-4" strokeWidth={3} />
+              </span>
+              <div>
+                <p className="text-[14px] font-semibold text-ink">Plan saved</p>
+                <p className="text-[12.5px] text-muted-foreground">{emailSaved}</p>
+              </div>
+            </div>
+          ) : (
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                submitEmail();
+              }}
+            >
+              <p className="font-serif text-[20px] font-semibold leading-tight text-ink">
+                Where should we send your plan?
+              </p>
+              <p className="mt-1.5 text-[13px] leading-relaxed text-ink2">
+                So it's still here tomorrow, on any device.
+              </p>
+              <Input
+                type="email"
+                inputMode="email"
+                autoComplete="email"
+                value={emailInput}
+                placeholder="you@email.com"
+                onChange={(e) => setEmailInput(e.target.value)}
+                className={`mt-4 h-13 rounded-2xl border-2 bg-background px-4 text-[15px] ${
+                  emailError ? "border-destructive" : "border-border"
+                }`}
+              />
+              {emailError ? (
+                <p className="mt-2 text-[12.5px] text-destructive">
+                  That doesn't look like an email address.
+                </p>
+              ) : null}
+              <button
+                type="submit"
+                className="mt-3 h-[50px] w-full rounded-2xl bg-teal text-[15px] font-semibold text-background shadow-s2 transition hover:opacity-90"
+              >
+                Save my plan
+              </button>
+              <p className="mt-2.5 text-center font-mono text-[10px] uppercase tracking-wider text-faint">
+                No spam · just your plan
+              </p>
+            </form>
+          )}
+        </section>
+
         {/* Plan card */}
         <section className="mt-6 overflow-hidden rounded-3xl bg-card shadow-s2">
           <div className="flex items-stretch gap-4 border-b border-border p-5">
