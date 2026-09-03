@@ -81,7 +81,29 @@ function ResultPage() {
     setPlan(buildPlan(answers));
     track("paywall_view", { segment: segmentCopy.id });
     trackMetaViewContent({ content_name: "paywall" });
+    const existing = typeof answers["email"] === "string" ? (answers["email"] as string).trim() : "";
+    if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(existing)) {
+      setEmailSaved(existing);
+      setEmailInput(existing);
+    } else {
+      track("result_email_shown", { segment: segmentCopy.id });
+    }
   }, [answers, segmentCopy.id]);
+
+  const submitEmail = () => {
+    const email = emailInput.trim().toLowerCase();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      setEmailError(true);
+      return;
+    }
+    setEmailError(false);
+    setEmailSaved(email);
+    saveAnswers({ ...answers, email });
+    track("email_submit", { segment: segmentCopy.id, placement: "result" });
+    trackMetaLead({});
+    void saveLead({ data: { email, segment: segmentCopy.id } });
+    document.getElementById("access")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
 
   const selectedPlan = useMemo(() => PLANS.find((p) => p.id === selected)!, [selected]);
   const renewalDate = useMemo(() => {
