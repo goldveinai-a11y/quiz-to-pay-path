@@ -1,6 +1,7 @@
 import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { segmentFromSearch } from "@/lib/quiz/segments";
+import heroArt from "@/assets/art-hero.jpg";
 import { Hero } from "@/components/landing/Hero";
 import { SocialProof } from "@/components/landing/SocialProof";
 import { FeatureRow } from "@/components/landing/FeatureRow";
@@ -15,6 +16,7 @@ import { useReturningReader } from "@/lib/auth/useReturningReader";
 
 export const Route = createFileRoute("/")({
   head: () => ({
+    links: [{ rel: "preload", as: "image", href: heroArt, fetchpriority: "high" }],
     meta: [
       { title: "BibleRoutine — understand the Bible in 7 minutes a day" },
       {

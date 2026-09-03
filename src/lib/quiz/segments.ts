@@ -446,10 +446,21 @@ export function stepsForSegment(id: string | null | undefined, fromUrl: boolean)
     const start = out.findIndex((s) => s.id === "blockers");
     const end = out.findIndex((s) => s.id === "plan-history");
     if (start !== -1 && end !== -1) {
-      out.splice(start, end - start + 1, ...seg.firstQuestions);
+      out.splice(start, end - start + 1);
+    }
+    // Tagged traffic keeps message match: the segment questions open the quiz.
+    // Untagged traffic self-selects first, so they stay where the generic
+    // blocker block used to be.
+    if (fromUrl) {
+      out.unshift(...seg.firstQuestions);
+    } else if (start !== -1 && end !== -1) {
+      out.splice(start, 0, ...seg.firstQuestions);
+    } else {
+      out.unshift(...seg.firstQuestions);
     }
   }
 
   if (!fromUrl) out.unshift(SEGMENT_STEP);
   return out;
 }
+

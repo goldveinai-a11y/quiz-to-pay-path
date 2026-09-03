@@ -11,7 +11,7 @@ import { track } from "@/lib/analytics";
 export const Route = createFileRoute("/quiz")({
   head: () => ({
     meta: [
-      { title: "Bible Plan Quiz — 2 minutes, 22 questions" },
+      { title: "Bible Plan Quiz — 2 minutes to your plan" },
       {
         name: "description",
         content:
