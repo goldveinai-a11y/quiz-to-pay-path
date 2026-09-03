@@ -15,11 +15,13 @@ import { Reveal } from "@/components/product/Reveal";
 import { LiveSessionLoop } from "@/components/product/LiveSessionLoop";
 import { PAYWALL_REVIEWS } from "@/lib/reviews";
 import { ART } from "@/lib/quiz/art";
-import { loadAnswers } from "@/lib/quiz/store";
+import { loadAnswers, saveAnswers } from "@/lib/quiz/store";
 import { buildPlan, THEME_LABELS, type PlanResult } from "@/lib/quiz/plan";
 import { getSegment } from "@/lib/quiz/segments";
 import { track } from "@/lib/analytics";
-import { trackMetaViewContent, trackMetaInitiateCheckout } from "@/lib/meta-pixel";
+import { trackMetaViewContent, trackMetaInitiateCheckout, trackMetaLead } from "@/lib/meta-pixel";
+import { saveLead } from "@/lib/leads.functions";
+import { Input } from "@/components/ui/input";
 
 export const Route = createFileRoute("/result")({
   head: () => ({
@@ -64,6 +66,9 @@ function ResultPage() {
   const navigate = useNavigate();
   const [plan, setPlan] = useState<PlanResult | null>(null);
   const [selected, setSelected] = useState("1-month");
+  const [emailInput, setEmailInput] = useState("");
+  const [emailSaved, setEmailSaved] = useState<string | null>(null);
+  const [emailError, setEmailError] = useState(false);
 
   const answers = useMemo(() => loadAnswers(), []);
   const segmentCopy = useMemo(() => getSegment(answers["segment"] as string | undefined), [answers]);
@@ -76,7 +81,29 @@ function ResultPage() {
     setPlan(buildPlan(answers));
     track("paywall_view", { segment: segmentCopy.id });
     trackMetaViewContent({ content_name: "paywall" });
+    const existing = typeof answers["email"] === "string" ? (answers["email"] as string).trim() : "";
+    if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(existing)) {
+      setEmailSaved(existing);
+      setEmailInput(existing);
+    } else {
+      track("result_email_shown", { segment: segmentCopy.id });
+    }
   }, [answers, segmentCopy.id]);
+
+  const submitEmail = () => {
+    const email = emailInput.trim().toLowerCase();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      setEmailError(true);
+      return;
+    }
+    setEmailError(false);
+    setEmailSaved(email);
+    saveAnswers({ ...answers, email });
+    track("email_submit", { segment: segmentCopy.id, placement: "result" });
+    trackMetaLead({});
+    void saveLead({ data: { email, segment: segmentCopy.id } });
+    document.getElementById("access")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
 
   const selectedPlan = useMemo(() => PLANS.find((p) => p.id === selected)!, [selected]);
   const renewalDate = useMemo(() => {
@@ -149,6 +176,60 @@ function ResultPage() {
           {segmentCopy.resultBullet ? (
             <p className="mt-3 text-[13.5px] leading-relaxed text-teal">{segmentCopy.resultBullet}</p>
           ) : null}
+        </section>
+
+        {/* Email capture — value first, then the ask */}
+        <section className="mt-4 rounded-3xl bg-card p-5 shadow-s1">
+          {emailSaved ? (
+            <div className="flex items-center gap-3">
+              <span className="grid h-9 w-9 flex-none place-items-center rounded-full bg-teal text-background">
+                <Check className="h-4 w-4" strokeWidth={3} />
+              </span>
+              <div>
+                <p className="text-[14px] font-semibold text-ink">Plan saved</p>
+                <p className="text-[12.5px] text-muted-foreground">{emailSaved}</p>
+              </div>
+            </div>
+          ) : (
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                submitEmail();
+              }}
+            >
+              <p className="font-serif text-[20px] font-semibold leading-tight text-ink">
+                Where should we send your plan?
+              </p>
+              <p className="mt-1.5 text-[13px] leading-relaxed text-ink2">
+                So it's still here tomorrow, on any device.
+              </p>
+              <Input
+                type="email"
+                inputMode="email"
+                autoComplete="email"
+                value={emailInput}
+                placeholder="you@email.com"
+                onChange={(e) => setEmailInput(e.target.value)}
+                className={`mt-4 h-13 rounded-2xl border-2 bg-background px-4 text-[15px] ${
+                  emailError ? "border-destructive" : "border-border"
+                }`}
+              />
+              {emailError ? (
+                <p className="mt-2 text-[12.5px] text-destructive">
+                  That doesn't look like an email address.
+                </p>
+              ) : null}
+              <button
+                type="submit"
+                className="mt-3 h-[50px] w-full rounded-2xl bg-teal text-[15px] font-semibold text-background shadow-s2 transition hover:opacity-90"
+              >
+                Save my plan
+              </button>
+              <p className="mt-2.5 text-center font-mono text-[10px] uppercase tracking-wider text-faint">
+                No spam · just your plan
+              </p>
+            </form>
+          )}
         </section>
 
         {/* Plan card */}
