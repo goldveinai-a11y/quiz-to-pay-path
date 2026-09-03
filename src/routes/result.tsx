@@ -66,6 +66,9 @@ function ResultPage() {
   const navigate = useNavigate();
   const [plan, setPlan] = useState<PlanResult | null>(null);
   const [selected, setSelected] = useState("1-month");
+  const [emailInput, setEmailInput] = useState("");
+  const [emailSaved, setEmailSaved] = useState<string | null>(null);
+  const [emailError, setEmailError] = useState(false);
 
   const answers = useMemo(() => loadAnswers(), []);
   const segmentCopy = useMemo(() => getSegment(answers["segment"] as string | undefined), [answers]);
