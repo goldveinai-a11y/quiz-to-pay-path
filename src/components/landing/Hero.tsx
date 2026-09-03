@@ -1,4 +1,4 @@
-import { ART } from "@/lib/quiz/art";
+import heroArt from "@/assets/art-hero.jpg";
 import { StartButton } from "./StartButton";
 import { getSegment } from "@/lib/quiz/segments";
 
