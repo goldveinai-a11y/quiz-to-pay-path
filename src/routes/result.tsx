@@ -15,11 +15,13 @@ import { Reveal } from "@/components/product/Reveal";
 import { LiveSessionLoop } from "@/components/product/LiveSessionLoop";
 import { PAYWALL_REVIEWS } from "@/lib/reviews";
 import { ART } from "@/lib/quiz/art";
-import { loadAnswers } from "@/lib/quiz/store";
+import { loadAnswers, saveAnswers } from "@/lib/quiz/store";
 import { buildPlan, THEME_LABELS, type PlanResult } from "@/lib/quiz/plan";
 import { getSegment } from "@/lib/quiz/segments";
 import { track } from "@/lib/analytics";
-import { trackMetaViewContent, trackMetaInitiateCheckout } from "@/lib/meta-pixel";
+import { trackMetaViewContent, trackMetaInitiateCheckout, trackMetaLead } from "@/lib/meta-pixel";
+import { saveLead } from "@/lib/leads.functions";
+import { Input } from "@/components/ui/input";
 
 export const Route = createFileRoute("/result")({
   head: () => ({
