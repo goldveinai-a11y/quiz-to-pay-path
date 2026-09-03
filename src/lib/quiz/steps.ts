@@ -271,15 +271,6 @@ export const steps: Step[] = [
     cta: "Continue",
   },
   {
-    id: "email",
-    kind: "email",
-    section: SECTIONS[4],
-    title: "Where should we send your plan?",
-    subtitle: "So your plan is still here tomorrow, on any device.",
-    placeholder: "you@email.com",
-    cta: "Build my plan",
-  },
-  {
     id: "analysis",
     kind: "analysis",
     section: SECTIONS[4],
