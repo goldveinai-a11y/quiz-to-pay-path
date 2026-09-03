@@ -15,9 +15,9 @@ export function Hero({ segment }: { segment?: string | null }) {
       </p>
 
       <div className="relative mt-7">
-        <div className="overflow-hidden rounded-[26px] border border-border shadow-s2">
+        <div className="overflow-hidden rounded-[26px] border border-border bg-parchment shadow-s2">
           <img
-            src={ART["hero"]}
+            src={heroArt}
             alt="Engraved illustration of light breaking over open pages"
             className="h-[300px] w-full object-cover sm:h-[360px]"
             loading="eager"
