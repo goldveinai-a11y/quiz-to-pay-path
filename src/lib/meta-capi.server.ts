@@ -12,8 +12,6 @@ import { createHash } from "node:crypto";
  * Lovable's environment variables, this silently no-ops: purchases must
  * never fail because analytics isn't configured yet.
  */
-const PIXEL_ID = process.env["META_PIXEL_ID"] || "1597943145145592";
-const ACCESS_TOKEN = process.env["META_CAPI_ACCESS_TOKEN"];
 const GRAPH_VERSION = "v21.0";
 
 function sha256(value: string): string {
