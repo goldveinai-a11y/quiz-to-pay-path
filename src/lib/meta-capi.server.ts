@@ -28,6 +28,10 @@ export type MetaCapiPurchaseInput = {
 };
 
 export async function sendMetaPurchaseEvent(input: MetaCapiPurchaseInput): Promise<void> {
+  // Read inside the function: env injection happens per call in the serverless
+  // runtime, so a module-scope read can see an empty value.
+  const PIXEL_ID = process.env["META_PIXEL_ID"] || "1597943145145592";
+  const ACCESS_TOKEN = process.env["META_CAPI_ACCESS_TOKEN"];
   if (!ACCESS_TOKEN || !PIXEL_ID) return;
   try {
     const res = await fetch(
